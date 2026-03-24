@@ -108,7 +108,8 @@ export default async function RootLayout({
             }),
           }}
         />
-        <script defer src="https://analytics.intambwemedia.com/script.js" data-website-id="810d43c5-4b69-4f2b-a04f-21c859c0f6e0"></script>
+        {/* Analytics: Using Plausible Privacy-First Analytics */}
+        <script defer data-domain="intambwemedia.com" src="https://plausible.io/js/script.js"></script>
       </head>
       <body>
         <ThemeProvider>
