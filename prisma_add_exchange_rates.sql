@@ -1,0 +1,2 @@
+-- Migration script: Add ExchangeRate model
+-- This adds exchange rate tracking to the database

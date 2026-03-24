@@ -1,0 +1,14 @@
+{
+  "adverts": [
+    {
+      "id": "1772214092811",
+      "title": "Igare",
+      "url": "",
+      "imageUrl": "/uploads/article-1772214070363-clyd8z.gif",
+      "position": "homepage_top",
+      "isActive": true,
+      "createdAt": "2026-02-27T17:41:32.811Z",
+      "updatedAt": "2026-02-27T17:41:32.811Z"
+    }
+  ]
+}

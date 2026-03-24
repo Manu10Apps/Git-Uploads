@@ -1,0 +1,20 @@
+# Robots.txt for Intambwe Media
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /search?
+Allow: /search
+
+# Specific rules for search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Sitemap
+Sitemap: https://amakuru.news/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1

@@ -1,0 +1,131 @@
+export function cn(...classes: (string | undefined | null | false)[]): string {
+  return classes.filter(Boolean).join(' ');
+}
+
+export function formatDate(date: string | Date): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(d);
+}
+
+export function calculateReadTime(content: string): number {
+  const wordsPerMinute = 200;
+  const words = content.split(/\s+/).length;
+  return Math.ceil(words / wordsPerMinute);
+}
+
+export function truncateText(text: string, length: number): string {
+  if (text.length <= length) return text;
+  return text.substring(0, length) + '...';
+}
+
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+export function getCategoryColor(category: string): string {
+  const colors: Record<string, string> = {
+    politics: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200',
+    business: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200',
+    technology: 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-200',
+    investigations: 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-200',
+    culture: 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200',
+    sports: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200',
+  };
+  return colors[category] || 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200';
+}
+
+export function normalizeArticleImageUrl(imageUrl?: string | null): string | null {
+  if (!imageUrl) {
+    return null;
+  }
+
+  const trimmedUrl = imageUrl.trim();
+  if (!trimmedUrl) {
+    return null;
+  }
+
+  const normalizedSlashes = trimmedUrl.replace(/\\/g, '/');
+
+  if (normalizedSlashes.startsWith('data:') || normalizedSlashes.startsWith('blob:')) {
+    return normalizedSlashes;
+  }
+
+  if (/^file:/i.test(normalizedSlashes)) {
+    return null;
+  }
+
+  if (/^[a-zA-Z]:\//.test(normalizedSlashes)) {
+    const uploadsMatch = normalizedSlashes.match(/(?:^|\/)public\/uploads\/(.+)$/i);
+    if (uploadsMatch?.[1]) {
+      return `/uploads/${uploadsMatch[1]}`;
+    }
+
+    return null;
+  }
+
+  if (normalizedSlashes.startsWith('//')) {
+    return `https:${normalizedSlashes}`;
+  }
+
+  const normalizeUploadPath = (path: string) => {
+    if (path.startsWith('/public/uploads/')) {
+      return path.replace('/public/uploads/', '/uploads/');
+    }
+
+    if (path.startsWith('public/uploads/')) {
+      return `/${path.replace(/^public\//, '')}`;
+    }
+
+    if (path.startsWith('./uploads/')) {
+      return `/${path.replace(/^\.\//, '')}`;
+    }
+
+    if (path.startsWith('/admin/uploads/')) {
+      return path.replace('/admin/uploads/', '/uploads/');
+    }
+
+    if (path.startsWith('admin/uploads/')) {
+      return `/${path.replace(/^admin\//, '')}`;
+    }
+
+    if (path.startsWith('uploads/')) {
+      return `/${path}`;
+    }
+
+    if (path.startsWith('/uploads/')) {
+      return path;
+    }
+
+    return path;
+  };
+
+  if (/^https?:\/\//i.test(normalizedSlashes)) {
+    try {
+      const parsedUrl = new URL(normalizedSlashes);
+      parsedUrl.pathname = normalizeUploadPath(parsedUrl.pathname);
+      return parsedUrl.toString();
+    } catch {
+      return normalizedSlashes;
+    }
+  }
+
+  if (/^[\w.-]+\.[a-z]{2,}(\/|$)/i.test(normalizedSlashes)) {
+    return `https://${normalizedSlashes}`;
+  }
+
+  const normalizedPath = normalizeUploadPath(normalizedSlashes);
+  if (normalizedPath.startsWith('/')) {
+    return normalizedPath;
+  }
+
+  return `/${normalizedPath}`;
+}

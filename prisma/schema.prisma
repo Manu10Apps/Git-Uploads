@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  parentId    Int?
+  parent      Category? @relation("CategoryParent", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Category[] @relation("CategoryParent")
+  articles    Article[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  status      String    @default("active") // "active" or "archived"
+
+  @@map("categories")
+}
+
+model Article {
+  id              Int       @id @default(autoincrement())
+  title           String
+  slug            String    @unique
+  excerpt         String
+  content         String    // Markdown or HTML
+  image           String?
+  categoryId      Int
+  category        Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  author          String
+  status          String    @default("draft") // "draft" | "published" | "scheduled" | "archived"
+  publishedAt     DateTime?
+  scheduledFor    DateTime?
+  featured        Boolean   @default(false)
+  readTime        Int       @default(5)
+  tags            String?   // JSON array as string: '["tag1","tag2"]'
+  gallery         String?   // JSON array as string: '[{"url":"...","caption":"..."}]'
+  seoTitle        String?
+  seoDescription  String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([publishedAt])
+  @@map("articles")
+}
+
+model AdminUser {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String    // Hash with bcrypt
+  name      String
+  role      String    @default("editor") // "admin" | "editor"
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("admin_users")
+}
+
+model ExchangeRate {
+  id        Int       @id @default(autoincrement())
+  currency  String    @unique
+  rate      Float
+  change    Float     @default(0)
+  updatedAt DateTime  @updatedAt
+  createdAt DateTime  @default(now())
+
+  @@map("exchange_rates")
+}
