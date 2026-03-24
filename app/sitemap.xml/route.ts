@@ -7,16 +7,28 @@ export async function GET() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://intambwemedia.com';
   
   try {
-    // Fetch all articles for the sitemap directly from database
-    const articles = await prisma.article.findMany({
-      select: {
-        slug: true,
-        publishedAt: true,
-      },
-      orderBy: {
-        publishedAt: 'desc',
-      },
-    });
+    // Fetch articles for the sitemap with timeout using raw query for better performance
+    let articles: Array<{ slug: string; publishedAt: Date | null }> = [];
+    
+    try {
+      const result = await Promise.race<Array<{ slug: string; publishedAt: Date | null }>>([
+        prisma.$queryRaw`
+          SELECT slug, publishedAt 
+          FROM "Article" 
+          WHERE status = 'published'
+          ORDER BY publishedAt DESC 
+          LIMIT 5000
+        ` as Promise<Array<{ slug: string; publishedAt: Date | null }>>,
+        new Promise<Array<{ slug: string; publishedAt: Date | null }>>((_, reject) => 
+          setTimeout(() => reject(new Error('Sitemap query timeout')), 20000)
+        ),
+      ]);
+      articles = result;
+    } catch (queryError) {
+      console.warn('Failed to fetch articles for sitemap:', queryError);
+      // Continue with empty articles array - fallback sitemap will be used
+      articles = [];
+    }
 
     const sitemapUrls = [
       {
