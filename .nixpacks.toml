@@ -1,2 +1,5 @@
 [phases.setup]
 nixpkgs = ["nodejs_22"]
+
+[env]
+DATABASE_URL = "postgresql://placeholder:placeholder@localhost:5432/placeholder"

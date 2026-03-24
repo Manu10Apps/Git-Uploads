@@ -6,9 +6,9 @@ import { defineConfig } from "prisma/config";
 loadEnv({ path: '.env.local' });
 loadEnv();
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL is required for Prisma commands. Set it in .env.local or the shell environment.');
-}
+// Use a fallback DATABASE_URL for build-time Prisma generation
+// This is needed because Docker containers don't have env vars during build
+const databaseUrl = process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/amakuru_db';
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
@@ -17,6 +17,6 @@ export default defineConfig({
     seed: "tsx ./prisma/seed.ts",
   },
   datasource: {
-    url: process.env.DATABASE_URL,
+    url: databaseUrl,
   },
 });
