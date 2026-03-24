@@ -39,7 +39,7 @@
     "next-themes": "^0.2.1",
     "pg": "^8.20.0",
     "postcss": "^8.4.38",
-    "prisma": "^6.19.2",
+    "prisma": "^7.5.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-dropzone": "^15.0.0",
