@@ -9,6 +9,7 @@ interface TopBarData {
   weather: {
     temp: number;
     condition: string;
+    conditionKy: string;
     icon: string;
   };
   location: {
@@ -38,37 +39,38 @@ export function TopBar() {
       const data = await response.json();
       const current = data.current;
       
-      // Map WMO weather codes to conditions
-      const weatherConditions: { [key: number]: { condition: string; icon: string } } = {
-        0: { condition: 'Clear', icon: '☀️' },
-        1: { condition: 'Mostly Clear', icon: '🌤️' },
-        2: { condition: 'Partly Cloudy', icon: '⛅' },
-        3: { condition: 'Overcast', icon: '☁️' },
-        45: { condition: 'Foggy', icon: '🌫️' },
-        48: { condition: 'Foggy', icon: '🌫️' },
-        51: { condition: 'Light Drizzle', icon: '🌧️' },
-        53: { condition: 'Drizzle', icon: '🌧️' },
-        55: { condition: 'Heavy Drizzle', icon: '🌧️' },
-        61: { condition: 'Light Rain', icon: '🌧️' },
-        63: { condition: 'Rain', icon: '🌧️' },
-        65: { condition: 'Heavy Rain', icon: '⛈️' },
-        71: { condition: 'Light Snow', icon: '❄️' },
-        73: { condition: 'Snow', icon: '❄️' },
-        75: { condition: 'Heavy Snow', icon: '❄️' },
-        80: { condition: 'Light Showers', icon: '🌧️' },
-        81: { condition: 'Showers', icon: '⛈️' },
-        82: { condition: 'Heavy Showers', icon: '⛈️' },
-        85: { condition: 'Snow Showers', icon: '❄️' },
-        86: { condition: 'Heavy Snow Showers', icon: '❄️' },
-        95: { condition: 'Thunderstorm', icon: '⛈️' },
-        96: { condition: 'Thunderstorm with Hail', icon: '⛈️' },
+      // Map WMO weather codes to conditions (in Kinyarwanda)
+      const weatherConditions: { [key: number]: { condition: string; conditionKy: string; icon: string } } = {
+        0: { condition: 'Clear', conditionKy: 'Hari ikirere gikeye', icon: '☀️' },
+        1: { condition: 'Mostly Clear', conditionKy: 'Hari akazuba gake', icon: '🌤️' },
+        2: { condition: 'Partly Cloudy', conditionKy: 'Hari ikibunda gike', icon: '⛅' },
+        3: { condition: 'Overcast', conditionKy: 'Hari ikibunda', icon: '☁️' },
+        45: { condition: 'Foggy', conditionKy: 'Hari igihu', icon: '🌫️' },
+        48: { condition: 'Foggy', conditionKy: 'Hari igihu', icon: '🌫️' },
+        51: { condition: 'Light Drizzle', conditionKy: 'Akavura gake', icon: '🌧️' },
+        53: { condition: 'Drizzle', conditionKy: 'Akavura', icon: '🌧️' },
+        55: { condition: 'Heavy Drizzle', conditionKy: 'Akavura k\'urushyana', icon: '🌧️' },
+        61: { condition: 'Light Rain', conditionKy: 'Udutonyanga', icon: '🌧️' },
+        63: { condition: 'Rain', conditionKy: 'Imvura', icon: '🌧️' },
+        65: { condition: 'Heavy Rain', conditionKy: 'Imvura nyinshi', icon: '⛈️' },
+        71: { condition: 'Light Snow', conditionKy: 'Urubura ruke', icon: '❄️' },
+        73: { condition: 'Snow', conditionKy: 'Urubura', icon: '❄️' },
+        75: { condition: 'Heavy Snow', conditionKy: 'Urubura rwinshi', icon: '❄️' },
+        80: { condition: 'Light Showers', conditionKy: 'Akavura gake cyane', icon: '🌧️' },
+        81: { condition: 'Showers', conditionKy: 'Akavura', icon: '⛈️' },
+        82: { condition: 'Heavy Showers', conditionKy: 'Imvura nyinshi', icon: '⛈️' },
+        85: { condition: 'Snow Showers', conditionKy: 'Imvura y\'urubura', icon: '❄️' },
+        86: { condition: 'Heavy Snow Showers', conditionKy: 'Imvura y\'urubura nyinshi', icon: '❄️' },
+        95: { condition: 'Thunderstorm', conditionKy: 'Imvura ivanze n\'inkuba', icon: '⛈️' },
+        96: { condition: 'Thunderstorm with Hail', conditionKy: 'Imvura ivanze n\'inkuba n\'imirabyo', icon: '⛈️' },
       };
 
-      const weatherInfo = weatherConditions[current.weather_code] || { condition: 'Unknown', icon: '🌤️' };
+      const weatherInfo = weatherConditions[current.weather_code] || { condition: 'Unknown', conditionKy: 'Ifuzo ritamenyekana', icon: '🌤️' };
 
       return {
         temp: Math.round(current.temperature_2m),
         condition: weatherInfo.condition,
+        conditionKy: weatherInfo.conditionKy,
         icon: weatherInfo.icon,
       };
     } catch (error) {
@@ -77,6 +79,7 @@ export function TopBar() {
       return {
         temp: 24,
         condition: 'Partly Cloudy',
+        conditionKy: 'Hari ikibunda gike',
         icon: '🌤️',
       };
     }
@@ -188,10 +191,13 @@ export function TopBar() {
             <span className="text-white/80 text-xs">{data.simplifiedDate}</span>
           </div>
 
-          {/* Simplified Weather - temp only */}
-          <div className="flex items-center gap-1 whitespace-nowrap flex-shrink-0 border-l border-neutral-600 pl-2">
+          {/* Simplified Weather - temp and condition in Kinyarwanda */}
+          <div className="flex items-center gap-2 whitespace-nowrap flex-shrink-0 border-l border-neutral-600 pl-2">
             <span>{data.weather.icon}</span>
-            <span className="text-white/80 text-xs">{data.weather.temp}°C</span>
+            <div className="flex items-center gap-1">
+              <span className="text-white/80 text-xs">{data.weather.temp}°C</span>
+              <span className="text-neutral-400 text-xs">{data.weather.conditionKy}</span>
+            </div>
           </div>
 
           {/* USD Only */}
@@ -214,7 +220,7 @@ export function TopBar() {
             <span>{data.weather.icon}</span>
             <div className="flex items-center gap-1">
               <span className="text-white/80">{data.weather.temp}°C</span>
-              <span className="text-neutral-400">{data.weather.condition}</span>
+              <span className="text-neutral-400">{data.weather.conditionKy}</span>
             </div>
           </div>
 
