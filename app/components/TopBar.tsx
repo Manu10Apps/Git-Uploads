@@ -27,17 +27,75 @@ export function TopBar() {
   const [data, setData] = useState<TopBarData | null>(null);
   const [mounted, setMounted] = useState(false);
   const [previousRates, setPreviousRates] = useState<{ [key: string]: number }>({});
+  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number; city: string; timezone: string } | null>(null);
 
-  const fetchWeatherData = async () => {
+  // Detect user's location
+  const detectLocation = async () => {
     try {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          const { latitude, longitude } = position.coords;
+          
+          // Get city name and timezone from coordinates using reverse geocoding
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+            { signal: AbortSignal.timeout(5000) }
+          );
+          const data = await response.json();
+          const city = data.address?.city || data.address?.town || data.address?.county || 'Unknown';
+          
+          // Get timezone using lat/lon
+          const tzResponse = await fetch(
+            `https://api.timezonedb.com/v2.1/get-time-zone?key=YOUR_TIMEZONE_KEY&format=json&by=position&lat=${latitude}&lng=${longitude}`,
+            { signal: AbortSignal.timeout(5000) }
+          ).catch(() => null);
+          
+          // Fallback: Use common timezone mapping
+          const tzData = await tzResponse?.json().catch(() => null);
+          const timezone = tzData?.zoneName || getTimezoneFromCoords(latitude, longitude);
+          
+          setUserLocation({
+            lat: latitude,
+            lon: longitude,
+            city: city,
+            timezone: timezone
+          });
+        }, 
+        (error) => {
+          // If geolocation denied, use default (Kigali)
+          console.log('Geolocation permission denied, using default location');
+          setUserLocation({ lat: -1.9536, lon: 29.8739, city: 'Kigali', timezone: 'Africa/Kigali' });
+        });
+      }
+    } catch (error) {
+      console.error('Location detection error:', error);
+      setUserLocation({ lat: -1.9536, lon: 29.8739, city: 'Kigali', timezone: 'Africa/Kigali' });
+    }
+  };
+
+  // Fallback timezone mapping based on coordinates
+  const getTimezoneFromCoords = (lat: number, lon: number): string => {
+    if (lat > -2 && lat < 0 && lon > 29 && lon < 31) return 'Africa/Kigali';
+    if (lat > 33 && lat < 35 && lon > -8 && lon < -5) return 'Africa/Casablanca';
+    if (lat > -4 && lat < -2 && lon > 37 && lon < 42) return 'Africa/Nairobi';
+    if (lat > -18 && lat < -11 && lon > 21 && lon < 30) return 'Africa/Lusaka';
+    // Default to UTC
+    return 'UTC';
+  };
+
+  const fetchWeatherData = async (lat?: number, lon?: number) => {
+    try {
+      // Use detected location or default to Kigali
+      const latitude = lat ?? -1.9536;
+      const longitude = lon ?? 29.8739;
+      
       // Using Open-Meteo API (free, no API key required)
-      // Fetch weather for Kigali, Rwanda (coordinates: -1.9536, 29.8739)
       const response = await fetch(
-        'https://api.open-meteo.com/v1/forecast?latitude=-1.9536&longitude=29.8739&current=temperature_2m,weather_code&timezone=Africa/Kigali',
-        { signal: AbortSignal.timeout(5000) } // 5 second timeout
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=auto`,
+        { signal: AbortSignal.timeout(5000) }
       );
-      const data = await response.json();
-      const current = data.current;
+      const weatherData = await response.json();
+      const current = weatherData.current;
       
       // Map WMO weather codes to conditions (in Kinyarwanda)
       const weatherConditions: { [key: number]: { condition: string; conditionKy: string; icon: string } } = {
@@ -139,32 +197,53 @@ export function TopBar() {
 
   useEffect(() => {
     setMounted(true);
-    updateData();
-    const interval = setInterval(updateData, 60000); // Update every minute
-    return () => clearInterval(interval);
+    detectLocation(); // Detect location on component mount
   }, []);
 
+  // Update data whenever location changes
+  useEffect(() => {
+    if (userLocation) {
+      updateData();
+      const interval = setInterval(updateData, 60000); // Update every minute
+      return () => clearInterval(interval);
+    }
+  }, [userLocation]);
+
   const updateData = async () => {
-    // Current date and time
+    if (!userLocation) return;
+
+    // Current date and time in user's timezone
     const now = new Date();
+    const formatter = new Intl.DateTimeFormat('ky-RW', {
+      timeZone: userLocation.timezone,
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      weekday: 'long'
+    });
     
-    // Kinyarwanda day names
+    const parts = formatter.formatToParts(now);
+    const getPartValue = (type: string) => parts.find(p => p.type === type)?.value || '';
+    
+    // Kinyarwanda day and month names
     const daysKy = ['Ku Cyumweru', 'Kuwa Mbere', 'Kuwa Kabiri', 'Kuwa Gatatu', 'Kuwa Kane', 'Kuwa Gatanu', 'Kuwa Gatandatu'];
-    // Kinyarwanda month names
     const monthsKy = ['Mutarama', 'Gashyantare', 'Werurwe', 'Mata', 'Gicurasi', 'Kamena', 'Nyakanga', 'Kanama', 'Nzeri', 'Ukwakira', 'Ugushyingo', 'Ukuboza'];
     
-    const dayName = daysKy[now.getDay()];
-    const day = String(now.getDate()).padStart(2, '0');
-    const monthName = monthsKy[now.getMonth()];
-    const year = now.getFullYear();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const kigaliNow = new Date(now.toLocaleString('en-US', { timeZone: userLocation.timezone }));
+    const dayName = daysKy[kigaliNow.getDay()];
+    const day = String(kigaliNow.getDate()).padStart(2, '0');
+    const monthName = monthsKy[kigaliNow.getMonth()];
+    const year = kigaliNow.getFullYear();
+    const hours = String(kigaliNow.getHours()).padStart(2, '0');
+    const minutes = String(kigaliNow.getMinutes()).padStart(2, '0');
     
     const dateTime = `${dayName}, Tariki ya ${day} ${monthName}, ${year} | ${hours}:${minutes}`;
-    const simplifiedDate = `${day}/${String(now.getMonth() + 1).padStart(2, '0')}/${year.toString().slice(-2)}`;
+    const simplifiedDate = `${day}/${String(kigaliNow.getMonth() + 1).padStart(2, '0')}/${year.toString().slice(-2)}`;
 
-    // Fetch real weather data from API
-    const weatherData = await fetchWeatherData();
+    // Fetch real weather data from API using detected location
+    const weatherData = await fetchWeatherData(userLocation.lat, userLocation.lon);
 
     // Fetch real exchange rates from API
     const exchangeData = await fetchExchangeRates();
@@ -173,7 +252,7 @@ export function TopBar() {
       dateTime,
       simplifiedDate,
       weather: weatherData,
-      location: { city: 'Kigali', country: 'Rwanda' },
+      location: { city: userLocation.city, country: 'Rwanda' },
       exchanges: exchangeData,
     });
   };
