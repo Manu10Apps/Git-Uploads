@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Megaphone } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 import { Header, Footer, BreakingNewsCarousel } from './components';
@@ -254,7 +255,7 @@ export default function Home() {
         </section>
 
         {/* Headline Advertisement Section */}
-        <section className="py-4 bg-neutral-50 dark:bg-neutral-850 border-b border-neutral-200 dark:border-neutral-800\">
+        <section className="py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {adverts.filter((ad: any) => ad.position === 'homepage_top' && ad.isActive).length > 0 ? (
               adverts
@@ -280,8 +281,11 @@ export default function Home() {
             ) : (
               <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-neutral-800 dark:to-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-28 flex items-center justify-center border-2 border-dashed" style={{borderColor: 'rgba(189, 80, 0, 0.3)'}}>
                 <div className="text-center">
-                  <p className="text-base font-semibold text-neutral-700 dark:text-neutral-300">Amamaza hano</p>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Tubwire icyo wifuza!</p>
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <Megaphone className="w-5 h-5 text-amber-700 dark:text-amber-400" />
+                    <p className="text-base font-semibold text-neutral-700 dark:text-neutral-300">Kwamamaza</p>
+                  </div>
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Ihuze n'isi yose! Amamaza hano, ugere ku cyo wifuza!</p>
                 </div>
               </div>
             )}
@@ -442,8 +446,11 @@ export default function Home() {
             ) : (
               <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-neutral-800 dark:to-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-28 flex items-center justify-center border-2 border-dashed" style={{borderColor: 'rgba(189, 80, 0, 0.3)'}}>
                 <div className="text-center">
-                  <p className="text-base font-semibold text-neutral-700 dark:text-neutral-300">Amamaza hano</p>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Tubwire icyo wifuza!</p>
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <Megaphone className="w-5 h-5 text-amber-700 dark:text-amber-400" />
+                    <p className="text-base font-semibold text-neutral-700 dark:text-neutral-300">Kwamamaza</p>
+                  </div>
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Ihuze n'isi yose! Amamaza hano, ugere ku cyo wifuza!</p>
                 </div>
               </div>
             )}

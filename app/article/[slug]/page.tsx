@@ -7,7 +7,7 @@ import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 import { Header, FactCheckBox, Footer } from '@/app/components';
 import { ArticleImage } from '@/app/components/ArticleImage';
-import { Bookmark, Copy, Check } from 'lucide-react';
+import { Bookmark, Copy, Check, Megaphone } from 'lucide-react';
 
 interface Article {
   id: string;
@@ -342,8 +342,11 @@ export default function ArticlePage({ params: paramsPromise }: ArticleParams) {
             ) : (
               <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-neutral-800 dark:to-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 flex items-center justify-center border-2 border-dashed" style={{borderColor: 'rgba(189, 80, 0, 0.3)'}}>
                 <div className="text-center">
-                  <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Amamaza hano</p>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Tubwire icyo wifuza!</p>
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <Megaphone className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                    <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Kwamamaza</p>
+                  </div>
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Ihuze n'isi yose! Amamaza hano, ugere ku cyo wifuza!</p>
                 </div>
               </div>
             )}
@@ -369,8 +372,11 @@ export default function ArticlePage({ params: paramsPromise }: ArticleParams) {
             ) : (
               <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-neutral-800 dark:to-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 flex items-center justify-center border-2 border-dashed" style={{borderColor: 'rgba(189, 80, 0, 0.3)'}}>
                 <div className="text-center">
-                  <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Amamaza hano</p>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Tubwire icyo wifuza!</p>
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <Megaphone className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                    <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Kwamamaza</p>
+                  </div>
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Ihuze n'isi yose! Amamaza hano, ugere ku cyo wifuza!</p>
                 </div>
               </div>
             )}
@@ -613,8 +619,11 @@ export default function ArticlePage({ params: paramsPromise }: ArticleParams) {
                 ) : (
                   <div className="bg-gradient-to-b from-amber-50 to-orange-50 dark:from-neutral-800 dark:to-neutral-800 rounded-lg overflow-hidden flex items-center justify-center border-2 border-dashed" style={{minHeight: '200px', borderColor: 'rgba(189, 80, 0, 0.3)'}}>
                     <div className="text-center p-4">
-                      <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Amamaza hano</p>
-                      <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">Tubwire icyo wifuza!</p>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <Megaphone className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                        <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Kwamamaza</p>
+                      </div>
+                      <p className="text-xs text-neutral-600 dark:text-neutral-400">Ihuze n'isi yose! Amamaza hano, ugere ku cyo wifuza!</p>
                     </div>
                   </div>
                 )}
