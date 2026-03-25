@@ -285,7 +285,7 @@ export default function Home() {
                     <Megaphone className="w-5 h-5 text-amber-700 dark:text-amber-400" />
                     <p className="text-base font-semibold text-neutral-700 dark:text-neutral-300">Kwamamaza</p>
                   </div>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Ihuze n'isi yose! Amamaza hano, ugere ku cyo wifuza!</p>
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Ihuze n'isi yose! Amamaza hano, ugere ku nzozi zawe!</p>
                 </div>
               </div>
             )}
@@ -450,7 +450,7 @@ export default function Home() {
                     <Megaphone className="w-5 h-5 text-amber-700 dark:text-amber-400" />
                     <p className="text-base font-semibold text-neutral-700 dark:text-neutral-300">Kwamamaza</p>
                   </div>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Ihuze n'isi yose! Amamaza hano, ugere ku cyo wifuza!</p>
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Ihuze n'isi yose! Amamaza hano, ugere ku nzozi zawe!</p>
                 </div>
               </div>
             )}
