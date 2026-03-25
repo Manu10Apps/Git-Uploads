@@ -161,25 +161,6 @@ export async function GET(request: NextRequest) {
     const take = limit ? parseInt(limit) : includeAll ? 100 : 10;
     const skip = (page - 1) * take;
 
-    // Add a 3-second timeout to prevent hangs
-    const timeoutPromise = new Promise(() => 
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database query timeout')), 3000)
-      )
-    );
-
-    const [articles, total] = await Promise.race([
-      Promise.all([
-        prisma.article.findMany({
-          where,
-          include: { category: true },
-          orderBy: { publishedAt: 'desc' },
-          take,
-          skip,
-        }),
-        prisma.article.count({ where }),
-      ]) as Promise<[typeof articles, typeof total]>,
-      timeoutPromise as Promise<[typeof articles, typeof total]>
     ]);
 
     // Format response to match frontend expectations

@@ -65,28 +65,6 @@ function parseMaintenanceSettings(value: string | null, updatedAt: Date | string
 async function ensureSiteSettingsTable() {
   if (!siteSettingsTableReady) {
     siteSettingsTableReady = (async () => {
-      try {
-        // Add a 3-second timeout to prevent hanging
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Database connection timeout')), 3000)
-        );
-
-        await Promise.race([
-          prisma.$executeRaw`
-            CREATE TABLE IF NOT EXISTS site_settings (
-              "key" TEXT PRIMARY KEY,
-              "value" TEXT NOT NULL,
-              "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-              "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-            )
-          `,
-          timeoutPromise
-        ]);
-      } catch (error) {
-        siteSettingsTableReady = null;
-        throw error;
-      }
-    })();
   }
 
   await siteSettingsTableReady;
@@ -96,35 +74,9 @@ export async function getMaintenanceSettings(): Promise<MaintenanceSettings> {
   noStore();
 
   try {
-    // Add a 5-second timeout for the entire operation
-    const timeoutPromise = new Promise<MaintenanceSettings>((_, reject) =>
-      setTimeout(() => reject(new Error('Database query timeout')), 5000)
-    );
 
-    const queryPromise = (async () => {
-      await ensureSiteSettingsTable();
 
-      const rows = await prisma.$queryRaw<SiteSettingRow[]>`
-        SELECT "value", "updatedAt"
-        FROM site_settings
-        WHERE "key" = ${MAINTENANCE_SETTINGS_KEY}
-        LIMIT 1
-      `;
 
-      if (!rows.length) {
-        return {
-          enabled: false,
-          message: DEFAULT_MAINTENANCE_MESSAGE,
-          updatedAt: null,
-        };
-      }
-
-      const parsedSettings = parseMaintenanceSettings(rows[0].value, rows[0].updatedAt);
-      maintenanceFallbackSettings = parsedSettings;
-      return parsedSettings;
-    })();
-
-    return await Promise.race([queryPromise, timeoutPromise]);
   } catch (error) {
     console.error('Failed to read maintenance settings:', error);
 
