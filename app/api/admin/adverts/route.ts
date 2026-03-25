@@ -24,18 +24,31 @@ type AdvertRow = {
 };
 
 const ensureAdvertsTable = async () => {
-  await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS adverts (
-      id SERIAL PRIMARY KEY,
-      title TEXT NOT NULL,
-      url TEXT DEFAULT '',
-      imageUrl TEXT NOT NULL,
-      position TEXT NOT NULL,
-      isActive BOOLEAN NOT NULL DEFAULT TRUE,
-      createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
-      updatedAt TIMESTAMP NOT NULL DEFAULT NOW()
-    )
-  `);
+  try {
+    // Add a 2-second timeout to prevent hanging
+    const timeoutPromise = new Promise<void>((_, reject) =>
+      setTimeout(() => reject(new Error('Database connection timeout')), 2000)
+    );
+
+    await Promise.race([
+      prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS adverts (
+          id SERIAL PRIMARY KEY,
+          title TEXT NOT NULL,
+          url TEXT DEFAULT '',
+          imageUrl TEXT NOT NULL,
+          position TEXT NOT NULL,
+          isActive BOOLEAN NOT NULL DEFAULT TRUE,
+          createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
+          updatedAt TIMESTAMP NOT NULL DEFAULT NOW()
+        )
+      `),
+      timeoutPromise
+    ]);
+  } catch (error) {
+    // Silently fail - we'll return empty data on error
+    throw error;
+  }
 };
 
 const toAdvert = (row: AdvertRow): Advert => ({
