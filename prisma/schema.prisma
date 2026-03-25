@@ -75,3 +75,40 @@ model ExchangeRate {
 
   @@map("exchange_rates")
 }
+
+model AnalyticsEvent {
+  id               String    @id @default(cuid())
+  sessionId        String    // Unique session identifier
+  visitorId        String?   // Anonymous visitor ID
+  eventType        String    // "pageview" | "click" | "custom" | "error"
+  eventName        String?   // Custom event name
+  pageUrl          String    // URL of the page
+  pageTitle        String?   // Page title
+  referrer         String?   // Referrer URL
+  // User Agent / Device Info
+  userAgent        String?
+  deviceType       String?   // "mobile" | "tablet" | "desktop"
+  browserName      String?   // Chrome, Firefox, Safari, etc.
+  browserVersion   String?
+  osName           String?   // Windows, macOS, iOS, Android, etc.
+  // Geo Info
+  country          String?
+  city             String?
+  latitude         Float?
+  longitude        Float?
+  // Session Data
+  duration         Int?      // Time spent on page in seconds
+  scrollDepth      Int?      // Percentage scrolled (0-100)
+  // Custom Properties
+  properties       String?   // JSON object as string for custom data
+  // Timestamps
+  createdAt        DateTime  @default(now())
+  // Indexes for fast querying
+  @@index([sessionId])
+  @@index([visitorId])
+  @@index([eventType])
+  @@index([pageUrl])
+  @@index([createdAt])
+  @@index([country])
+  @@map("analytics_events")
+}
