@@ -65,6 +65,18 @@ function parseMaintenanceSettings(value: string | null, updatedAt: Date | string
 async function ensureSiteSettingsTable() {
   if (!siteSettingsTableReady) {
     siteSettingsTableReady = (async () => {
+      await prisma.$executeRaw`
+        CREATE TABLE IF NOT EXISTS site_settings (
+          "key" TEXT PRIMARY KEY,
+          "value" TEXT NOT NULL,
+          "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `;
+    })().catch((error) => {
+      siteSettingsTableReady = null;
+      throw error;
+    });
   }
 
   await siteSettingsTableReady;
@@ -74,9 +86,26 @@ export async function getMaintenanceSettings(): Promise<MaintenanceSettings> {
   noStore();
 
   try {
+    await ensureSiteSettingsTable();
 
+    const rows = await prisma.$queryRaw<SiteSettingRow[]>`
+      SELECT "value", "updatedAt"
+      FROM site_settings
+      WHERE "key" = ${MAINTENANCE_SETTINGS_KEY}
+      LIMIT 1
+    `;
 
+    if (!rows.length) {
+      return {
+        enabled: false,
+        message: DEFAULT_MAINTENANCE_MESSAGE,
+        updatedAt: null,
+      };
+    }
 
+    const parsedSettings = parseMaintenanceSettings(rows[0].value, rows[0].updatedAt);
+    maintenanceFallbackSettings = parsedSettings;
+    return parsedSettings;
   } catch (error) {
     console.error('Failed to read maintenance settings:', error);
 

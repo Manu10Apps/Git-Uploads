@@ -161,6 +161,15 @@ export async function GET(request: NextRequest) {
     const take = limit ? parseInt(limit) : includeAll ? 100 : 10;
     const skip = (page - 1) * take;
 
+    const [articles, total] = await Promise.all([
+      prisma.article.findMany({
+        where,
+        include: { category: true },
+        orderBy: { publishedAt: 'desc' },
+        take,
+        skip,
+      }),
+      prisma.article.count({ where }),
     ]);
 
     // Format response to match frontend expectations

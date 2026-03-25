@@ -24,6 +24,18 @@ type AdvertRow = {
 };
 
 const ensureAdvertsTable = async () => {
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS adverts (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      url TEXT DEFAULT '',
+      imageUrl TEXT NOT NULL,
+      position TEXT NOT NULL,
+      isActive BOOLEAN NOT NULL DEFAULT TRUE,
+      createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
+      updatedAt TIMESTAMP NOT NULL DEFAULT NOW()
+    )
+  `);
 };
 
 const toAdvert = (row: AdvertRow): Advert => ({

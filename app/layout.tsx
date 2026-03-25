@@ -4,6 +4,7 @@ import '@/styles/globals.css';
 import { MaintenanceScreen } from '@/app/components/MaintenanceScreen';
 import { ThemeProvider } from '@/app/components/ThemeProvider';
 import { TopBar } from '@/app/components/TopBar';
+import { AnalyticsProvider } from '@/app/components/AnalyticsProvider';
 import { getMaintenanceSettings, shouldBypassMaintenance } from '@/lib/maintenance';
 
 export const metadata: Metadata = {
@@ -112,6 +113,7 @@ export default async function RootLayout({
         <script defer data-domain="intambwemedia.com" src="https://plausible.io/js/script.js"></script>
       </head>
       <body>
+        <AnalyticsProvider />
         <ThemeProvider>
           {showMaintenance ? (
             <MaintenanceScreen message={maintenanceSettings?.message || ''} />

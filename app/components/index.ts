@@ -7,5 +7,6 @@ export { ThemeProvider } from './ThemeProvider';
 export { SearchModal } from './SearchModal';
 export { TopBar } from './TopBar';
 export { GridNewsLayout } from './GridNewsLayout';
+export { AnalyticsProvider } from './AnalyticsProvider';
 export { default as BreakingNewsCarousel } from './BreakingNewsCarousel';
 export { default as CategorySelect } from './CategorySelect';
