@@ -44,15 +44,21 @@ export function TopBar() {
           const data = await response.json();
           const city = data.address?.city || data.address?.town || data.address?.county || 'Unknown';
           
-          // Get timezone using lat/lon
-          const tzResponse = await fetch(
-            `https://api.timezonedb.com/v2.1/get-time-zone?key=YOUR_TIMEZONE_KEY&format=json&by=position&lat=${latitude}&lng=${longitude}`,
-            { signal: AbortSignal.timeout(5000) }
-          ).catch(() => null);
+          // Get timezone using lat/lon (optional - uses env var if available)
+          let timezone = getTimezoneFromCoords(latitude, longitude);
           
-          // Fallback: Use common timezone mapping
-          const tzData = await tzResponse?.json().catch(() => null);
-          const timezone = tzData?.zoneName || getTimezoneFromCoords(latitude, longitude);
+          const timezoneDbKey = process.env.NEXT_PUBLIC_TIMEZONEDB_KEY;
+          if (timezoneDbKey && timezoneDbKey !== 'YOUR_TIMEZONE_KEY') {
+            const tzResponse = await fetch(
+              `https://api.timezonedb.com/v2.1/get-time-zone?key=${timezoneDbKey}&format=json&by=position&lat=${latitude}&lng=${longitude}`,
+              { signal: AbortSignal.timeout(5000) }
+            ).catch(() => null);
+            
+            const tzData = await tzResponse?.json().catch(() => null);
+            if (tzData?.zoneName) {
+              timezone = tzData.zoneName;
+            }
+          }
           
           setUserLocation({
             lat: latitude,
