@@ -443,6 +443,7 @@ export async function GET(
       featured: article.featured,
       tags: article.tags ? JSON.parse(article.tags) : [],
       status: article.status,
+      gallery: article.gallery ? JSON.parse(article.gallery) : [],
     };
 
     return NextResponse.json(

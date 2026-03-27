@@ -31,6 +31,11 @@ function isMissingLocalUpload(url: string | null): boolean {
   return !existsSync(filePath);
 }
 
+function isExternalUrl(url: string | null): boolean {
+  if (!url) return false;
+  return /^https?:\/\/|^\/\//i.test(url);
+}
+
 function firstValidGalleryImage(gallery: string | null | undefined): string | null {
   const galleryItems = parseGallery(gallery);
 
@@ -67,6 +72,12 @@ export function resolveArticleImage(
     return galleryImage || fallbackImage;
   }
 
+  // For external URLs (https/http), return them directly without checking file existence
+  if (isExternalUrl(normalizedImage)) {
+    return normalizedImage;
+  }
+
+  // For local uploads, check if the file exists
   if (isMissingLocalUpload(normalizedImage)) {
     return galleryImage || fallbackImage;
   }

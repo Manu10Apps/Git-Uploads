@@ -20,6 +20,7 @@ interface Article {
   image: string;
   slug: string;
   publishedAt: string;
+  gallery?: Array<{ url: string; caption: string }>;
 }
 
 interface ArticleParams {
@@ -358,6 +359,33 @@ export default function ArticlePage({ params: paramsPromise }: ArticleParams) {
               {article.content}
             </div>
           </div>
+
+          {/* Gallery Section */}
+          {article.gallery && article.gallery.length > 0 && (
+            <div className="mb-8 sm:mb-10 md:mb-12">
+              <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white mb-4 sm:mb-6">
+                Ifoto z'Inkuru
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {article.gallery.map((item, index) => (
+                  <div key={index} className="rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 hover:shadow-lg transition-shadow">
+                    <ArticleImage
+                      src={item.url}
+                      alt={item.caption || `Gallery image ${index + 1}`}
+                      className="w-full h-48 sm:h-56 object-cover"
+                    />
+                    {item.caption && (
+                      <div className="p-3 sm:p-4 bg-neutral-50 dark:bg-neutral-800">
+                        <p className="text-sm text-neutral-700 dark:text-neutral-300 italic">
+                          {item.caption}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Article Bottom Advertisement */}
           <div className="mb-8 sm:mb-10">

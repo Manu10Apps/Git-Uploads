@@ -101,6 +101,7 @@ function toClientArticle(article: FallbackArticle) {
     featured: article.featured,
     tags: Array.isArray(article.tags) ? article.tags : [],
     status: article.status,
+    gallery: article.gallery || [],
   };
 }
 
@@ -186,6 +187,7 @@ export async function GET(request: NextRequest) {
       readTime: article.readTime,
       featured: article.featured,
       tags: article.tags ? JSON.parse(article.tags) : [],
+      gallery: article.gallery ? JSON.parse(article.gallery) : [],
     }));
 
     return NextResponse.json({

@@ -21,10 +21,23 @@ export function ArticleImage({
   ...props
 }: ArticleImageProps) {
   const [currentSrc, setCurrentSrc] = React.useState(normalizeArticleImageUrl(src) ?? fallbackSrc);
+  const [hasErrored, setHasErrored] = React.useState(false);
 
   React.useEffect(() => {
-    setCurrentSrc(normalizeArticleImageUrl(src) ?? fallbackSrc);
+    const normalizedSrc = normalizeArticleImageUrl(src);
+    setCurrentSrc(normalizedSrc ?? fallbackSrc);
+    setHasErrored(false);
   }, [src, fallbackSrc]);
+
+  const handleError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    // Only fall back once - prevent infinite fallback loops
+    if (!hasErrored && currentSrc !== fallbackSrc) {
+      setHasErrored(true);
+      setCurrentSrc(fallbackSrc);
+      return;
+    }
+    onError?.(event);
+  };
 
   return (
     <img
@@ -34,13 +47,7 @@ export function ArticleImage({
       loading={loading ?? 'lazy'}
       decoding={decoding ?? 'async'}
       className={className || ''}
-      onError={(event) => {
-        if (currentSrc !== fallbackSrc) {
-          setCurrentSrc(fallbackSrc);
-          return;
-        }
-        onError?.(event);
-      }}
+      onError={handleError}
     />
   );
 }

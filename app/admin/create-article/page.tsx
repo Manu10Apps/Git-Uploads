@@ -150,6 +150,12 @@ export default function CreateArticlePage() {
       return;
     }
 
+    if (!form.image || !form.image.trim()) {
+      setMessage({ type: 'error', text: 'Please upload a featured image for this article' });
+      setLoading(false);
+      return;
+    }
+
     try {
       const tagArray = form.tags
         .split(',')
@@ -163,9 +169,7 @@ export default function CreateArticlePage() {
         return;
       }
 
-      const normalizedFeaturedImage =
-        normalizeArticleImageUrl(form.image) ||
-        'https://images.unsplash.com/photo-1585776245865-b0d71db86b00?w=800&q=80';
+      const normalizedFeaturedImage = normalizeArticleImageUrl(form.image);
 
       const response = await fetch('/api/articles', {
         method: 'POST',

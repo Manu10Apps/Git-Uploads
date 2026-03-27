@@ -19,6 +19,7 @@ interface ArticleForm {
   image: string;
   tags: string;
   featured: boolean;
+  gallery: Array<{ url: string; caption: string }>;
 }
 
 interface ArticleMetadata {
@@ -44,6 +45,7 @@ export default function EditArticlePage() {
     image: '',
     tags: '',
     featured: false,
+    gallery: [],
   });
 
   const [metadata, setMetadata] = useState<ArticleMetadata>({
@@ -57,6 +59,7 @@ export default function EditArticlePage() {
   const [degradedNotice, setDegradedNotice] = useState<string | null>(null);
   const [uploadedImage, setUploadedImage] = useState<{ name: string; url: string } | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [galleryCaption, setGalleryCaption] = useState('');
 
   const [categories, setCategories] = useState<Array<{ id: number; slug: string; name: string }>>([]);
   const visibleCategories = React.useMemo(() => {
@@ -105,6 +108,9 @@ export default function EditArticlePage() {
             image: article.image,
             tags: Array.isArray(article.tags) ? article.tags.join(', ') : (article.tags || ''),
             featured: article.featured || false,
+            gallery: article.gallery && typeof article.gallery === 'string' 
+              ? JSON.parse(article.gallery) 
+              : (article.gallery || []),
           });
           setMetadata({
             views: 0,
@@ -214,6 +220,7 @@ export default function EditArticlePage() {
           image: form.image || 'https://images.unsplash.com/photo-1585776245865-b0d71db86b00?w=800&q=80',
           tags: tagArray,
           featured: form.featured,
+          gallery: form.gallery,
           status,
           publishedAt: publishedAtForUpdate,
         }),
@@ -449,6 +456,151 @@ export default function EditArticlePage() {
                     />
                   </label>
                 </div>
+              </div>
+            </div>
+
+            {/* Gallery Images */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
+                Gallery Images (with captions)
+              </label>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-4">
+                Add additional images to display as a gallery within the article
+              </p>
+
+              {/* Gallery Items Display */}
+              {form.gallery.length > 0 && (
+                <div className="mb-6 space-y-3">
+                  {form.gallery.map((item, index) => (
+                    <div
+                      key={index}
+                      className="p-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg flex items-start justify-between"
+                    >
+                      <div className="flex-grow">
+                        <p className="text-sm font-medium text-neutral-900 dark:text-white mb-1">
+                          Image {index + 1}
+                        </p>
+                        <p className="text-xs text-neutral-600 dark:text-neutral-400 break-all">
+                          {item.url.substring(0, 60)}...
+                        </p>
+                        {item.caption && (
+                          <p className="text-sm text-neutral-700 dark:text-neutral-300 mt-2 italic">
+                            "{item.caption}"
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setForm((prev) => ({
+                            ...prev,
+                            gallery: prev.gallery.filter((_, i) => i !== index),
+                          }));
+                        }}
+                        className="ml-4 p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors flex-shrink-0"
+                      >
+                        <X className="w-4 h-4 text-red-600 dark:text-red-400" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Add Gallery Item */}
+              <div className="space-y-3 p-4 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-300 dark:border-neutral-700 rounded-lg">
+                <div>
+                  <label htmlFor="galleryFileEdit" className="block text-xs font-semibold text-neutral-900 dark:text-white mb-2">
+                    Upload Image
+                  </label>
+                  <label className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg hover:border-amber-500 dark:hover:border-amber-500 transition-colors cursor-pointer bg-white dark:bg-neutral-800">
+                    <div className="text-center">
+                      <Upload className="w-6 h-6 text-neutral-400 dark:text-neutral-500 mx-auto mb-2" />
+                      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                        Click to upload
+                      </p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        PNG, JPG, GIF up to 10MB
+                      </p>
+                    </div>
+                    <input
+                      id="galleryFileEdit"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-900 dark:text-white mb-2">
+                    Caption (optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Describe this image (e.g., 'Market vendors at Kigali Central Market')"
+                    value={galleryCaption}
+                    onChange={(e) => setGalleryCaption(e.target.value)}
+                    className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-700 focus:border-transparent outline-none"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const fileInput = document.getElementById('galleryFileEdit') as HTMLInputElement;
+                    const file = fileInput.files?.[0];
+
+                    if (!file) {
+                      setMessage({ type: 'error', text: 'Please select an image file' });
+                      return;
+                    }
+
+                    if (!file.type.startsWith('image/')) {
+                      setMessage({ type: 'error', text: 'Please upload an image file' });
+                      return;
+                    }
+
+                    if (file.size > 10 * 1024 * 1024) {
+                      setMessage({ type: 'error', text: 'Image size must be less than 10MB' });
+                      return;
+                    }
+
+                    setUploading(true);
+                    try {
+                      const formData = new FormData();
+                      formData.append('file', file);
+
+                      const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData,
+                      });
+
+                      const data = await response.json();
+
+                      if (data.success) {
+                        setForm((prev) => ({
+                          ...prev,
+                          gallery: [
+                            ...prev.gallery,
+                            { url: data.url, caption: galleryCaption },
+                          ],
+                        }));
+                        fileInput.value = '';
+                        setGalleryCaption('');
+                        setMessage({ type: 'success', text: 'Image added to gallery!' });
+                        setTimeout(() => setMessage(null), 2000);
+                      } else {
+                        setMessage({ type: 'error', text: data.error || 'Failed to upload image' });
+                      }
+                    } catch (error) {
+                      setMessage({ type: 'error', text: 'Failed to upload image' });
+                    } finally {
+                      setUploading(false);
+                    }
+                  }}
+                  disabled={uploading}
+                  className="w-full px-4 py-2 bg-red-700 hover:bg-red-800 disabled:bg-red-700/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+                >
+                  {uploading ? 'Uploading...' : 'Add to Gallery'}
+                </button>
               </div>
             </div>
 
