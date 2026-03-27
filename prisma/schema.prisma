@@ -76,6 +76,19 @@ model ExchangeRate {
   @@map("exchange_rates")
 }
 
+model Advert {
+  id        Int       @id @default(autoincrement())
+  title     String
+  url       String    @default("")
+  imageUrl  String
+  position  String    // "homepage_top" | "homepage_middle" | "sidebar" etc.
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("adverts")
+}
+
 model AnalyticsEvent {
   id               String    @id @default(cuid())
   sessionId        String    // Unique session identifier
