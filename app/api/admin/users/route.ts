@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { hashPassword } from '@/lib/auth';
 import type { PrismaClient } from '@prisma/client';
 
-const VALID_ROLES = new Set(['admin', 'editor']);
+const VALID_ROLES = new Set(['admin', 'sub-admin', 'editor']);
 
 function toUsersRouteErrorResponse(error: unknown) {
   const prismaCode =
@@ -86,8 +86,8 @@ async function getAuthorizedRequester(request: NextRequest, prisma: PrismaClient
     select: { id: true, email: true, role: true },
   });
 
-  if (!requester || requester.role !== 'admin') {
-    return { error: 'Only admins can manage users', status: 403 as const };
+  if (!requester || (requester.role !== 'admin' && requester.role !== 'sub-admin')) {
+    return { error: 'Only admins and sub-admins can manage users', status: 403 as const };
   }
 
   return { requester };
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
 
     if (!VALID_ROLES.has(role)) {
       return NextResponse.json(
-        { success: false, message: 'Role must be admin or editor' },
+        { success: false, message: 'Role must be admin, sub-admin, or editor' },
         { status: 400 }
       );
     }
@@ -241,7 +241,7 @@ export async function PATCH(request: NextRequest) {
 
     if (role !== undefined && !VALID_ROLES.has(role)) {
       return NextResponse.json(
-        { success: false, message: 'Role must be admin or editor' },
+        { success: false, message: 'Role must be admin, sub-admin, or editor' },
         { status: 400 }
       );
     }
@@ -265,7 +265,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    if (target.role === 'admin' && role === 'editor') {
+    if (target.role === 'admin' && role !== 'admin') {
       const adminCount = await prisma.adminUser.count({ where: { role: 'admin' } });
       if (adminCount <= 1) {
         return NextResponse.json(
@@ -273,6 +273,14 @@ export async function PATCH(request: NextRequest) {
           { status: 400 }
         );
       }
+    }
+
+    // Sub-admins cannot promote users to admin role
+    if (auth.requester.role === 'sub-admin' && role === 'admin') {
+      return NextResponse.json(
+        { success: false, message: 'Sub-admins cannot assign the admin role' },
+        { status: 403 }
+      );
     }
 
     const updateData: {
@@ -319,6 +327,14 @@ export async function DELETE(request: NextRequest) {
     const auth = await getAuthorizedRequester(request, prisma);
     if ('error' in auth) {
       return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    }
+
+    // Only full admins can delete users
+    if (auth.requester.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, message: 'Only admins can delete users' },
+        { status: 403 }
+      );
     }
 
     const { searchParams } = new URL(request.url);

@@ -16,6 +16,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const validRoles = ['admin', 'sub-admin', 'editor'];
+    if (!validRoles.includes(role)) {
+      return NextResponse.json(
+        { success: false, error: 'Role must be admin, sub-admin, or editor' },
+        { status: 400 }
+      );
+    }
+
     // Hash the password
     const hashedPassword = await hashPassword(password);
 

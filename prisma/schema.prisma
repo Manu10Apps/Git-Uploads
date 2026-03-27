@@ -58,7 +58,7 @@ model AdminUser {
   email     String    @unique
   password  String    // Hash with bcrypt
   name      String
-  role      String    @default("editor") // "admin" | "editor"
+  role      String    @default("editor") // "admin" | "sub-admin" | "editor"
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 

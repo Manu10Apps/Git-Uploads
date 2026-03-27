@@ -60,6 +60,8 @@ export default function EditArticlePage() {
   const [uploadedImage, setUploadedImage] = useState<{ name: string; url: string } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [galleryCaption, setGalleryCaption] = useState('');
+  const [adminRole, setAdminRole] = useState('');
+  const [adminEmail, setAdminEmail] = useState('');
 
   const [categories, setCategories] = useState<Array<{ id: number; slug: string; name: string }>>([]);
   const visibleCategories = React.useMemo(() => {
@@ -77,6 +79,8 @@ export default function EditArticlePage() {
       router.push('/admin/login');
       return;
     }
+    setAdminRole(localStorage.getItem('adminRole') || '');
+    setAdminEmail(localStorage.getItem('adminEmail') || '');
 
     const fetchData = async () => {
       try {
@@ -210,7 +214,10 @@ export default function EditArticlePage() {
 
       const response = await fetch(`/api/articles/${articleId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-email': adminEmail,
+        },
         body: JSON.stringify({
           title: form.title,
           excerpt: form.excerpt,
@@ -683,7 +690,7 @@ export default function EditArticlePage() {
               </label>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className={`grid grid-cols-1 ${adminRole === 'editor' ? 'sm:grid-cols-2' : 'sm:grid-cols-3'} gap-3`}>
               <button
                 type="button"
                 onClick={() => submitArticle('draft')}
@@ -700,13 +707,15 @@ export default function EditArticlePage() {
               >
                 {loading ? 'Saving...' : 'Unpublish'}
               </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-6 py-3 bg-red-700 hover:bg-red-800 disabled:bg-red-700/50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
-              >
-                {loading ? 'Publishing...' : 'Publish Article'}
-              </button>
+              {adminRole !== 'editor' && (
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-3 bg-red-700 hover:bg-red-800 disabled:bg-red-700/50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
+                >
+                  {loading ? 'Publishing...' : 'Publish Article'}
+                </button>
+              )}
             </div>
           </form>
         </div>

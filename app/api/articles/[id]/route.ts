@@ -5,6 +5,25 @@ import { prisma } from '@/lib/prisma';
 import { resolveArticleImage } from '@/lib/article-images';
 import { NAV_CATEGORY_SLUGS } from '@/lib/nav-categories';
 
+/** Lookup the requesting admin user's role and name from DB, if x-admin-email header present */
+async function getRequesterInfo(request: NextRequest): Promise<{ role: string; name: string } | null> {
+  const email = request.headers.get('x-admin-email')?.trim().toLowerCase();
+  if (!email) return null;
+  const envAdminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+  if (envAdminEmail && email === envAdminEmail) {
+    return { role: 'admin', name: process.env.ADMIN_NAME || 'Admin' };
+  }
+  try {
+    const user = await prisma.adminUser.findUnique({
+      where: { email },
+      select: { role: true, name: true },
+    });
+    return user ? { role: user.role, name: user.name } : null;
+  } catch {
+    return null;
+  }
+}
+
 interface Article {
   id: number;
   title: string;
@@ -153,6 +172,15 @@ export async function PATCH(
       return NextResponse.json(
         { success: false, error: 'Article not found' },
         { status: 404 }
+      );
+    }
+
+    // Role-based restriction: editors cannot publish articles
+    const requester = await getRequesterInfo(request);
+    if (requester?.role === 'editor' && body.status === 'published') {
+      return NextResponse.json(
+        { success: false, error: 'Editors cannot publish articles. Ask an admin or sub-admin to publish.' },
+        { status: 403 }
       );
     }
 
@@ -338,6 +366,15 @@ export async function DELETE(
       return NextResponse.json(
         { success: false, error: 'Article not found' },
         { status: 404 }
+      );
+    }
+
+    // Role-based restriction: editors can only delete their own articles
+    const requester = await getRequesterInfo(request);
+    if (requester?.role === 'editor' && article.author !== requester.name) {
+      return NextResponse.json(
+        { success: false, error: 'Editors can only delete their own articles' },
+        { status: 403 }
       );
     }
 

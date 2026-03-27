@@ -9,7 +9,7 @@ interface AdminUserItem {
   id: number;
   name: string;
   email: string;
-  role: 'admin' | 'editor';
+  role: 'admin' | 'sub-admin' | 'editor';
   createdAt: string;
   updatedAt: string;
 }
@@ -23,10 +23,17 @@ export default function AdminUsersPage() {
   const [success, setSuccess] = useState('');
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
-  const [editRole, setEditRole] = useState<'admin' | 'editor'>('editor');
+  const [editRole, setEditRole] = useState<'admin' | 'sub-admin' | 'editor'>('editor');
   const [editPassword, setEditPassword] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
   const [adminRole, setAdminRole] = useState('');
+
+  // Create user form state
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createName, setCreateName] = useState('');
+  const [createEmail, setCreateEmail] = useState('');
+  const [createPassword, setCreatePassword] = useState('');
+  const [createRole, setCreateRole] = useState<'admin' | 'sub-admin' | 'editor'>('editor');
 
   useEffect(() => {
     const auth = localStorage.getItem('adminAuth');
@@ -41,8 +48,8 @@ export default function AdminUsersPage() {
       return;
     }
 
-    if (role !== 'admin') {
-      setError('Only admins can manage users.');
+    if (role !== 'admin' && role !== 'sub-admin') {
+      setError('Only admins and sub-admins can manage users.');
       setIsCheckingAuth(false);
       setLoading(false);
       return;
@@ -159,6 +166,45 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleCreate = async (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-email': adminEmail,
+        },
+        body: JSON.stringify({
+          name: createName,
+          email: createEmail,
+          password: createPassword,
+          role: createRole,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        setError(data.message || 'Failed to create user.');
+        return;
+      }
+
+      setSuccess('User created successfully.');
+      setCreateName('');
+      setCreateEmail('');
+      setCreatePassword('');
+      setCreateRole('editor');
+      setShowCreateForm(false);
+      await fetchUsers();
+    } catch {
+      setError('Failed to create user.');
+    }
+  };
+
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-950 text-white">
@@ -172,19 +218,90 @@ export default function AdminUsersPage() {
       <AdminHeader />
       <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="mb-8">
-            <h1 className="text-4xl font-serif font-bold text-neutral-900 dark:text-white mb-2">
-              Manage Users
-            </h1>
-            <p className="text-neutral-600 dark:text-neutral-400">
-              Create users from login page, then manage them here.
-            </p>
-            {adminRole === 'admin' && (
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
-                Logged in as: {adminEmail}
+          <div className="mb-8 flex items-start justify-between flex-wrap gap-4">
+            <div>
+              <h1 className="text-4xl font-serif font-bold text-neutral-900 dark:text-white mb-2">
+                Manage Users
+              </h1>
+              <p className="text-neutral-600 dark:text-neutral-400">
+                Create and manage admin users with role-based permissions.
               </p>
-            )}
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
+                Logged in as: {adminEmail} ({adminRole === 'sub-admin' ? 'Sub Admin' : adminRole.charAt(0).toUpperCase() + adminRole.slice(1)})
+              </p>
+            </div>
+            <button
+              onClick={() => { setShowCreateForm((v) => !v); setError(''); setSuccess(''); }}
+              className="flex items-center gap-2 px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white font-semibold rounded-lg transition-colors text-sm"
+            >
+              {showCreateForm ? '✕ Cancel' : '+ Add User'}
+            </button>
           </div>
+
+          {/* Create User Form */}
+          {showCreateForm && (
+            <div className="mb-6 bg-white dark:bg-neutral-900 rounded-lg shadow-sm p-6 border border-neutral-200 dark:border-neutral-800">
+              <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">Create New User</h2>
+              <form onSubmit={handleCreate} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Full Name *</label>
+                  <input
+                    type="text"
+                    value={createName}
+                    onChange={(e) => setCreateName(e.target.value)}
+                    placeholder="e.g. Jean Paul"
+                    required
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Email *</label>
+                  <input
+                    type="email"
+                    value={createEmail}
+                    onChange={(e) => setCreateEmail(e.target.value)}
+                    placeholder="user@example.com"
+                    required
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Password * (min 8 chars)</label>
+                  <input
+                    type="password"
+                    value={createPassword}
+                    onChange={(e) => setCreatePassword(e.target.value)}
+                    placeholder="Strong password"
+                    required
+                    minLength={8}
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Role *</label>
+                  <select
+                    value={createRole}
+                    onChange={(e) => setCreateRole(e.target.value as 'admin' | 'sub-admin' | 'editor')}
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-sm"
+                  >
+                    <option value="editor">Editor — can create/edit articles (no publish, no delete others)</option>
+                    <option value="sub-admin">Sub Admin — can do everything except delete users</option>
+                    {adminRole === 'admin' && (
+                      <option value="admin">Admin — full control</option>
+                    )}
+                  </select>
+                </div>
+                <div className="sm:col-span-2 flex justify-end">
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 bg-red-700 hover:bg-red-800 text-white font-semibold rounded-lg text-sm transition-colors"
+                  >
+                    Create User
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
 
           {error && (
             <div className="mb-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 px-4 py-3 rounded-lg text-sm">
@@ -239,19 +356,24 @@ export default function AdminUsersPage() {
                             {isEditing ? (
                               <select
                                 value={editRole}
-                                onChange={(e) => setEditRole(e.target.value as 'admin' | 'editor')}
+                                onChange={(e) => setEditRole(e.target.value as 'admin' | 'sub-admin' | 'editor')}
                                 className="px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900 text-sm"
                               >
-                                <option value="editor">editor</option>
-                                <option value="admin">admin</option>
+                                <option value="editor">Editor</option>
+                                <option value="sub-admin">Sub Admin</option>
+                                {adminRole === 'admin' && (
+                                  <option value="admin">Admin</option>
+                                )}
                               </select>
                             ) : (
                               <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
                                 user.role === 'admin'
                                   ? 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300'
+                                  : user.role === 'sub-admin'
+                                  ? 'bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-300'
                                   : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
                               }`}>
-                                {user.role}
+                                {user.role === 'sub-admin' ? 'Sub Admin' : user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                               </span>
                             )}
                           </td>
@@ -293,13 +415,15 @@ export default function AdminUsersPage() {
                                 >
                                   <Pencil className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
                                 </button>
-                                <button
-                                  onClick={() => handleDelete(user.id)}
-                                  className="p-2 hover:bg-red-50 dark:hover:bg-red-950 rounded transition-colors"
-                                  title="Delete user"
-                                >
-                                  <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
-                                </button>
+                                {adminRole === 'admin' && (
+                                  <button
+                                    onClick={() => handleDelete(user.id)}
+                                    className="p-2 hover:bg-red-50 dark:hover:bg-red-950 rounded transition-colors"
+                                    title="Delete user"
+                                  >
+                                    <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+                                  </button>
+                                )}
                               </div>
                             )}
                           </td>

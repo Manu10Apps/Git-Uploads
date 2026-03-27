@@ -26,12 +26,18 @@ export default function AdminArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [adminRole, setAdminRole] = useState('');
+  const [adminName, setAdminName] = useState('');
+  const [adminEmail, setAdminEmail] = useState('');
 
   useEffect(() => {
     const isAdminAuth = localStorage.getItem('adminAuth');
     if (!isAdminAuth) {
       router.push('/admin/login');
     } else {
+      setAdminRole(localStorage.getItem('adminRole') || '');
+      setAdminName(localStorage.getItem('adminName') || '');
+      setAdminEmail(localStorage.getItem('adminEmail') || '');
       setIsLoading(false);
       fetchArticles();
     }
@@ -54,9 +60,15 @@ export default function AdminArticlesPage() {
     if (!confirm('Are you sure you want to delete this article?')) return;
     
     try {
-      const response = await fetch(`/api/articles/${id}`, { method: 'DELETE' });
+      const response = await fetch(`/api/articles/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-email': adminEmail },
+      });
       if (response.ok) {
         setArticles(articles.filter((a) => a.id !== id));
+      } else {
+        const data = await response.json().catch(() => ({}));
+        alert(data.error || 'Failed to delete article');
       }
     } catch (error) {
       console.error('Failed to delete article:', error);
@@ -188,13 +200,15 @@ export default function AdminArticlesPage() {
                             >
                               <Edit2 className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
                             </button>
-                            <button
-                              onClick={() => handleDelete(article.id)}
-                              className="p-2 hover:bg-red-50 dark:hover:bg-red-950 rounded transition-colors"
-                              title="Delete article"
-                            >
-                              <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
-                            </button>
+                            {(adminRole !== 'editor' || article.author === adminName) && (
+                              <button
+                                onClick={() => handleDelete(article.id)}
+                                className="p-2 hover:bg-red-50 dark:hover:bg-red-950 rounded transition-colors"
+                                title="Delete article"
+                              >
+                                <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
