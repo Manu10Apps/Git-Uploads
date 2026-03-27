@@ -27,7 +27,7 @@ export default function DatabaseStatus() {
           setMessage('Using Fallback Storage (Database Unavailable)');
         } else if (response.ok) {
           setStatus('connected');
-          setMessage('PostgreSQL Database Connected');
+          setMessage('Db Connected');
         } else {
           setStatus('unknown');
           setMessage('Database Status Unknown');
