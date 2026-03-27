@@ -80,11 +80,11 @@ model Advert {
   id        Int       @id @default(autoincrement())
   title     String
   url       String    @default("")
-  imageUrl  String
-  position  String    // "homepage_top" | "homepage_middle" | "sidebar" etc.
+  imageUrl  String    @default("")
+  position  String    @default("homepage_top")
   isActive  Boolean   @default(true)
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  updatedAt DateTime  @default(now()) @updatedAt
 
   @@map("adverts")
 }
