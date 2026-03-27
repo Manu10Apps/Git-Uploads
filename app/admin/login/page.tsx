@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Lock, Mail, User, UserPlus } from 'lucide-react';
 
@@ -10,13 +10,16 @@ export default function LoginPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'admin' | 'editor'>('editor');
+  const [role, setRole] = useState<'admin' | 'sub-admin' | 'editor'>('editor');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Helper functions
+  useEffect(() => {
+    setIsLoggedIn(localStorage.getItem('adminAuth') === 'true');
+  }, []);
   const getPasswordStrength = (pwd: string) => {
     if (!pwd) return { strength: 0, label: '', color: '' };
     if (pwd.length < 8) return { strength: 1, label: 'Weak', color: 'text-red-500' };
@@ -131,6 +134,8 @@ export default function LoginPage() {
         setName('');
         setEmail('');
         setRole('editor');
+      } else if (response.status === 401) {
+        setError('Admin authentication required. Please log in first, then create users from Admin → Users management page.');
       } else {
         setError(data.message || 'Failed to create user. Please try again.');
       }
@@ -306,11 +311,12 @@ export default function LoginPage() {
               <select
                 id="role"
                 value={role}
-                onChange={(e) => setRole(e.target.value as 'admin' | 'editor')}
+                onChange={(e) => setRole(e.target.value as 'admin' | 'sub-admin' | 'editor')}
                 className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                 disabled={isLoading}
               >
                 <option value="editor">Editor</option>
+                <option value="sub-admin">Sub Admin</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
@@ -348,10 +354,17 @@ export default function LoginPage() {
               : 'Create Account'}
           </button>
 
-          {mode === 'create' && (
-            <div className="flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400 pt-2">
-              <UserPlus className="w-4 h-4 flex-shrink-0" />
-              <span>First user can be created freely. Additional users require admin authentication.</span>
+          {mode === 'create' && !isLoggedIn && (
+            <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-lg px-4 py-3 text-xs text-amber-700 dark:text-amber-300">
+              <strong>Note:</strong> Creating users requires admin authentication. This form works only for the very first admin account setup. If admin users already exist, please{' '}
+              <button
+                type="button"
+                className="underline font-semibold"
+                onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
+              >
+                log in first
+              </button>
+              , then go to <strong>Admin &rarr; Users</strong> to manage users.
             </div>
           )}
         </form>
