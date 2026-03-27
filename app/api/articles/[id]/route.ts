@@ -3,6 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { prisma } from '@/lib/prisma';
 import { resolveArticleImage } from '@/lib/article-images';
+import { normalizeArticleImageUrl } from '@/lib/utils';
 import { NAV_CATEGORY_SLUGS } from '@/lib/nav-categories';
 
 /** Lookup the requesting admin user's role and name from DB, if x-admin-email header present */
@@ -160,7 +161,12 @@ export async function PATCH(
 
     parsedBody = await request.json();
     const body = parsedBody;
-    const normalizedImage = resolveArticleImage(body.image, body.gallery);
+
+    // Normalize image path for DB storage only (no existsSync – that belongs only in GET responses).
+    // If body.image is absent/empty, imageToStore is null → existing DB value will be preserved.
+    const imageToStore: string | null = body.image
+      ? (normalizeArticleImageUrl(String(body.image)) ?? null)
+      : null;
 
     // Find the article first
     const article = await prisma.article.findUnique({
@@ -206,7 +212,9 @@ export async function PATCH(
         title: body.title || article.title,
         excerpt: body.excerpt || article.excerpt,
         content: body.content || article.content,
-        image: normalizedImage || resolveArticleImage(article.image, article.gallery),
+        // Only overwrite the stored image when a non-empty value is explicitly supplied.
+        // Using nullish coalescing preserves the existing DB image when no new image is sent.
+        image: imageToStore ?? article.image,
         categoryId: body.categoryId || article.categoryId,
         author: body.author || article.author,
         featured: body.featured !== undefined ? body.featured : article.featured,
@@ -306,7 +314,7 @@ export async function PATCH(
           excerpt: body.excerpt ? String(body.excerpt).trim() : current.excerpt,
           content: body.content ? String(body.content).trim() : current.content,
           image: body.image
-            ? resolveArticleImage(String(body.image), nextGallery.length ? JSON.stringify(nextGallery) : null)
+            ? (normalizeArticleImageUrl(String(body.image)) ?? current.image)
             : current.image,
           category: resolveFallbackCategorySlug(body.categoryId, current.category),
           author: body.author ? String(body.author).trim() : current.author,

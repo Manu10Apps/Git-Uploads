@@ -3,6 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { prisma } from '@/lib/prisma';
 import { resolveArticleImage } from '@/lib/article-images';
+import { normalizeArticleImageUrl } from '@/lib/utils';
 import { NAV_CATEGORY_SLUGS } from '@/lib/nav-categories';
 
 type FallbackArticle = {
@@ -289,10 +290,12 @@ export async function POST(request: NextRequest) {
       published_at,
       scheduled_for,
     } = body;
-    const normalizedImage = resolveArticleImage(
-      image,
-      gallery && Array.isArray(gallery) ? JSON.stringify(gallery) : null
-    );
+
+    // Normalize the image path for DB storage. Do NOT use resolveArticleImage here
+    // because its existsSync check must never run on write paths – only on reads.
+    const imageToStore: string | null = image
+      ? (normalizeArticleImageUrl(String(image)) ?? null)
+      : null;
 
     // Validate required fields
     if (!title || !title.trim()) {
@@ -364,7 +367,7 @@ export async function POST(request: NextRequest) {
         content: content.trim(),
         categoryId: category.id,
         author: author.trim(),
-        image: normalizedImage,
+        image: imageToStore,
         tags: tags && Array.isArray(tags) ? JSON.stringify(tags) : null,
         gallery: gallery && Array.isArray(gallery) ? JSON.stringify(gallery) : null,
         readTime: readTime || 5,
@@ -479,7 +482,7 @@ export async function POST(request: NextRequest) {
           slug,
           excerpt,
           content,
-          image: resolveArticleImage(body?.image || null, gallery.length ? JSON.stringify(gallery) : null),
+          image: body?.image ? (normalizeArticleImageUrl(String(body.image)) ?? null) : null,
           category: categorySlug,
           author,
           status,
