@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { LogOut, User, Menu, X, Sun, Moon, Wrench } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
+import DatabaseStatus from './DatabaseStatus';
 
 export default function AdminHeader() {
   const router = useRouter();
@@ -79,6 +80,9 @@ export default function AdminHeader() {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Database Status */}
+            <DatabaseStatus />
+
             <button
               type="button"
               onClick={handleThemeToggle}
