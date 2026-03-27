@@ -230,7 +230,7 @@ export default function ArticlePage({ params: paramsPromise }: ArticleParams) {
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight mb-3 sm:mb-4 text-neutral-900 dark:text-white text-justify">
               {article.title}
             </h1>
-            <p className="text-base sm:text-lg md:text-xl text-neutral-600 dark:text-neutral-400 mb-4 sm:mb-6 italic text-justify">
+            <p className="text-base sm:text-lg md:text-xl text-neutral-600 dark:text-neutral-400 mb-4 sm:mb-6 text-justify">
               {article.excerpt}
             </p>
 
