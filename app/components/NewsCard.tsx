@@ -115,7 +115,7 @@ export function NewsCard({
   return (
     <article
       onClick={handleCardClick}
-      className={`group glass rounded-lg sm:rounded-xl overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer ${
+      className={`group glass rounded-lg sm:rounded-xl overflow-hidden hover:shadow-2xl sm:hover:scale-105 transition-all duration-300 cursor-pointer ${
         featured ? 'sm:col-span-2' : ''
       }`}
     >
@@ -199,7 +199,7 @@ export function NewsCard({
             
             {/* Share Menu */}
             {showShareMenu && (
-              <div className="absolute bottom-full -left-2 sm:right-0 sm:left-auto mb-2 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 p-2 min-w-max z-50">
+              <div className="absolute bottom-full left-0 sm:left-auto sm:right-0 mb-2 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 p-2 min-w-max z-50">
                 {/* Copy Link Button */}
                 <button
                   onClick={(e) => {

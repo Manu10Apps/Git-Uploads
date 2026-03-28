@@ -288,7 +288,7 @@ export default function EditArticlePage() {
       <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="mb-8">
-            <h1 className="text-4xl font-serif font-bold text-neutral-900 dark:text-white mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-neutral-900 dark:text-white mb-2">
               Edit Article
             </h1>
             <p className="text-neutral-600 dark:text-neutral-400">
@@ -327,7 +327,7 @@ export default function EditArticlePage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="bg-white dark:bg-neutral-900 rounded-lg shadow-sm p-8">
+          <form onSubmit={handleSubmit} className="bg-white dark:bg-neutral-900 rounded-lg shadow-sm p-4 sm:p-6 lg:p-8">
             <div className="mb-6">
               <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
                 Article Title *

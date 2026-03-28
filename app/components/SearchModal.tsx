@@ -63,7 +63,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
       {/* Modal */}
       <div
-        className="fixed top-0 left-0 right-0 z-50 flex items-start justify-center pt-20"
+        className="fixed top-0 left-0 right-0 z-50 flex items-start justify-center pt-10 sm:pt-20"
         role="dialog"
         aria-labelledby="search-modal-title"
         aria-modal="true"

@@ -143,8 +143,8 @@ export function Header() {
               )}
             </button>
 
-            {/* Language Switcher */}
-            <div className="relative hidden md:block" ref={languageMenuRef}>
+            {/* Language Switcher - visible on all sizes */}
+            <div className="relative" ref={languageMenuRef}>
               <button
                 onClick={() => setIsLanguageOpen((open) => !open)}
                 aria-label={t.common.language}
@@ -218,34 +218,15 @@ export function Header() {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <nav className="md:hidden pb-3 sm:pb-4 space-y-1 sm:space-y-2 border-t border-neutral-200 dark:border-neutral-800 mt-2">
-            <div className="px-3 sm:px-4 pt-3 space-y-2">
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/#social-media-links"
-                  className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white"
-                  style={{ backgroundColor: '#e3001b' }}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {language === 'ky' ? 'Iyandikishe' : t.nav.subscribe}
-                </Link>
-                <div className="flex items-center rounded-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-                  {languageOptions.map((option) => (
-                    <button
-                      key={option.code}
-                      type="button"
-                      onClick={() => setLanguage(option.code)}
-                      className={`px-3 py-2 text-xs font-semibold uppercase transition-colors ${
-                        language === option.code
-                          ? 'bg-red-600 text-white'
-                          : 'bg-white text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300'
-                      }`}
-                      aria-label={option.label}
-                    >
-                      {option.code}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <div className="px-3 sm:px-4 pt-3">
+              <Link
+                href="/#social-media-links"
+                className="inline-flex items-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white"
+                style={{ backgroundColor: '#e3001b' }}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {language === 'ky' ? 'Iyandikishe' : t.nav.subscribe}
+              </Link>
             </div>
             {navItems.map((item) => {
               const parts = item.key.split('.');
@@ -254,7 +235,7 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="block px-3 sm:px-4 py-3 rounded-lg text-sm sm:text-base text-neutral-900 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors font-medium"
+                  className="block px-3 sm:px-4 py-3 rounded-lg text-sm sm:text-base text-neutral-900 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors font-medium min-h-[44px]"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {label}

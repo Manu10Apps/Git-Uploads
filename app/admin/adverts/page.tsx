@@ -275,7 +275,7 @@ export default function AdminAdvertsPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="mb-8 flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-serif font-bold text-neutral-900 dark:text-white mb-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-neutral-900 dark:text-white mb-2">
                 Advert Manager
               </h1>
               <p className="text-neutral-600 dark:text-neutral-400">
@@ -310,7 +310,7 @@ export default function AdminAdvertsPage() {
           )}
 
           {/* Form Section */}
-          <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-sm p-8 mb-8">
+          <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-sm p-4 sm:p-6 lg:p-8 mb-8">
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
               {editingId ? 'Edit Advert' : 'Create New Advert'}
             </h2>
@@ -460,39 +460,39 @@ export default function AdminAdvertsPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-900 dark:text-white">Title</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-900 dark:text-white">Position</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-900 dark:text-white">Link</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-900 dark:text-white">Updated</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-900 dark:text-white">Actions</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-900 dark:text-white">Title</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-900 dark:text-white">Position</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-900 dark:text-white hidden md:table-cell">Link</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-900 dark:text-white hidden sm:table-cell">Updated</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-900 dark:text-white">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {adverts.map((advert) => (
                       <tr key={advert.id} className="border-b border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-                        <td className="px-6 py-4 text-sm text-neutral-900 dark:text-white font-medium">{advert.title}</td>
-                        <td className="px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400">
+                        <td className="px-3 sm:px-6 py-4 text-sm text-neutral-900 dark:text-white font-medium">{advert.title}</td>
+                        <td className="px-3 sm:px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400">
                           {positions.find((p) => p.value === advert.position)?.label || advert.position}
                         </td>
-                        <td className="px-6 py-4 text-sm text-blue-600 dark:text-blue-400 truncate max-w-xs">
+                        <td className="px-3 sm:px-6 py-4 text-sm text-blue-600 dark:text-blue-400 truncate max-w-xs hidden md:table-cell">
                           <a href={advert.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
                             {advert.url}
                           </a>
                         </td>
-                        <td className="px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400">
+                        <td className="px-3 sm:px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400 hidden sm:table-cell">
                           {new Date(advert.updatedAt).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 text-sm flex gap-2">
+                        <td className="px-3 sm:px-6 py-4 text-sm flex gap-1 sm:gap-2">
                           <button
                             onClick={() => handleEdit(advert)}
-                            className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded transition-colors"
+                            className="p-2.5 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                             title="Edit"
                           >
                             <Edit2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                           </button>
                           <button
                             onClick={() => handleDelete(advert.id)}
-                            className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
+                            className="p-2.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                             title="Delete"
                           >
                             <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />

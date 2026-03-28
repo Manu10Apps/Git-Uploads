@@ -326,7 +326,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
             <ArticleImage
               src={article.image}
               alt={article.title}
-              className="w-full h-96 md:h-[500px] object-cover"
+              className="w-full h-48 sm:h-64 md:h-96 lg:h-[500px] object-cover"
             />
           </div>
 
@@ -430,7 +430,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                     />
                   </div>
                 </div>
-                <div className="py-2 px-4 mb-4 bg-white dark:bg-neutral-700 rounded-lg rounded-t-lg border border-neutral-200 dark:border-neutral-600">
+                <div className="py-2 px-3 sm:px-4 mb-4 bg-white dark:bg-neutral-700 rounded-lg rounded-t-lg border border-neutral-200 dark:border-neutral-600">
                   <label htmlFor="comment" className="sr-only">
                     Your comment
                   </label>
@@ -439,7 +439,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                     name="comment"
                     value={formData.comment}
                     onChange={handleInputChange}
-                    rows={6}
+                    rows={4}
                     className="px-4 py-2 w-full text-sm text-neutral-900 dark:text-white border-0 focus:ring-0 focus:outline-none resize-none bg-transparent"
                     placeholder="Andika igitekerezo..."
                     required

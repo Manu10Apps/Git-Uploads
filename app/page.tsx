@@ -61,7 +61,7 @@ export default function Home() {
         type="button"
         onClick={onFirst}
         disabled={page === 0}
-        className="inline-flex h-8 min-w-8 px-1 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+        className="inline-flex h-10 min-w-10 sm:h-8 sm:min-w-8 px-1 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
         style={{ color: '#ff2000' }}
         onMouseEnter={e => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = '#ff2000'; e.currentTarget.style.color = '#ffffff'; } }}
         onMouseLeave={e => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = '#ff2000'; }}
@@ -73,7 +73,7 @@ export default function Home() {
         type="button"
         onClick={onPrevious}
         disabled={page === 0}
-        className="inline-flex h-8 w-8 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+        className="inline-flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
         style={{ color: '#ff2000' }}
         onMouseEnter={e => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = '#ff2000'; e.currentTarget.style.color = '#ffffff'; } }}
         onMouseLeave={e => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = '#ff2000'; }}
@@ -88,7 +88,7 @@ export default function Home() {
         type="button"
         onClick={onNext}
         disabled={page >= totalPages - 1}
-        className="inline-flex h-8 w-8 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+        className="inline-flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
         style={{ color: '#ff2000' }}
         onMouseEnter={e => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = '#ff2000'; e.currentTarget.style.color = '#ffffff'; } }}
         onMouseLeave={e => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = '#ff2000'; }}
@@ -100,7 +100,7 @@ export default function Home() {
         type="button"
         onClick={onLast}
         disabled={page >= totalPages - 1}
-        className="inline-flex h-8 min-w-8 px-1 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+        className="inline-flex h-10 min-w-10 sm:h-8 sm:min-w-8 px-1 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
         style={{ color: '#ff2000' }}
         onMouseEnter={e => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = '#ff2000'; e.currentTarget.style.color = '#ffffff'; } }}
         onMouseLeave={e => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = '#ff2000'; }}
@@ -175,7 +175,7 @@ export default function Home() {
                   <article className="flex flex-col h-full">
                     {featuredArticle.image && (
                       <Link href={`/article/${featuredArticle.slug}`}>
-                        <div className="mb-4 rounded overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 h-96 cursor-pointer hover:opacity-90 transition-opacity">
+                        <div className="mb-4 rounded overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 h-48 sm:h-64 md:h-80 lg:h-96 cursor-pointer hover:opacity-90 transition-opacity">
                           <ArticleImage
                             src={featuredArticle.image}
                             alt={featuredArticle.title}
@@ -288,7 +288,7 @@ export default function Home() {
                 <p className="text-neutral-600 dark:text-neutral-400">Inkuru ziri gushakishwa...</p>
               </div>
             ) : latestPageArticles.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 {latestPageArticles.map((article) => (
                   <article
                     key={article.id}
@@ -305,7 +305,7 @@ export default function Home() {
                         </div>
                       </Link>
                     )}
-                    <div className="p-6">
+                    <div className="p-3 sm:p-4 md:p-6">
                       <div className="text-red-600 dark:text-red-500 text-xs font-semibold tracking-widest mb-2 uppercase">
                         {article.category}
                       </div>
@@ -353,7 +353,7 @@ export default function Home() {
                 <p className="text-neutral-600 dark:text-neutral-400">Inkuru ziri gushakishwa...</p>
               </div>
             ) : mostViewedPageArticles.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 {mostViewedPageArticles.map((article) => (
                   <article
                     key={article.id}
@@ -436,7 +436,7 @@ export default function Home() {
         <section id="newsletter" className="py-10 bg-neutral-100 dark:bg-neutral-900/50 border-t border-neutral-200 dark:border-neutral-800">
           <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="text-red-600 text-xs font-semibold tracking-widest mb-3">GUMANA AMAKURU</div>
-            <h2 className="text-3xl font-serif font-bold text-neutral-900 dark:text-white mb-3">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-neutral-900 dark:text-white mb-3">
               Habwa amakuru yihariye kandi acukumbuye
             </h2>
             <p className="text-neutral-600 dark:text-neutral-400 mb-8 font-light">

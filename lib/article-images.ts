@@ -1,6 +1,7 @@
 import { existsSync } from 'fs';
 import path from 'path';
 import { normalizeArticleImageUrl } from '@/lib/utils';
+import { getUploadsDir } from '@/lib/upload-config';
 
 type GalleryItem = {
   url?: string;
@@ -27,7 +28,8 @@ function isMissingLocalUpload(url: string | null): boolean {
     return false;
   }
 
-  const filePath = path.join(process.cwd(), 'public', url.replace(/^\//, ''));
+  const filename = url.replace(/^\/uploads\//, '');
+  const filePath = path.join(getUploadsDir(), filename);
   return !existsSync(filePath);
 }
 

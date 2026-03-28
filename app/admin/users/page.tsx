@@ -220,7 +220,7 @@ export default function AdminUsersPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="mb-8 flex items-start justify-between flex-wrap gap-4">
             <div>
-              <h1 className="text-4xl font-serif font-bold text-neutral-900 dark:text-white mb-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-neutral-900 dark:text-white mb-2">
                 Manage Users
               </h1>
               <p className="text-neutral-600 dark:text-neutral-400">
@@ -327,11 +327,11 @@ export default function AdminUsersPage() {
                 <table className="w-full">
                   <thead className="bg-neutral-100 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">Name</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">Email</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">Role</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">Created</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">Actions</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">Name</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white hidden sm:table-cell">Email</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">Role</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white hidden md:table-cell">Created</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
@@ -340,7 +340,7 @@ export default function AdminUsersPage() {
 
                       return (
                         <tr key={user.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors align-top">
-                          <td className="px-6 py-4">
+                          <td className="px-3 sm:px-6 py-4">
                             {isEditing ? (
                               <input
                                 value={editName}
@@ -351,8 +351,8 @@ export default function AdminUsersPage() {
                               <span className="text-sm text-neutral-900 dark:text-white">{user.name}</span>
                             )}
                           </td>
-                          <td className="px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400">{user.email}</td>
-                          <td className="px-6 py-4">
+                          <td className="px-3 sm:px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400 hidden sm:table-cell">{user.email}</td>
+                          <td className="px-3 sm:px-6 py-4">
                             {isEditing ? (
                               <select
                                 value={editRole}
@@ -377,12 +377,12 @@ export default function AdminUsersPage() {
                               </span>
                             )}
                           </td>
-                          <td className="px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400">
+                          <td className="px-3 sm:px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400 hidden md:table-cell">
                             {new Date(user.createdAt).toLocaleDateString()}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-3 sm:px-6 py-4">
                             {isEditing ? (
-                              <form onSubmit={(e) => handleUpdate(e, user.id)} className="space-y-2 w-56">
+                              <form onSubmit={(e) => handleUpdate(e, user.id)} className="space-y-2 w-full sm:w-56">
                                 <input
                                   value={editPassword}
                                   onChange={(e) => setEditPassword(e.target.value)}
@@ -410,7 +410,7 @@ export default function AdminUsersPage() {
                               <div className="flex items-center gap-2">
                                 <button
                                   onClick={() => startEdit(user)}
-                                  className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors"
+                                  className="p-2.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                                   title="Edit user"
                                 >
                                   <Pencil className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
@@ -418,7 +418,7 @@ export default function AdminUsersPage() {
                                 {adminRole === 'admin' && (
                                   <button
                                     onClick={() => handleDelete(user.id)}
-                                    className="p-2 hover:bg-red-50 dark:hover:bg-red-950 rounded transition-colors"
+                                    className="p-2.5 hover:bg-red-50 dark:hover:bg-red-950 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                                     title="Delete user"
                                   >
                                     <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />

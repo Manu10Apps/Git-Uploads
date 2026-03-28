@@ -295,7 +295,7 @@ export default function CreateArticlePage() {
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="bg-white dark:bg-neutral-900 rounded-lg shadow-sm p-8">
+          <form onSubmit={handleSubmit} className="bg-white dark:bg-neutral-900 rounded-lg shadow-sm p-4 sm:p-6 lg:p-8">
             {/* Title */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">

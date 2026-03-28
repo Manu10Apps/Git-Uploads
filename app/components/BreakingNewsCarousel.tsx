@@ -156,7 +156,7 @@ export default function BreakingNewsCarousel({ articles = [] }: BreakingNewsCaro
               {Array.from({ length: maxFeaturedIndex }).map((_, index) => (
                 <div
                   key={index}
-                  className={`h-1 sm:h-1.5 w-1 sm:w-1.5 rounded-full transition-colors ${
+                  className={`h-1.5 sm:h-2 w-1.5 sm:w-2 rounded-full transition-colors ${
                     index === currentFeaturedIndex
                       ? 'bg-red-700 dark:bg-amber-500'
                       : 'bg-neutral-300 dark:bg-neutral-600'

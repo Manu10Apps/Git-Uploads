@@ -148,8 +148,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-800 to-black flex items-center justify-center px-4">
-      <div className="bg-white dark:bg-slate-900 rounded-lg shadow-2xl p-8 max-w-md w-full">
+    <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-800 to-black flex items-center justify-center px-3 sm:px-4">
+      <div className="bg-white dark:bg-slate-900 rounded-lg shadow-2xl p-5 sm:p-8 max-w-md w-full">
         <div className="flex justify-center mb-6">
           <div className="bg-red-600 p-3 rounded-full">
             <Lock className="w-6 h-6 text-white" />

@@ -92,9 +92,9 @@ export default function AdminArticlesPage() {
       <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
             <div>
-              <h1 className="text-4xl font-serif font-bold text-neutral-900 dark:text-white mb-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-neutral-900 dark:text-white mb-2">
                 Manage Articles
               </h1>
               <p className="text-neutral-600 dark:text-neutral-400">
@@ -121,25 +121,25 @@ export default function AdminArticlesPage() {
                 <table className="w-full">
                   <thead className="bg-neutral-100 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">
+                      <th className="px-3 sm:px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">
                         Image
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">
+                      <th className="px-3 sm:px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">
                         Title
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">
+                      <th className="px-3 sm:px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white hidden sm:table-cell">
                         Category
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">
+                      <th className="px-3 sm:px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white hidden md:table-cell">
                         Author
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">
+                      <th className="px-3 sm:px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white hidden lg:table-cell">
                         Published
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">
+                      <th className="px-3 sm:px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white hidden md:table-cell">
                         Featured
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">
+                      <th className="px-3 sm:px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">
                         Actions
                       </th>
                     </tr>
@@ -150,8 +150,8 @@ export default function AdminArticlesPage() {
                         key={article.id}
                         className="hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                       >
-                        <td className="px-6 py-4">
-                          <div className="w-20 h-12 rounded overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                        <td className="px-3 sm:px-6 py-4">
+                          <div className="w-16 sm:w-20 h-10 sm:h-12 rounded overflow-hidden bg-neutral-100 dark:bg-neutral-800">
                             <ArticleImage
                               src={article.image}
                               alt={article.title}
@@ -159,14 +159,14 @@ export default function AdminArticlesPage() {
                             />
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="max-w-xs">
+                        <td className="px-3 sm:px-6 py-4">
+                          <div className="max-w-[120px] sm:max-w-xs">
                             <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                               {article.title}
                             </p>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-3 sm:px-6 py-4 hidden sm:table-cell">
                           <span
                             className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
                               categoryColors[article.category] ||
@@ -176,13 +176,13 @@ export default function AdminArticlesPage() {
                             {article.category}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400">
+                        <td className="px-3 sm:px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400 hidden md:table-cell">
                           {article.author}
                         </td>
-                        <td className="px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400">
+                        <td className="px-3 sm:px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400 hidden lg:table-cell">
                           {article.publishedAt}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-3 sm:px-6 py-4 hidden md:table-cell">
                           {article.featured ? (
                             <span className="text-xs font-semibold text-red-700 dark:text-amber-400">
                               ★ Featured
@@ -191,12 +191,12 @@ export default function AdminArticlesPage() {
                             <span className="text-xs text-neutral-500">-</span>
                           )}
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
+                        <td className="px-3 sm:px-6 py-4">
+                          <div className="flex items-center gap-1 sm:gap-2">
                             {(adminRole !== 'editor' || article.author === adminName) && (
                               <button
                                 onClick={() => router.push(`/admin/edit-article/${article.id}`)}
-                                className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors"
+                                className="p-2.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                                 title="Edit article"
                               >
                                 <Edit2 className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
@@ -205,7 +205,7 @@ export default function AdminArticlesPage() {
                             {(adminRole !== 'editor' || article.author === adminName) && (
                               <button
                                 onClick={() => handleDelete(article.id)}
-                                className="p-2 hover:bg-red-50 dark:hover:bg-red-950 rounded transition-colors"
+                                className="p-2.5 hover:bg-red-50 dark:hover:bg-red-950 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                                 title="Delete article"
                               >
                                 <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />

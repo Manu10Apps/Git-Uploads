@@ -1,10 +1,10 @@
 import { prisma } from '@/lib/prisma';
 import { promises as fs } from 'fs';
-import path from 'path';
+import { getUploadsDir } from '@/lib/upload-config';
 
 async function getUploadedImages(): Promise<string[]> {
   try {
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+    const uploadsDir = getUploadsDir();
     const files = await fs.readdir(uploadsDir);
     // Filter to only article uploads and sort them
     return files
