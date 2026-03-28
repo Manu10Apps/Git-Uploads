@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { analytics } from '@/lib/analytics-tracker';
+import { getAnalytics } from '@/lib/analytics-tracker';
 
 /**
  * Analytics Provider Component
@@ -9,6 +9,8 @@ import { analytics } from '@/lib/analytics-tracker';
  */
 export function AnalyticsProvider() {
   useEffect(() => {
+    const analytics = getAnalytics();
+
     // Track pageview on mount
     analytics.trackPageview();
 

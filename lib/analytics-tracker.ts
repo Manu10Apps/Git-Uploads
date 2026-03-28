@@ -165,6 +165,8 @@ class Analytics {
    * Get or create session ID (expires after 30 minutes of inactivity)
    */
   private getOrCreateSessionId(): string {
+    if (typeof window === 'undefined') return this.generateId();
+
     const key = 'analytics_session_id';
     const timeKey = 'analytics_session_time';
     
@@ -191,6 +193,8 @@ class Analytics {
    * Get or create visitor ID (persists indefinitely)
    */
   private getOrCreateVisitorId(): string {
+    if (typeof window === 'undefined') return this.generateId();
+
     const key = 'analytics_visitor_id';
     let visitorId = localStorage.getItem(key);
 
@@ -210,9 +214,21 @@ class Analytics {
   }
 }
 
-// Export singleton instance
-export const analytics = new Analytics({
-  debug: process.env.NODE_ENV === 'development',
-});
+// Lazy singleton – avoids SSR crash when this module is imported on the server.
+let _analytics: Analytics | null = null;
+
+export function getAnalytics(): Analytics {
+  if (!_analytics) {
+    _analytics = new Analytics({
+      debug: process.env.NODE_ENV === 'development',
+    });
+  }
+  return _analytics;
+}
+
+/** @deprecated Use getAnalytics() instead */
+export const analytics = typeof window !== 'undefined'
+  ? getAnalytics()
+  : (null as unknown as Analytics);
 
 export default Analytics;
