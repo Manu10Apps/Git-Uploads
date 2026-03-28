@@ -74,15 +74,9 @@ export function resolveArticleImage(
     return galleryImage || fallbackImage;
   }
 
-  // For external URLs (https/http), return them directly without checking file existence
-  if (isExternalUrl(normalizedImage)) {
-    return normalizedImage;
-  }
-
-  // For local uploads, check if the file exists
-  if (isMissingLocalUpload(normalizedImage)) {
-    return galleryImage || fallbackImage;
-  }
-
+  // Return the stored image URL as-is (after normalization).
+  // The client-side ArticleImage component handles broken/missing images
+  // gracefully with retry + fallback, so we should NOT discard valid
+  // database URLs based on server-side file existence checks.
   return normalizedImage;
 }

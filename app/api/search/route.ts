@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { normalizeArticleImageUrl } from '@/lib/utils';
+import { resolveArticleImage } from '@/lib/article-images';
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       title: article.title,
       slug: article.slug,
       excerpt: article.excerpt,
-      image: normalizeArticleImageUrl(article.image),
+      image: resolveArticleImage(article.image, article.gallery),
       category: article.category.slug,
       categoryName: article.category.name,
       author: article.author,
