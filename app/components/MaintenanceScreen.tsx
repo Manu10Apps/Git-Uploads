@@ -20,7 +20,7 @@ export function MaintenanceScreen({ message }: MaintenanceScreenProps) {
                 Turimo gukora ivugurura ry'uru rubuga.
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-neutral-700 dark:text-neutral-300 sm:text-lg">
-                mutwihanganire turagaruka mu kanya ivugurura rimaze kurangira.
+                Mutwihanganire turagaruka mu kanya ivugurura rimaze kurangira.
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -31,7 +31,7 @@ export function MaintenanceScreen({ message }: MaintenanceScreenProps) {
               </div>
 
               <div className="mt-6">
-                <p className="mb-3 text-sm font-medium text-neutral-500 dark:text-neutral-400">Ushobora kudukurikire ugakomeza gusoma amakuru kuri:</p>
+                <p className="mb-3 text-sm font-medium text-neutral-500 dark:text-neutral-400">Ushobora kudukurikira ugakomeza gusoma amakuru yacu kuri:</p>
                 <div className="flex flex-wrap items-center gap-2">
                   <a href="https://x.com/intambwemedias" target="_blank" rel="noopener noreferrer" aria-label="X" className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-200 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 dark:border-red-700 dark:text-red-500 dark:hover:bg-red-950 dark:hover:text-red-400">
                     <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.657l-5.223-6.831-5.97 6.831H2.423l7.723-8.835L1.457 2.25h6.888l4.722 6.236 5.454-6.236zM17.15 20.005h1.828L6.883 3.996H5.017l12.133 16.009z" /></svg>
