@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { PrismaClient } from '@prisma/client';
 import { DEFAULT_MAINTENANCE_MESSAGE, getMaintenanceSettings, saveMaintenanceSettings } from '@/lib/maintenance';
 
-const VALID_ROLES = new Set(['admin', 'editor']);
+const VALID_ROLES = new Set(['admin']);
 
 const DEFAULT_SETTINGS_RESPONSE = {
   enabled: false,

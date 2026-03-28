@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FileText, Users, Eye, TrendingUp, Calendar, Tag } from 'lucide-react';
+import { FileText, Eye, TrendingUp, Calendar, Tag } from 'lucide-react';
 
 interface DashboardStats {
   totalArticles: number;
@@ -19,23 +19,32 @@ interface DashboardStats {
 export default function DashboardStats() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<'admin' | 'sub-admin' | 'editor'>('editor');
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [articlesRes, usersRes, categoriesRes] = await Promise.all([
+        const currentRole = (localStorage.getItem('adminRole') || 'editor') as 'admin' | 'sub-admin' | 'editor';
+        setRole(currentRole);
+
+        const [articlesRes, categoriesRes] = await Promise.all([
           fetch('/api/articles'),
-          fetch('/api/admin/users', {
-            headers: {
-              'x-admin-email': localStorage.getItem('adminEmail') || '',
-            },
-          }),
           fetch('/api/admin/categories'),
         ]);
 
         const articlesData = await articlesRes.json();
-        const usersData = await usersRes.json();
         const categoriesData = await categoriesRes.json();
+
+        let totalUsers = 0;
+        if (currentRole !== 'editor') {
+          const usersRes = await fetch('/api/admin/users', {
+            headers: {
+              'x-admin-email': localStorage.getItem('adminEmail') || '',
+            },
+          });
+          const usersData = await usersRes.json();
+          totalUsers = usersData.users?.length || 0;
+        }
 
         const articles = articlesData.data || [];
         const published = articles.filter((a: any) => a.status === 'published').length;
@@ -45,7 +54,7 @@ export default function DashboardStats() {
           totalArticles: articles.length,
           publishedArticles: published,
           draftArticles: draft,
-          totalUsers: usersData.users?.length || 0,
+          totalUsers,
           totalCategories: categoriesData.data?.length || 0,
           recentArticles: articles.slice(0, 5).map((a: any) => ({
             title: a.title,
@@ -193,12 +202,14 @@ export default function DashboardStats() {
           >
             View All Articles
           </a>
-          <a
-            href="/admin/users"
-            className="px-4 py-2 bg-red-700/50 hover:bg-red-700 transition-colors rounded-lg font-medium"
-          >
-            Manage Users
-          </a>
+          {role !== 'editor' && (
+            <a
+              href="/admin/users"
+              className="px-4 py-2 bg-red-700/50 hover:bg-red-700 transition-colors rounded-lg font-medium"
+            >
+              Manage Users
+            </a>
+          )}
         </div>
       </div>
     </div>

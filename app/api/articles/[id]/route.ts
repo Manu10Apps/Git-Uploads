@@ -180,8 +180,16 @@ export async function PATCH(
       );
     }
 
-    // Role-based restriction: editors cannot publish articles
+    // Role-based restriction: editors cannot modify other authors' articles.
     const requester = await getRequesterInfo(request);
+    if (requester?.role === 'editor' && article.author !== requester.name) {
+      return NextResponse.json(
+        { success: false, error: 'Editors can only edit their own articles.' },
+        { status: 403 }
+      );
+    }
+
+    // Role-based restriction: editors cannot publish articles
     if (requester?.role === 'editor' && body.status === 'published') {
       return NextResponse.json(
         { success: false, error: 'Editors cannot publish articles. Ask an admin or sub-admin to publish.' },

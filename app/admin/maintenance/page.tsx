@@ -17,6 +17,7 @@ type MaintenanceSettings = {
 export default function MaintenancePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [isForbidden, setIsForbidden] = useState(false);
   const [enabled, setEnabled] = useState(false);
   const [message, setMessage] = useState(DEFAULT_MESSAGE);
   const [savedAt, setSavedAt] = useState<string | null>(null);
@@ -34,9 +35,16 @@ export default function MaintenancePage() {
     const loadMaintenanceSettings = async () => {
       const isAdminAuth = localStorage.getItem('adminAuth');
       const adminEmail = localStorage.getItem('adminEmail') || '';
+      const adminRole = localStorage.getItem('adminRole') || 'editor';
 
       if (!isAdminAuth) {
         router.push('/admin/login');
+        return;
+      }
+
+      if (adminRole !== 'admin') {
+        setIsForbidden(true);
+        setIsLoading(false);
         return;
       }
 
@@ -149,6 +157,27 @@ export default function MaintenancePage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl font-semibold">Loading maintenance settings...</div>
       </div>
+    );
+  }
+
+  if (isForbidden) {
+    return (
+      <>
+        <AdminHeader />
+        <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center p-6">
+          <div className="max-w-lg w-full rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-8 text-center">
+            <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">Access Restricted</h1>
+            <p className="text-neutral-600 dark:text-neutral-400 mb-5">Only full admins can manage maintenance mode.</p>
+            <button
+              type="button"
+              onClick={() => router.push('/admin/dashboard')}
+              className="px-5 py-2.5 rounded-lg bg-red-700 hover:bg-red-800 text-white font-semibold"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </main>
+      </>
     );
   }
 

@@ -19,6 +19,8 @@ interface Advert {
 export default function AdminAdvertsPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [isForbidden, setIsForbidden] = useState(false);
+  const [adminEmail, setAdminEmail] = useState('');
   const [adverts, setAdverts] = useState<Advert[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -42,18 +44,29 @@ export default function AdminAdvertsPage() {
 
   useEffect(() => {
     const isAdminAuth = localStorage.getItem('adminAuth');
+    const role = localStorage.getItem('adminRole') || 'editor';
+    const email = localStorage.getItem('adminEmail') || '';
     if (!isAdminAuth) {
       router.push('/admin/login');
-    } else {
+    } else if (role !== 'admin') {
+      setIsForbidden(true);
       setIsLoading(false);
-      fetchAdverts();
+    } else {
+      setAdminEmail(email);
+      setIsLoading(false);
+      fetchAdverts(email);
     }
   }, [router]);
 
-  const fetchAdverts = async () => {
+  const fetchAdverts = async (emailOverride?: string) => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/adverts');
+      const requestEmail = emailOverride ?? adminEmail;
+      const response = await fetch('/api/admin/adverts', {
+        headers: {
+          ...(requestEmail ? { 'x-admin-email': requestEmail } : {}),
+        },
+      });
       const data = await response.json();
       setAdverts(data.data || []);
     } catch (error) {
@@ -143,7 +156,10 @@ export default function AdminAdvertsPage() {
     try {
       const response = await fetch('/api/admin/adverts', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(adminEmail ? { 'x-admin-email': adminEmail } : {}),
+        },
         body: JSON.stringify({
           id: editingId,
           ...formData,
@@ -173,7 +189,10 @@ export default function AdminAdvertsPage() {
     try {
       const response = await fetch('/api/admin/adverts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(adminEmail ? { 'x-admin-email': adminEmail } : {}),
+        },
         body: JSON.stringify(formData),
       });
 
@@ -197,6 +216,9 @@ export default function AdminAdvertsPage() {
     try {
       const response = await fetch(`/api/admin/adverts?id=${id}`, {
         method: 'DELETE',
+        headers: {
+          ...(adminEmail ? { 'x-admin-email': adminEmail } : {}),
+        },
       });
 
       const data = await response.json();
@@ -222,6 +244,27 @@ export default function AdminAdvertsPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl font-semibold">Loading...</div>
       </div>
+    );
+  }
+
+  if (isForbidden) {
+    return (
+      <>
+        <AdminHeader />
+        <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center p-6">
+          <div className="max-w-lg w-full rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-8 text-center">
+            <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">Access Restricted</h1>
+            <p className="text-neutral-600 dark:text-neutral-400 mb-5">Only full admins can manage adverts.</p>
+            <button
+              type="button"
+              onClick={() => router.push('/admin/dashboard')}
+              className="px-5 py-2.5 rounded-lg bg-red-700 hover:bg-red-800 text-white font-semibold"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </main>
+      </>
     );
   }
 

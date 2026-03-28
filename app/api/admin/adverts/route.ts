@@ -1,6 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+async function getAuthorizedAdmin(request: NextRequest) {
+  const requesterEmail = request.headers.get('x-admin-email')?.trim().toLowerCase();
+  const envAdminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+
+  if (!requesterEmail) {
+    return { error: 'Unauthorized: missing admin identity', status: 401 as const };
+  }
+
+  if (envAdminEmail && requesterEmail === envAdminEmail) {
+    return { success: true as const };
+  }
+
+  const requester = await prisma.adminUser.findUnique({
+    where: { email: requesterEmail },
+    select: { role: true },
+  });
+
+  if (!requester || requester.role !== 'admin') {
+    return { error: 'Only admins can manage adverts', status: 403 as const };
+  }
+
+  return { success: true as const };
+}
+
 interface AdvertResponse {
   id: string;
   title: string;
@@ -27,6 +51,11 @@ function toAdvertResponse(advert: any): AdvertResponse {
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await getAuthorizedAdmin(request);
+    if ('error' in auth) {
+      return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+    }
+
     const adverts = await prisma.advert.findMany({
       orderBy: { createdAt: 'desc' },
     });
@@ -49,6 +78,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await getAuthorizedAdmin(request);
+    if ('error' in auth) {
+      return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+    }
+
     const body = await request.json();
     const { title, url, imageUrl, position } = body;
 
@@ -85,6 +119,11 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    const auth = await getAuthorizedAdmin(request);
+    if ('error' in auth) {
+      return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+    }
+
     const body = await request.json();
     const { id, title, url, imageUrl, position, isActive } = body;
 
@@ -143,6 +182,11 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const auth = await getAuthorizedAdmin(request);
+    if ('error' in auth) {
+      return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

@@ -193,13 +193,15 @@ export default function AdminArticlesPage() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => router.push(`/admin/edit-article/${article.id}`)}
-                              className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors"
-                              title="Edit article"
-                            >
-                              <Edit2 className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
-                            </button>
+                            {(adminRole !== 'editor' || article.author === adminName) && (
+                              <button
+                                onClick={() => router.push(`/admin/edit-article/${article.id}`)}
+                                className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors"
+                                title="Edit article"
+                              >
+                                <Edit2 className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+                              </button>
+                            )}
                             {(adminRole !== 'editor' || article.author === adminName) && (
                               <button
                                 onClick={() => handleDelete(article.id)}

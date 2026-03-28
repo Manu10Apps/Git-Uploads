@@ -5,6 +5,22 @@ import { useRouter, usePathname } from 'next/navigation';
 import { LogOut, Menu, X, Zap, FileText, BarChart3, Users, Loader2, Wrench } from 'lucide-react';
 import Link from 'next/link';
 
+type AdminRole = 'admin' | 'sub-admin' | 'editor';
+
+function canAccessAdminPath(role: string, path: string): boolean {
+  if (role === 'admin') return true;
+
+  if (role === 'sub-admin') {
+    return !['/admin/ai-generator', '/admin/maintenance', '/admin/adverts'].includes(path);
+  }
+
+  if (role === 'editor') {
+    return !['/admin/ai-generator', '/admin/maintenance', '/admin/adverts', '/admin/users'].includes(path);
+  }
+
+  return false;
+}
+
 export default function AdminLayout({
   children,
 }: {
@@ -13,7 +29,7 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState<AdminRole>('editor');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
@@ -34,8 +50,13 @@ export default function AdminLayout({
         if (!auth) {
           router.push('/admin/login');
         } else {
+          const normalizedRole = (adminRole || 'editor') as AdminRole;
+          if (!canAccessAdminPath(normalizedRole, pathname)) {
+            router.push('/admin/dashboard');
+            return;
+          }
           setEmail(adminEmail || 'Admin');
-          setRole(adminRole || 'editor');
+          setRole(normalizedRole);
           setIsAuthenticated(true);
         }
       } catch (error) {
@@ -58,13 +79,13 @@ export default function AdminLayout({
   };
 
   const navItems = [
-    { label: 'Articles', href: '/admin/articles', icon: FileText },
-    { label: 'Create Article', href: '/admin/create-article', icon: FileText },
-    { label: 'AI Generator', href: '/admin/ai-generator', icon: Zap },
-    { label: 'Maintenance', href: '/admin/maintenance', icon: Wrench },
-    { label: 'Adverts', href: '/admin/adverts', icon: BarChart3 },
-    { label: 'Users', href: '/admin/users', icon: Users },
-  ];
+    { label: 'Articles', href: '/admin/articles', icon: FileText, roles: ['admin', 'sub-admin', 'editor'] },
+    { label: 'Create Article', href: '/admin/create-article', icon: FileText, roles: ['admin', 'sub-admin', 'editor'] },
+    { label: 'AI Generator', href: '/admin/ai-generator', icon: Zap, roles: ['admin'] },
+    { label: 'Maintenance', href: '/admin/maintenance', icon: Wrench, roles: ['admin'] },
+    { label: 'Adverts', href: '/admin/adverts', icon: BarChart3, roles: ['admin'] },
+    { label: 'Users', href: '/admin/users', icon: Users, roles: ['admin', 'sub-admin'] },
+  ].filter((item) => item.roles.includes(role));
 
   const isActive = (href: string) => pathname === href;
 

@@ -11,13 +11,18 @@ export default function AdminHeader() {
   const pathname = usePathname();
   const { theme, setTheme } = useAppStore();
   const [email, setEmail] = useState('');
+  const [role, setRole] = useState<'admin' | 'sub-admin' | 'editor'>('editor');
   const [isOpen, setIsOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
 
   useEffect(() => {
     const adminEmail = localStorage.getItem('adminEmail');
+    const adminRole = localStorage.getItem('adminRole');
     if (adminEmail) {
       setEmail(adminEmail);
+    }
+    if (adminRole === 'admin' || adminRole === 'sub-admin' || adminRole === 'editor') {
+      setRole(adminRole);
     }
   }, []);
 
@@ -39,14 +44,14 @@ export default function AdminHeader() {
   };
 
   const navItems = [
-    { label: 'Dashboard', href: '/admin/dashboard' },
-    { label: 'Articles', href: '/admin/articles' },
-    { label: 'Create Article', href: '/admin/create-article' },
-    { label: 'AI Generator', href: '/admin/ai-generator' },
-    { label: 'Maintenance', href: '/admin/maintenance' },
-    { label: 'Users', href: '/admin/users' },
-    { label: 'Adverts', href: '/admin/adverts' },
-  ];
+    { label: 'Dashboard', href: '/admin/dashboard', roles: ['admin', 'sub-admin', 'editor'] },
+    { label: 'Articles', href: '/admin/articles', roles: ['admin', 'sub-admin', 'editor'] },
+    { label: 'Create Article', href: '/admin/create-article', roles: ['admin', 'sub-admin', 'editor'] },
+    { label: 'AI Generator', href: '/admin/ai-generator', roles: ['admin'] },
+    { label: 'Maintenance', href: '/admin/maintenance', roles: ['admin'] },
+    { label: 'Users', href: '/admin/users', roles: ['admin', 'sub-admin'] },
+    { label: 'Adverts', href: '/admin/adverts', roles: ['admin'] },
+  ].filter((item) => item.roles.includes(role));
 
   const isDarkMode = theme === 'dark';
 
@@ -81,7 +86,7 @@ export default function AdminHeader() {
 
           <div className="flex items-center gap-4">
             {/* Database Status */}
-            <DatabaseStatus />
+            {role === 'admin' && <DatabaseStatus />}
 
             <button
               type="button"
