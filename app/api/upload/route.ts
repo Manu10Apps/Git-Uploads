@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import path from 'path';
 import { existsSync } from 'fs';
+import { getUploadsDir } from '@/lib/upload-config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,13 +43,13 @@ export async function POST(request: NextRequest) {
     const filename = `article-${timestamp}-${randomString}.${ext}`;
 
     // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'public', 'uploads');
+    const uploadsDir = getUploadsDir();
     if (!existsSync(uploadsDir)) {
       await mkdir(uploadsDir, { recursive: true });
     }
 
     // Save file
-    const filepath = join(uploadsDir, filename);
+    const filepath = path.join(uploadsDir, filename);
     await writeFile(filepath, buffer);
 
     // Return public URL

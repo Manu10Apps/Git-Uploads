@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import path from 'path';
+import { getUploadsDir } from '@/lib/upload-config';
 
 // Served when a /uploads/* file does not exist on disk.
 // Next.js static-file serving handles requests for files that DO exist,
@@ -37,7 +38,7 @@ export async function GET(_request: Request, context: RouteContext) {
   );
 
   if (safeSegments.length > 0) {
-    const uploadsRoot = path.resolve(process.cwd(), 'public', 'uploads');
+    const uploadsRoot = path.resolve(getUploadsDir());
     const requestedPath = path.resolve(uploadsRoot, ...safeSegments);
 
     if (requestedPath.startsWith(uploadsRoot)) {
