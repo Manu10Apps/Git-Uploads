@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
+import { existsSync } from 'fs';
 import path from 'path';
 import { getUploadsDir } from '@/lib/upload-config';
 
@@ -45,26 +46,47 @@ type RouteContext = {
   }>;
 };
 
-export async function GET(_request: Request, context: RouteContext) {
+export async function GET(request: NextRequest, context: RouteContext) {
   const params = await context.params;
   const rawSegments = params.slug || [];
   const safeSegments = rawSegments.filter((segment) =>
     segment && segment !== '.' && segment !== '..' && !segment.includes('/') && !segment.includes('\\')
   );
 
+  const debugMode = new URL(request.url).searchParams.has('debug');
+  const debugInfo: Record<string, unknown> = {};
+
   if (safeSegments.length > 0) {
+    const searchDirs = getSearchDirs();
+    if (debugMode) {
+      debugInfo.safeSegments = safeSegments;
+      debugInfo.searchDirs = searchDirs;
+      debugInfo.cwd = process.cwd();
+      debugInfo.attempts = [];
+    }
+
     // Try each search directory in order
-    for (const dir of getSearchDirs()) {
+    for (const dir of searchDirs) {
       const uploadsRoot = path.resolve(dir);
       const requestedPath = path.resolve(uploadsRoot, ...safeSegments);
 
       // Path traversal guard
       if (!requestedPath.startsWith(uploadsRoot)) {
+        if (debugMode) (debugInfo.attempts as unknown[]).push({ dir, requestedPath, error: 'path_traversal_blocked' });
         continue;
       }
 
+      const fileExists = existsSync(requestedPath);
+      if (debugMode) (debugInfo.attempts as unknown[]).push({ dir, requestedPath, fileExists });
+
       try {
         const fileBuffer = await readFile(requestedPath);
+        if (debugMode) {
+          debugInfo.served = true;
+          debugInfo.contentType = getContentType(requestedPath);
+          debugInfo.size = fileBuffer.length;
+          return NextResponse.json(debugInfo);
+        }
         return new NextResponse(fileBuffer, {
           status: 200,
           headers: {
@@ -72,10 +94,23 @@ export async function GET(_request: Request, context: RouteContext) {
             'Cache-Control': 'public, max-age=86400',
           },
         });
-      } catch {
+      } catch (err) {
+        if (debugMode) {
+          const lastAttempt = (debugInfo.attempts as Record<string, unknown>[]).at(-1);
+          if (lastAttempt) lastAttempt.readError = String(err);
+        }
         // File does not exist in this directory; try next.
       }
     }
+  } else if (debugMode) {
+    debugInfo.error = 'no_safe_segments';
+    debugInfo.rawSegments = rawSegments;
+  }
+
+  if (debugMode) {
+    debugInfo.served = false;
+    debugInfo.result = 'placeholder_svg';
+    return NextResponse.json(debugInfo);
   }
 
   return new NextResponse(PLACEHOLDER_SVG, {
