@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Megaphone } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 import { Header, Footer, BreakingNewsCarousel } from './components';
@@ -37,6 +36,8 @@ export default function Home() {
   const rightFeaturedArticles = featuredRemainingArticles.slice(2, 4);
   const latestPageArticles = getPageItems(articles, latestPage, LATEST_PAGE_SIZE);
   const mostViewedPageArticles = getPageItems(mostViewed, mostViewedPage, MOST_VIEWED_PAGE_SIZE);
+  const homepageTopAdverts = adverts.filter((ad: any) => ad.position === 'homepage_top' && ad.isActive);
+  const homepageBottomAdverts = adverts.filter((ad: any) => ad.position === 'homepage_bottom' && ad.isActive);
 
   const PagerControls = ({
     page,
@@ -133,7 +134,7 @@ export default function Home() {
 
     const fetchAdverts = async () => {
       try {
-        const response = await fetch('/api/admin/adverts');
+        const response = await fetch('/api/adverts');
         const data = await response.json();
         setAdverts(data.data || []);
       } catch (error) {
@@ -255,42 +256,29 @@ export default function Home() {
         </section>
 
         {/* Headline Advertisement Section */}
-        <section className="py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {adverts.filter((ad: any) => ad.position === 'homepage_top' && ad.isActive).length > 0 ? (
-              adverts
-                .filter((ad: any) => ad.position === 'homepage_top' && ad.isActive)
-                .slice(0, 1)
-                .map((advert: any) => (
-                  <a
-                    key={advert.id}
-                    href={advert.url || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block group hover:opacity-90 transition-opacity"
-                  >
-                    <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-28 flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                      <img 
-                        src={advert.imageUrl} 
-                        alt={advert.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  </a>
-                ))
-            ) : (
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-neutral-800 dark:to-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-28 flex items-center justify-center border-2 border-dashed" style={{borderColor: 'rgba(189, 80, 0, 0.3)'}}>
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <Megaphone className="w-5 h-5 text-amber-700 dark:text-amber-400" />
-                    <p className="text-base font-semibold text-neutral-700 dark:text-neutral-300">Kwamamaza</p>
+        {homepageTopAdverts.length > 0 && (
+          <section className="py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              {homepageTopAdverts.slice(0, 1).map((advert: any) => (
+                <a
+                  key={advert.id}
+                  href={advert.url || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block group hover:opacity-90 transition-opacity"
+                >
+                  <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-28 flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                    <img
+                      src={advert.imageUrl}
+                      alt={advert.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
                   </div>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Ihuze n'isi yose! Amamaza hano, ugere ku nzozi zawe!</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Latest Stories Section */}
         <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
@@ -420,42 +408,29 @@ export default function Home() {
         </section>
 
         {/* Homepage Bottom Advertisement */}
-        <section className="py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {adverts.filter((ad: any) => ad.position === 'homepage_bottom' && ad.isActive).length > 0 ? (
-              adverts
-                .filter((ad: any) => ad.position === 'homepage_bottom' && ad.isActive)
-                .slice(0, 1)
-                .map((advert: any) => (
-                  <a
-                    key={advert.id}
-                    href={advert.url || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block group hover:opacity-90 transition-opacity"
-                  >
-                    <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-28 flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                      <img
-                        src={advert.imageUrl}
-                        alt={advert.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  </a>
-                ))
-            ) : (
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-neutral-800 dark:to-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-28 flex items-center justify-center border-2 border-dashed" style={{borderColor: 'rgba(189, 80, 0, 0.3)'}}>
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <Megaphone className="w-5 h-5 text-amber-700 dark:text-amber-400" />
-                    <p className="text-base font-semibold text-neutral-700 dark:text-neutral-300">Kwamamaza</p>
+        {homepageBottomAdverts.length > 0 && (
+          <section className="py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              {homepageBottomAdverts.slice(0, 1).map((advert: any) => (
+                <a
+                  key={advert.id}
+                  href={advert.url || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block group hover:opacity-90 transition-opacity"
+                >
+                  <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-28 flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                    <img
+                      src={advert.imageUrl}
+                      alt={advert.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
                   </div>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Ihuze n'isi yose! Amamaza hano, ugere ku nzozi zawe!</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Newsletter */}
         <section id="newsletter" className="py-10 bg-neutral-100 dark:bg-neutral-900/50 border-t border-neutral-200 dark:border-neutral-800">

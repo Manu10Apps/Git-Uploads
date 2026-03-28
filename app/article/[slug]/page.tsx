@@ -7,7 +7,7 @@ import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 import { Header, FactCheckBox, Footer } from '@/app/components';
 import { ArticleImage } from '@/app/components/ArticleImage';
-import { Bookmark, Copy, Check, Megaphone } from 'lucide-react';
+import { Bookmark, Copy, Check } from 'lucide-react';
 
 interface Article {
   id: string;
@@ -57,6 +57,9 @@ export default function ArticlePage({ params: paramsPromise }: ArticleParams) {
   const [mostViewedLoading, setMostViewedLoading] = useState(true);
   const [adverts, setAdverts] = useState<any[]>([]);
   const [shareUrl, setShareUrl] = useState('');
+  const articleTopAdverts = adverts.filter((ad: any) => ad.position === 'article_top' && ad.isActive);
+  const articleBottomAdverts = adverts.filter((ad: any) => ad.position === 'article_bottom' && ad.isActive);
+  const sidebarAdverts = adverts.filter((ad: any) => ad.position === 'sidebar' && ad.isActive);
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -140,7 +143,7 @@ export default function ArticlePage({ params: paramsPromise }: ArticleParams) {
   useEffect(() => {
     const fetchAdverts = async () => {
       try {
-        const response = await fetch('/api/admin/adverts');
+        const response = await fetch('/api/adverts');
         const data = await response.json();
         setAdverts(data.data || []);
       } catch {}
@@ -331,27 +334,17 @@ export default function ArticlePage({ params: paramsPromise }: ArticleParams) {
           </div>
 
           {/* Article Top Advertisement */}
-          <div className="mb-6 sm:mb-8">
-            {adverts.filter((ad: any) => ad.position === 'article_top' && ad.isActive).length > 0 ? (
-              adverts.filter((ad: any) => ad.position === 'article_top' && ad.isActive).slice(0, 1).map((advert: any) => (
+          {articleTopAdverts.length > 0 && (
+            <div className="mb-6 sm:mb-8">
+              {articleTopAdverts.slice(0, 1).map((advert: any) => (
                 <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block group hover:opacity-90 transition-opacity">
                   <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-24 flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
                     <img src={advert.imageUrl} alt={advert.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                 </a>
-              ))
-            ) : (
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-neutral-800 dark:to-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 flex items-center justify-center border-2 border-dashed" style={{borderColor: 'rgba(189, 80, 0, 0.3)'}}>
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <Megaphone className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-                    <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Kwamamaza</p>
-                  </div>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Ihuze n'isi yose! Amamaza hano, ugere ku nzozi zawe!</p>
-                </div>
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Article Content */}
           <div className="prose dark:prose-dark max-w-none mb-8 sm:mb-10 md:mb-12">
@@ -388,27 +381,17 @@ export default function ArticlePage({ params: paramsPromise }: ArticleParams) {
           )}
 
           {/* Article Bottom Advertisement */}
-          <div className="mb-8 sm:mb-10">
-            {adverts.filter((ad: any) => ad.position === 'article_bottom' && ad.isActive).length > 0 ? (
-              adverts.filter((ad: any) => ad.position === 'article_bottom' && ad.isActive).slice(0, 1).map((advert: any) => (
+          {articleBottomAdverts.length > 0 && (
+            <div className="mb-8 sm:mb-10">
+              {articleBottomAdverts.slice(0, 1).map((advert: any) => (
                 <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block group hover:opacity-90 transition-opacity">
                   <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-24 flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
                     <img src={advert.imageUrl} alt={advert.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                 </a>
-              ))
-            ) : (
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-neutral-800 dark:to-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 flex items-center justify-center border-2 border-dashed" style={{borderColor: 'rgba(189, 80, 0, 0.3)'}}>
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <Megaphone className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-                    <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Kwamamaza</p>
-                  </div>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400">Ihuze n'isi yose! Amamaza hano, ugere ku nzozi zawe!</p>
-                </div>
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Comments Section */}
           <section className="mt-8 sm:mt-10 md:mt-12 bg-neutral-100 dark:bg-neutral-800 p-4 sm:p-6 md:p-8 rounded-lg sm:rounded-md">
@@ -635,27 +618,17 @@ export default function ArticlePage({ params: paramsPromise }: ArticleParams) {
             </div>
 
               {/* Sidebar Advertisement */}
-              <div className="mt-8">
-                {adverts.filter((ad: any) => ad.position === 'sidebar' && ad.isActive).length > 0 ? (
-                  adverts.filter((ad: any) => ad.position === 'sidebar' && ad.isActive).slice(0, 1).map((advert: any) => (
+              {sidebarAdverts.length > 0 && (
+                <div className="mt-8">
+                  {sidebarAdverts.slice(0, 1).map((advert: any) => (
                     <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block group hover:opacity-90 transition-opacity">
                       <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden flex items-center justify-center border border-neutral-200 dark:border-neutral-700" style={{minHeight: '200px'}}>
                         <img src={advert.imageUrl} alt={advert.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       </div>
                     </a>
-                  ))
-                ) : (
-                  <div className="bg-gradient-to-b from-amber-50 to-orange-50 dark:from-neutral-800 dark:to-neutral-800 rounded-lg overflow-hidden flex items-center justify-center border-2 border-dashed" style={{minHeight: '200px', borderColor: 'rgba(189, 80, 0, 0.3)'}}>
-                    <div className="text-center p-4">
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <Megaphone className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-                        <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Kwamamaza</p>
-                      </div>
-                      <p className="text-xs text-neutral-600 dark:text-neutral-400">Ihuze n'isi yose! Amamaza hano, ugere ku nzozi zawe!</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
           </aside>
         </div>
       </main>
