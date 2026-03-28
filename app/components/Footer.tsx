@@ -162,7 +162,7 @@ export function Footer() {
               </svg>
             </a>
             <a
-              href="https://linkedin.com"
+              href="https://www.linkedin.com/in/intambwemedia/"
               target="_blank"
               rel="noopener noreferrer"
               className="social-link p-2 hover:scale-110 transition-transform"
