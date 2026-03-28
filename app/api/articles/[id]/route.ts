@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { prisma } from '@/lib/prisma';
-import { resolveArticleImage } from '@/lib/article-images';
 import { normalizeArticleImageUrl } from '@/lib/utils';
 import { NAV_CATEGORY_SLUGS } from '@/lib/nav-categories';
 
@@ -129,7 +128,7 @@ function toClientArticle(article: FallbackArticle) {
     slug: article.slug,
     excerpt: article.excerpt,
     content: article.content,
-    image: resolveArticleImage(article.image, article.gallery ? JSON.stringify(article.gallery) : null),
+    image: normalizeArticleImageUrl(article.image),
     category: article.category,
     author: article.author,
     publishedAt: article.publishedAt || undefined,
@@ -233,7 +232,7 @@ export async function PATCH(
       slug: updatedArticle.slug,
       excerpt: updatedArticle.excerpt,
       content: updatedArticle.content,
-      image: resolveArticleImage(updatedArticle.image, updatedArticle.gallery),
+      image: normalizeArticleImageUrl(updatedArticle.image),
       category: updatedArticle.category.slug,
       author: updatedArticle.author,
       publishedAt: updatedArticle.publishedAt?.toISOString(),
@@ -480,7 +479,7 @@ export async function GET(
       slug: article.slug,
       excerpt: article.excerpt,
       content: article.content,
-      image: resolveArticleImage(article.image, article.gallery),
+      image: normalizeArticleImageUrl(article.image),
       category: article.category.slug,
       author: article.author,
       publishedAt: article.publishedAt?.toISOString(),

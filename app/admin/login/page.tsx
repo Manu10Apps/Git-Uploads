@@ -354,19 +354,7 @@ export default function LoginPage() {
               : 'Create Account'}
           </button>
 
-          {mode === 'create' && !isLoggedIn && (
-            <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-lg px-4 py-3 text-xs text-amber-700 dark:text-amber-300">
-              <strong>Note:</strong> Creating users requires admin authentication. This form works only for the very first admin account setup. If admin users already exist, please{' '}
-              <button
-                type="button"
-                className="underline font-semibold"
-                onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
-              >
-                log in first
-              </button>
-              , then go to <strong>Admin &rarr; Users</strong> to manage users.
-            </div>
-          )}
+
         </form>
 
         <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
