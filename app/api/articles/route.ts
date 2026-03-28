@@ -3,6 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { prisma } from '@/lib/prisma';
 import { normalizeArticleImageUrl } from '@/lib/utils';
+import { resolveArticleImage } from '@/lib/article-images';
 import { NAV_CATEGORY_SLUGS } from '@/lib/nav-categories';
 
 type FallbackArticle = {
@@ -93,7 +94,7 @@ function toClientArticle(article: FallbackArticle) {
     slug: article.slug,
     excerpt: article.excerpt,
     content: article.content,
-    image: normalizeArticleImageUrl(article.image),
+    image: resolveArticleImage(article.image, typeof article.gallery === 'string' ? article.gallery : JSON.stringify(article.gallery || [])),
     category: article.category,
     author: article.author,
     publishedAt: article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : undefined,
@@ -180,7 +181,7 @@ export async function GET(request: NextRequest) {
       slug: article.slug,
       excerpt: article.excerpt,
       content: article.content,
-          image: normalizeArticleImageUrl(article.image),
+          image: resolveArticleImage(article.image, article.gallery),
       category: article.category.slug,
       author: article.author,
       publishedAt: article.publishedAt?.toLocaleDateString(),
@@ -386,7 +387,7 @@ export async function POST(request: NextRequest) {
           title: article.title,
           slug: article.slug,
           excerpt: article.excerpt,
-          image: normalizeArticleImageUrl(article.image),
+          image: resolveArticleImage(article.image, article.gallery),
           category: article.category.slug,
           author: article.author,
           publishedAt: article.publishedAt?.toLocaleDateString(),

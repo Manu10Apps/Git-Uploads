@@ -173,8 +173,7 @@ export default function Home() {
                 {/* Main Featured Article - Left Column */}
                 <div className="md:col-span-2">
                   <article className="flex flex-col h-full">
-                    {featuredArticle.image && (
-                      <Link href={`/article/${featuredArticle.slug}`}>
+                    <Link href={`/article/${featuredArticle.slug}`}>
                         <div className="mb-4 rounded overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 h-48 sm:h-64 md:h-80 lg:h-96 cursor-pointer hover:opacity-90 transition-opacity">
                           <ArticleImage
                             src={featuredArticle.image}
@@ -183,7 +182,6 @@ export default function Home() {
                           />
                         </div>
                       </Link>
-                    )}
                     <div className="flex-grow">
                       <h3 className="text-xl font-serif font-bold text-neutral-900 dark:text-white mb-2 leading-tight">
                         <Link href={`/article/${featuredArticle.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
@@ -203,8 +201,7 @@ export default function Home() {
                 <div className="md:col-span-1 flex flex-col gap-6">
                   {secondaryFeaturedArticles.map((article) => (
                     <article key={article.id} className="pb-4 border-b border-neutral-200 dark:border-neutral-700 last:border-0">
-                      {article.image && (
-                        <Link href={`/article/${article.slug}`}>
+                      <Link href={`/article/${article.slug}`}>
                           <div className="mb-3 rounded overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-32 cursor-pointer hover:opacity-90 transition-opacity">
                             <ArticleImage
                               src={article.image}
@@ -213,7 +210,6 @@ export default function Home() {
                             />
                           </div>
                         </Link>
-                      )}
                       <h4 className="text-base font-serif font-bold text-neutral-900 dark:text-white mb-1 leading-tight text-justify line-clamp-3">
                         <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
                           {article.title}
@@ -227,8 +223,7 @@ export default function Home() {
                 <div className="md:col-span-1 flex flex-col gap-4">
                   {rightFeaturedArticles.map((article) => (
                     <article key={article.id} className="pb-4 border-b border-neutral-200 dark:border-neutral-700 last:border-0">
-                      {article.image && (
-                        <Link href={`/article/${article.slug}`}>
+                      <Link href={`/article/${article.slug}`}>
                           <div className="mb-3 rounded overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-32 cursor-pointer hover:opacity-90 transition-opacity">
                             <ArticleImage
                               src={article.image}
@@ -237,7 +232,6 @@ export default function Home() {
                             />
                           </div>
                         </Link>
-                      )}
                       <h4 className="text-base font-serif font-bold text-neutral-900 dark:text-white mb-1 leading-tight text-justify line-clamp-3">
                         <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
                           {article.title}
@@ -294,8 +288,7 @@ export default function Home() {
                     key={article.id}
                     className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-200 dark:hover:border-red-900/50 transition-all duration-300 cursor-pointer hover:shadow-lg"
                   >
-                    {article.image && (
-                      <Link href={`/article/${article.slug}`}>
+                    <Link href={`/article/${article.slug}`}>
                         <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-24">
                           <ArticleImage
                             src={article.image}
@@ -304,7 +297,6 @@ export default function Home() {
                           />
                         </div>
                       </Link>
-                    )}
                     <div className="p-3 sm:p-4 md:p-6">
                       <div className="text-red-600 dark:text-red-500 text-xs font-semibold tracking-widest mb-2 uppercase">
                         {article.category}
@@ -359,8 +351,7 @@ export default function Home() {
                     key={article.id}
                     className="group border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden bg-white dark:bg-neutral-800 hover:shadow-lg transition-all duration-300"
                   >
-                    {article.image && (
-                      <Link href={`/article/${article.slug}`}>
+                    <Link href={`/article/${article.slug}`}>
                         <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-700 h-56 cursor-pointer">
                           <ArticleImage
                             src={article.image}
@@ -369,7 +360,6 @@ export default function Home() {
                           />
                         </div>
                       </Link>
-                    )}
                     <div className="p-5">
                       <div className="text-red-600 dark:text-red-500 text-xs font-semibold tracking-widest mb-2 uppercase">
                         {article.category}

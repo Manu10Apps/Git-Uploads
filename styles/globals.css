@@ -219,9 +219,9 @@ button:disabled {
 }
 
 .social-link {
-  color: white !important;
+  color: #a3a3a3 !important;
   transition: color 0.3s ease-out;
-  fill: white;
+  fill: #a3a3a3;
 }
 
 .social-link:hover {
@@ -230,8 +230,8 @@ button:disabled {
 }
 
 .dark .social-link {
-  color: white !important;
-  fill: white;
+  color: #d4d4d4 !important;
+  fill: #d4d4d4;
 }
 
 .dark .social-link:hover {

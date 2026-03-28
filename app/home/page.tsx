@@ -92,15 +92,13 @@ export default function HomePage() {
                 {/* Main Featured Article - Spans 4 columns */}
                 <div className="md:col-span-4">
                   <article className="flex flex-col h-full">
-                    {articles[0]?.image && (
-                      <div className="mb-4 rounded overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 h-48 md:h-80">
+                    <div className="mb-4 rounded overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 h-48 md:h-80">
                         <ArticleImage
-                          src={articles[0].image}
-                          alt={articles[0].title}
+                          src={articles[0]?.image}
+                          alt={articles[0]?.title}
                           className="w-full h-full object-cover"
                         />
                       </div>
-                    )}
                     <div className="flex-grow">
                       <div className="text-red-700 text-xs font-semibold tracking-widest mb-2">
                         INKURU ZIGEZWEHO
@@ -126,8 +124,7 @@ export default function HomePage() {
                 <div className="md:col-span-2 flex flex-col gap-3 md:gap-6">
                   {articles.slice(1, 3).map((article) => (
                     <article key={article.id} className="flex flex-col rounded overflow-hidden bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
-                      {article.image && (
-                        <Link href={`/article/${article.slug}`}>
+                      <Link href={`/article/${article.slug}`}>
                           <div className="flex-shrink-0 w-full h-40 md:h-56 rounded-t overflow-hidden bg-neutral-100 dark:bg-neutral-800 cursor-pointer hover:opacity-90 transition-opacity">
                             <ArticleImage
                               src={article.image}
@@ -136,7 +133,6 @@ export default function HomePage() {
                             />
                           </div>
                         </Link>
-                      )}
                       <div className="flex-grow p-4">
                         <h4 className="text-base md:text-lg font-serif font-bold text-neutral-900 dark:text-white mb-2 leading-tight line-clamp-2">
                           <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">

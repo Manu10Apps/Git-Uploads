@@ -110,15 +110,13 @@ export default function InvestigationsPage() {
                   onClick={() => router.push(`/article/${article.slug}`)}
                   className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-200 dark:hover:border-red-900/50 transition-colors cursor-pointer hover:shadow-lg"
                 >
-                  {article.image && (
-                    <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48">
+                  <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48">
                       <img
                         src={article.image}
                         alt={article.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
-                  )}
                   <div className="p-6">
                     <div className="text-red-700 dark:text-red-600 text-xs font-semibold tracking-widest mb-2 uppercase">
                       Inkuru icukumbuye

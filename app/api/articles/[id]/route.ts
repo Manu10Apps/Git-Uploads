@@ -3,6 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { prisma } from '@/lib/prisma';
 import { normalizeArticleImageUrl } from '@/lib/utils';
+import { resolveArticleImage } from '@/lib/article-images';
 import { NAV_CATEGORY_SLUGS } from '@/lib/nav-categories';
 
 /** Lookup the requesting admin user's role and name from DB, if x-admin-email header present */
@@ -128,7 +129,7 @@ function toClientArticle(article: FallbackArticle) {
     slug: article.slug,
     excerpt: article.excerpt,
     content: article.content,
-    image: normalizeArticleImageUrl(article.image),
+    image: resolveArticleImage(article.image, typeof article.gallery === 'string' ? article.gallery : JSON.stringify(article.gallery || [])),
     category: article.category,
     author: article.author,
     publishedAt: article.publishedAt || undefined,
@@ -240,7 +241,7 @@ export async function PATCH(
       slug: updatedArticle.slug,
       excerpt: updatedArticle.excerpt,
       content: updatedArticle.content,
-      image: normalizeArticleImageUrl(updatedArticle.image),
+      image: resolveArticleImage(updatedArticle.image, updatedArticle.gallery),
       category: updatedArticle.category.slug,
       author: updatedArticle.author,
       publishedAt: updatedArticle.publishedAt?.toISOString(),
@@ -487,7 +488,7 @@ export async function GET(
       slug: article.slug,
       excerpt: article.excerpt,
       content: article.content,
-      image: normalizeArticleImageUrl(article.image),
+      image: resolveArticleImage(article.image, article.gallery),
       category: article.category.slug,
       author: article.author,
       publishedAt: article.publishedAt?.toISOString(),

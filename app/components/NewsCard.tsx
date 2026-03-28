@@ -220,7 +220,7 @@ export function NewsCard({
                       e.stopPropagation();
                       handleSocialShare('twitter');
                     }}
-                    className="p-2 hover:bg-white/50 dark:hover:bg-neutral-700/50 rounded transition-colors"
+                    className="p-2 text-neutral-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-600 hover:bg-white/50 dark:hover:bg-neutral-700/50 rounded transition-colors"
                     aria-label="Share on X"
                     title="Share on X"
                   >
@@ -237,7 +237,7 @@ export function NewsCard({
                       e.stopPropagation();
                       handleSocialShare('facebook');
                     }}
-                    className="p-2 hover:bg-white/50 dark:hover:bg-neutral-700/50 rounded transition-colors"
+                    className="p-2 text-neutral-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-600 hover:bg-white/50 dark:hover:bg-neutral-700/50 rounded transition-colors"
                     aria-label="Share on Facebook"
                     title="Share on Facebook"
                   >
@@ -254,7 +254,7 @@ export function NewsCard({
                       e.stopPropagation();
                       handleSocialShare('linkedin');
                     }}
-                    className="p-2 hover:bg-white/50 dark:hover:bg-neutral-700/50 rounded transition-colors"
+                    className="p-2 text-neutral-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-600 hover:bg-white/50 dark:hover:bg-neutral-700/50 rounded transition-colors"
                     aria-label="Share on LinkedIn"
                     title="Share on LinkedIn"
                   >
