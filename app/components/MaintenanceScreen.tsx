@@ -17,7 +17,7 @@ export function MaintenanceScreen({ message }: MaintenanceScreenProps) {
           <div className="grid gap-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-start">
             <div>
               <h1 className="max-w-2xl text-2xl font-serif font-bold leading-tight sm:text-3xl">
-                Turimo gukora ivugurura ku rubuga.
+                Turimo gukora ivugurura ry'uru rubuga.
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-neutral-700 dark:text-neutral-300 sm:text-lg">
                 {message}
