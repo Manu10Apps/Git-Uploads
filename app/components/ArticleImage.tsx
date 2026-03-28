@@ -4,6 +4,13 @@ import React from 'react';
 import { normalizeArticleImageUrl } from '@/lib/utils';
 
 const FALLBACK_ARTICLE_IMAGE = '/uploads/article-fallback.svg';
+const RETRY_DELAY_MS = 1500;
+
+function withRetryQuery(url: string, retryCount: number): string {
+  const [baseWithQuery, hash = ''] = url.split('#');
+  const separator = baseWithQuery.includes('?') ? '&' : '?';
+  return `${baseWithQuery}${separator}img_retry=${retryCount}${hash ? `#${hash}` : ''}`;
+}
 
 type ArticleImageProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
   src?: string | null;
@@ -41,15 +48,26 @@ export function ArticleImage({
 
   const handleError = (event: React.SyntheticEvent<HTMLImageElement>) => {
     const normalizedOriginalSrc = normalizeArticleImageUrl(src);
-    // First failure: retry once after 2s to recover from transient hot-reload glitches
+    // First failure: retry once after a short delay to recover from transient hot-reload/network glitches.
     if (!hasErrored && normalizedOriginalSrc && retryCountRef.current < 1) {
+      if (retryTimerRef.current) {
+        return;
+      }
+
       retryCountRef.current += 1;
       retryTimerRef.current = setTimeout(() => {
-        setCurrentSrc(`${normalizedOriginalSrc}?r=${retryCountRef.current}`);
-      }, 2000);
+        retryTimerRef.current = null;
+        setCurrentSrc(withRetryQuery(normalizedOriginalSrc, retryCountRef.current));
+      }, RETRY_DELAY_MS);
       return;
     }
-    // Retry also failed — show fallback permanently
+
+    // Do not lock to fallback while a retry is still pending.
+    if (retryTimerRef.current) {
+      return;
+    }
+
+    // Retry also failed — show fallback permanently.
     if (!hasErrored && currentSrc !== fallbackSrc) {
       setHasErrored(true);
       setCurrentSrc(fallbackSrc);
