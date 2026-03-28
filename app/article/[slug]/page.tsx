@@ -1,638 +1,100 @@
-'use client';
+import type { Metadata } from 'next';
+import { prisma } from '@/lib/prisma';
+import { normalizeArticleImageUrl } from '@/lib/utils';
+import ArticlePageClient from './ArticlePageClient';
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useAppStore } from '@/lib/store';
-import { getTranslation } from '@/lib/translations';
-import { Header, FactCheckBox, Footer } from '@/app/components';
-import { ArticleImage } from '@/app/components/ArticleImage';
-import { Bookmark, Copy, Check } from 'lucide-react';
+const SITE_URL = 'https://intambwemedia.com';
+const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
 
-interface Article {
-  id: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  author: string;
-  category: string;
-  tags: string[];
-  image: string;
-  slug: string;
-  publishedAt: string;
-  gallery?: Array<{ url: string; caption: string }>;
+interface PageProps {
+  params: Promise<{ slug: string }>;
 }
 
-interface ArticleParams {
-  params: Promise<{
-    slug: string;
-  }>;
-}
-
-const formatDateInKinyarwanda = (dateString: string) => {
-  const date = new Date(dateString);
-  const months = [
-    'Mutarama', 'Gashyantare', 'Werurwe', 'Mata', 'Gicurasi', 'Kamena',
-    'Nyakanga', 'Kanama', 'Nzeri', 'Ukwakira', 'Ugushyingo', 'Ukuboza'
-  ];
-  return `Tariki ya ${date.getDate()} ${months[date.getMonth()]}, ${date.getFullYear()}`;
-};
-
-export default function ArticlePage({ params: paramsPromise }: ArticleParams) {
-  const params = React.use(paramsPromise);
-  const router = useRouter();
-  const { language } = useAppStore();
-  const t = getTranslation(language);
-  const [isSaved, setIsSaved] = React.useState(false);
-  const [linkCopied, setLinkCopied] = React.useState(false);
-  const [article, setArticle] = useState<Article | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState({ name: '', email: '', comment: '' });
-  const [comments, setComments] = useState<Array<{ name: string; email: string; comment: string }>>([]);
-  const [recentArticles, setRecentArticles] = useState<Article[]>([]);
-  const [recentLoading, setRecentLoading] = useState(true);
-  const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
-  const [relatedLoading, setRelatedLoading] = useState(true);
-  const [mostViewedArticles, setMostViewedArticles] = useState<Article[]>([]);
-  const [mostViewedLoading, setMostViewedLoading] = useState(true);
-  const [adverts, setAdverts] = useState<any[]>([]);
-  const [shareUrl, setShareUrl] = useState('');
-  const articleTopAdverts = adverts.filter((ad: any) => ad.position === 'article_top' && ad.isActive);
-  const articleBottomAdverts = adverts.filter((ad: any) => ad.position === 'article_bottom' && ad.isActive);
-  const sidebarAdverts = adverts.filter((ad: any) => ad.position === 'sidebar' && ad.isActive);
-
-  useEffect(() => {
-    const fetchArticle = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/articles');
-        const result = await response.json();
-        const articles = result.data || [];
-        const foundArticle = articles.find((a: Article) => a.slug === params.slug);
-        setArticle(foundArticle || null);
-      } catch (error) {
-        console.error('Failed to fetch article:', error);
-        setArticle(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchArticle();
-  }, [params.slug]);
-
-  useEffect(() => {
-    const fetchRecentArticles = async () => {
-      try {
-        setRecentLoading(true);
-        const response = await fetch('/api/articles?limit=4');
-        const result = await response.json();
-        const articles = result.data || [];
-        setRecentArticles(articles.slice(0, 4));
-      } catch (error) {
-        console.error('Failed to fetch recent articles:', error);
-        setRecentArticles([]);
-      } finally {
-        setRecentLoading(false);
-      }
-    };
-
-    fetchRecentArticles();
-  }, []);
-
-  useEffect(() => {
-    if (!article) return;
-    const fetchRelatedArticles = async () => {
-      try {
-        setRelatedLoading(true);
-        const response = await fetch(`/api/articles?category=${article.category}&limit=6`);
-        const result = await response.json();
-        const articles = result.data || [];
-        const filtered = articles.filter((a: Article) => a.slug !== article.slug);
-        setRelatedArticles(filtered.slice(0, 3));
-      } catch (error) {
-        console.error('Failed to fetch related articles:', error);
-        setRelatedArticles([]);
-      } finally {
-        setRelatedLoading(false);
-      }
-    };
-
-    fetchRelatedArticles();
-  }, [article?.category, article?.slug]);
-
-  useEffect(() => {
-    const fetchMostViewedArticles = async () => {
-      try {
-        setMostViewedLoading(true);
-        const response = await fetch('/api/articles?limit=3&featured=true');
-        const result = await response.json();
-        const articles = result.data || [];
-        setMostViewedArticles(articles.slice(0, 3));
-      } catch (error) {
-        console.error('Failed to fetch most viewed articles:', error);
-        setMostViewedArticles([]);
-      } finally {
-        setMostViewedLoading(false);
-      }
-    };
-
-    fetchMostViewedArticles();
-  }, []);
-
-  useEffect(() => {
-    const fetchAdverts = async () => {
-      try {
-        const response = await fetch('/api/adverts');
-        const data = await response.json();
-        setAdverts(data.data || []);
-      } catch {}
-    };
-    fetchAdverts();
-  }, []);
-
-  useEffect(() => {
-    setShareUrl(window.location.href);
-  }, []);
-
-  const shareTitle = article?.title || 'Amakuru';
-
-  const shareLinks = {
-    twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`,
-    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-  };
-
-  const handleCommentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.name && formData.email && formData.comment) {
-      setComments([...comments, formData]);
-      setFormData({ name: '', email: '', comment: '' });
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy link:', err);
-    }
-  };
-
-  if (loading) {
-    return (
-      <>
-        <Header />
-        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
-          <div className="text-center">
-            <p className="text-neutral-600 dark:text-neutral-400">Inkuru ziri gushakishwa...</p>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
+async function getArticleBySlug(slug: string) {
+  try {
+    const article = await prisma.article.findUnique({
+      where: { slug },
+      select: {
+        title: true,
+        excerpt: true,
+        image: true,
+        author: true,
+        seoTitle: true,
+        seoDescription: true,
+        category: { select: { slug: true, name: true } },
+        publishedAt: true,
+      },
+    });
+    return article;
+  } catch {
+    return null;
   }
+}
+
+function resolveAbsoluteImageUrl(image: string | null | undefined): string {
+  const normalized = normalizeArticleImageUrl(image);
+  if (!normalized) return DEFAULT_OG_IMAGE;
+
+  // Already absolute
+  if (/^https?:\/\//i.test(normalized)) return normalized;
+
+  // Relative path → absolute
+  return `${SITE_URL}${normalized.startsWith('/') ? '' : '/'}${normalized}`;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const article = await getArticleBySlug(slug);
 
   if (!article) {
-    return (
-      <>
-        <Header />
-        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4 text-neutral-900 dark:text-white">Article Not Found</h1>
-            <Link href="/" className="text-red-600 hover:text-red-700 dark:text-red-600 dark:hover:text-red-500">
-              Return to Home
-            </Link>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
+    return {
+      title: 'Inkuru Ntiyabonetse | Intambwe Media',
+      description: 'Inkuru ushaka ntiyabonetse.',
+    };
   }
 
-  return (
-    <>
-      <Header />
-      <main className="min-h-screen bg-white dark:bg-neutral-950">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
-          {/* Main Article Content - 2/3 width on desktop */}
-          <article className="lg:col-span-2">
-            {/* Title Section */}
-            <header className="mb-6 sm:mb-8">
-            <div className="mb-3 sm:mb-4">
-              <span className="inline-block px-2 sm:px-3 py-1 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-300 rounded-full text-xs sm:text-sm font-semibold capitalize">
-                {article.category}
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight mb-3 sm:mb-4 text-neutral-900 dark:text-white text-justify">
-              {article.title}
-            </h1>
-            <p className="text-base sm:text-lg md:text-xl text-neutral-600 dark:text-neutral-400 mb-4 sm:mb-6 text-justify">
-              {article.excerpt}
-            </p>
+  const title = article.seoTitle || article.title;
+  const description = article.seoDescription || article.excerpt;
+  const imageUrl = resolveAbsoluteImageUrl(article.image);
+  const articleUrl = `${SITE_URL}/article/${slug}`;
 
-            {/* Meta Information */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 pb-4 sm:pb-6 border-b border-neutral-200 dark:border-neutral-800">
-              {/* Author */}
-              <div>
-                <p className="font-semibold text-sm sm:text-base text-neutral-900 dark:text-white">Yanditswe na {article.author}</p>
-                <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400">
-                  {formatDateInKinyarwanda(article.publishedAt)}
-                </p>
-              </div>
+  return {
+    title: `${title} | Intambwe Media`,
+    description,
+    authors: [{ name: article.author }],
+    openGraph: {
+      type: 'article',
+      locale: 'ky_RW',
+      url: articleUrl,
+      siteName: 'Intambwe Media',
+      title,
+      description,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+      publishedTime: article.publishedAt?.toISOString(),
+      authors: [article.author],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      site: '@intambwemedias',
+      creator: '@intambwemedias',
+      title,
+      description,
+      images: [imageUrl],
+    },
+    alternates: {
+      canonical: articleUrl,
+    },
+  };
+}
 
-              {/* Actions */}
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 sm:ml-auto">
-                <button
-                  onClick={() => setIsSaved(!isSaved)}
-                  className="p-2 sm:p-2.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors"
-                  aria-label="Bookmark"
-                  title="Save article"
-                >
-                  <Bookmark
-                    className="w-5 h-5 sm:w-6 sm:h-6"
-                    fill={isSaved ? 'currentColor' : 'none'}
-                  />
-                </button>
-                
-                {/* Social Share Links */}
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 pl-0 sm:pl-4 border-l-0 sm:border-l border-neutral-200 dark:border-neutral-700">
-                  {/* X Share */}
-                  <a
-                    href={shareLinks.twitter}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-red-600 dark:hover:text-red-600 transition-colors"
-                    aria-label="Share on X"
-                    title="Share on X"
-                  >
-                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.657l-5.223-6.831-5.97 6.831H2.423l7.723-8.835L1.457 2.25h6.888l4.722 6.236 5.454-6.236zM17.15 20.005h1.828L6.883 3.996H5.017l12.133 16.009z"/>
-                    </svg>
-                  </a>
-
-                  {/* Facebook Share */}
-                  <a
-                    href={shareLinks.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-red-600 dark:hover:text-red-600 transition-colors"
-                    aria-label="Share on Facebook"
-                    title="Share on Facebook"
-                  >
-                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                  </a>
-
-                  {/* LinkedIn Share */}
-                  <a
-                    href={shareLinks.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-red-600 dark:hover:text-red-600 transition-colors"
-                    aria-label="Share on LinkedIn"
-                    title="Share on LinkedIn"
-                  >
-                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"/>
-                    </svg>
-                  </a>
-
-                  {/* Copy Link */}
-                  <button
-                    onClick={handleCopyLink}
-                    className="hover:text-red-600 dark:hover:text-red-600 transition-colors"
-                    aria-label="Copy link"
-                    title={linkCopied ? "Link copied!" : "Copy link"}
-                  >
-                    {linkCopied ? (
-                      <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
-                    ) : (
-                      <Copy className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </header>
-
-          {/* Featured Image */}
-          <div className="mb-6 sm:mb-8 md:mb-12 rounded-lg sm:rounded-xl overflow-hidden">
-            <ArticleImage
-              src={article.image}
-              alt={article.title}
-              className="w-full h-96 md:h-[500px] object-cover"
-            />
-          </div>
-
-          {/* Article Top Advertisement */}
-          {articleTopAdverts.length > 0 && (
-            <div className="mb-6 sm:mb-8">
-              {articleTopAdverts.slice(0, 1).map((advert: any) => (
-                <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block group hover:opacity-90 transition-opacity">
-                  <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-24 flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                    <img src={advert.imageUrl} alt={advert.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                  </div>
-                </a>
-              ))}
-            </div>
-          )}
-
-          {/* Article Content */}
-          <div className="prose dark:prose-dark max-w-none mb-8 sm:mb-10 md:mb-12">
-            <div className="text-sm sm:text-base text-neutral-700 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap text-justify">
-              {article.content}
-            </div>
-          </div>
-
-          {/* Gallery Section */}
-          {article.gallery && article.gallery.length > 0 && (
-            <div className="mb-8 sm:mb-10 md:mb-12">
-              <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white mb-4 sm:mb-6">
-                Ifoto z'Inkuru
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {article.gallery.map((item, index) => (
-                  <div key={index} className="rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 hover:shadow-lg transition-shadow">
-                    <ArticleImage
-                      src={item.url}
-                      alt={item.caption || `Gallery image ${index + 1}`}
-                      className="w-full h-48 sm:h-56 object-cover"
-                    />
-                    {item.caption && (
-                      <div className="p-3 sm:p-4 bg-neutral-50 dark:bg-neutral-800">
-                        <p className="text-sm text-neutral-700 dark:text-neutral-300 italic">
-                          {item.caption}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Article Bottom Advertisement */}
-          {articleBottomAdverts.length > 0 && (
-            <div className="mb-8 sm:mb-10">
-              {articleBottomAdverts.slice(0, 1).map((advert: any) => (
-                <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block group hover:opacity-90 transition-opacity">
-                  <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-24 flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                    <img src={advert.imageUrl} alt={advert.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                  </div>
-                </a>
-              ))}
-            </div>
-          )}
-
-          {/* Comments Section */}
-          <section className="mt-8 sm:mt-10 md:mt-12 bg-neutral-100 dark:bg-neutral-800 p-4 sm:p-6 md:p-8 rounded-lg sm:rounded-md">
-            <h2 className="mb-4 sm:mb-6 text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">Ibitekerezo ({comments.length})</h2>
-            <div>
-              {/* Comment Form */}
-              <form className="mb-3 sm:mb-6" onSubmit={handleCommentSubmit}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-4">
-                  <div>
-                    <label htmlFor="name" className="block mb-2 text-sm font-medium text-neutral-900 dark:text-white sr-only">
-                      Name
-                    </label>
-                    <input
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 text-neutral-900 dark:text-white text-sm rounded-lg focus:ring-0 focus:outline-none block w-full p-2.5"
-                      placeholder="Andika izina ryawe"
-                      required
-                      pattern="[A-Za-z\s]{3,20}"
-                      type="text"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block mb-2 text-sm font-medium text-neutral-900 dark:text-white sr-only">
-                      Email
-                    </label>
-                    <input
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 text-neutral-900 dark:text-white text-sm rounded-lg focus:ring-0 focus:outline-none block w-full p-2.5"
-                      placeholder="Andika Imeli yawe"
-                      required
-                      pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
-                      type="email"
-                    />
-                  </div>
-                </div>
-                <div className="py-2 px-4 mb-4 bg-white dark:bg-neutral-700 rounded-lg rounded-t-lg border border-neutral-200 dark:border-neutral-600">
-                  <label htmlFor="comment" className="sr-only">
-                    Your comment
-                  </label>
-                  <textarea
-                    id="comment"
-                    name="comment"
-                    value={formData.comment}
-                    onChange={handleInputChange}
-                    rows={6}
-                    className="px-4 py-2 w-full text-sm text-neutral-900 dark:text-white border-0 focus:ring-0 focus:outline-none resize-none bg-transparent"
-                    placeholder="Andika igitekerezo..."
-                    required
-                  />
-                </div>
-                <div className="flex justify-end">
-                  <button
-                    className="rounded-md focus:opacity-90 hover:opacity-95 transition duration-300 flex flex-nowrap text-center items-center py-2 px-4 text-base bg-red-700 hover:bg-red-800 text-white disabled:bg-neutral-400"
-                    type="submit"
-                  >
-                    Ohereza Igitekerezo
-                  </button>
-                </div>
-              </form>
-
-              {/* Comments List */}
-              <ul className="flex flex-col gap-4 ml-2 my-2">
-                {comments.map((comment, index) => (
-                  <li key={index} className="border-l-4 border-red-600 pl-4 py-2">
-                    <p className="font-semibold text-neutral-900 dark:text-white">{comment.name}</p>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-2">{comment.email}</p>
-                    <p className="text-neutral-700 dark:text-neutral-300">{comment.comment}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-
-          {/* Related Articles - Same Category Stories - INKURU BIFITANYE ISANO */}
-          <section className="mt-16 border-t border-neutral-200 dark:border-neutral-700 pt-12">
-            <div className="mb-10">
-              <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">INKURU BIFITANYE ISANO</div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {relatedLoading ? (
-                <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-100 dark:hover:border-red-900/50 transition-colors">
-                  <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru ziri gushakishwa...</p>
-                  </div>
-                </article>
-              ) : relatedArticles.length > 0 ? (
-                relatedArticles.map((relatedArticle) => (
-                  <article 
-                    key={relatedArticle.slug}
-                    onClick={() => router.push(`/article/${relatedArticle.slug}`)}
-                    className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-100 dark:hover:border-red-900/50 transition-colors cursor-pointer hover:shadow-lg"
-                  >
-                      <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48">
-                        <ArticleImage
-                          src={relatedArticle.image}
-                          alt={relatedArticle.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-600 transition-colors mb-2">
-                          {relatedArticle.title}
-                        </h3>
-                        <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                          {formatDateInKinyarwanda(relatedArticle.publishedAt)}
-                        </p>
-                      </div>
-                    </article>
-                  ))
-              ) : (
-                <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900">
-                  <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">Nta bikuru byashyiriwe</p>
-                  </div>
-                </article>
-              )}
-            </div>
-          </section>
-
-          {/* Most Viewed Articles - IZIKUNZWE CYANE */}
-          <section className="mt-16 border-t border-neutral-200 dark:border-neutral-700 pt-12">
-            <div className="mb-10">
-              <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">IZIKUNZWE CYANE</div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {mostViewedLoading ? (
-                <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-100 dark:hover:border-red-900/50 transition-colors">
-                  <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru ziri gushakishwa...</p>
-                  </div>
-                </article>
-              ) : mostViewedArticles.length > 0 ? (
-                mostViewedArticles.map((viewedArticle) => (
-                  <article
-                    key={viewedArticle.slug}
-                    onClick={() => router.push(`/article/${viewedArticle.slug}`)}
-                    className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-100 dark:hover:border-red-900/50 transition-colors cursor-pointer hover:shadow-lg"
-                  >
-                      <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48">
-                        <ArticleImage
-                          src={viewedArticle.image}
-                          alt={viewedArticle.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-600 transition-colors mb-2">
-                          {viewedArticle.title}
-                        </h3>
-                        <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                          {formatDateInKinyarwanda(viewedArticle.publishedAt)}
-                        </p>
-                      </div>
-                    </article>
-                  ))
-              ) : (
-                <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900">
-                  <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">Nta bikuru byashyiriwe</p>
-                  </div>
-                </article>
-              )}
-            </div>
-          </section>
-
-          {/* Related Articles - Can be added later by fetching articles with same category */}
-          </article>
-
-          {/* Sidebar - Recent Stories - 1/3 width on desktop */}
-          <aside className="lg:col-span-1">
-            <div className="sticky top-24">
-              {/* Recent Stories Section - INKURU ZIHERUKA */}
-              <section className="border-t border-neutral-200 dark:border-neutral-700 pt-12">
-                <div className="mb-10">
-                  <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">INKURU ZIHERUKA</div>
-                </div>
-                <div className="grid grid-cols-1 gap-8">
-                  {recentLoading ? (
-                    <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-100 dark:hover:border-red-900/50 transition-colors">
-                      <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru ziri gushakishwa...</p>
-                      </div>
-                    </article>
-                  ) : recentArticles.length > 0 ? (
-                    recentArticles.map((recentArticle) => (
-                      <article 
-                        key={recentArticle.slug}
-                        onClick={() => router.push(`/article/${recentArticle.slug}`)}
-                        className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-100 dark:hover:border-red-900/50 transition-colors cursor-pointer hover:shadow-lg"
-                      >
-                        <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-32">
-                          <ArticleImage
-                            src={recentArticle.image}
-                            alt={recentArticle.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                        <div className="p-3">
-                          <h3 className="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-600 transition-colors">
-                            {recentArticle.title}
-                          </h3>
-                          <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
-                            {formatDateInKinyarwanda(recentArticle.publishedAt)}
-                          </p>
-                        </div>
-                      </article>
-                    ))
-                  ) : (
-                    <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900">
-                      <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Nta bikuru byashyiriwe</p>
-                      </div>
-                    </article>
-                  )}
-                </div>
-              </section>
-
-            </div>
-
-              {/* Sidebar Advertisement */}
-              {sidebarAdverts.length > 0 && (
-                <div className="mt-8">
-                  {sidebarAdverts.slice(0, 1).map((advert: any) => (
-                    <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block group hover:opacity-90 transition-opacity">
-                      <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden flex items-center justify-center border border-neutral-200 dark:border-neutral-700" style={{minHeight: '200px'}}>
-                        <img src={advert.imageUrl} alt={advert.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              )}
-          </aside>
-        </div>
-      </main>
-      <Footer />
-    </>
-  );
+export default async function ArticlePage({ params }: PageProps) {
+  const { slug } = await params;
+  return <ArticlePageClient slug={slug} />;
 }
