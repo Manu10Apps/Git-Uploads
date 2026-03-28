@@ -29,8 +29,19 @@ function isMissingLocalUpload(url: string | null): boolean {
   }
 
   const filename = url.replace(/^\/uploads\//, '');
-  const filePath = path.join(getUploadsDir(), filename);
-  return !existsSync(filePath);
+
+  // Check both UPLOAD_DIR and public/uploads/ (for git-tracked images)
+  const primaryPath = path.join(getUploadsDir(), filename);
+  if (existsSync(primaryPath)) {
+    return false;
+  }
+
+  const publicPath = path.join(process.cwd(), 'public', 'uploads', filename);
+  if (existsSync(publicPath)) {
+    return false;
+  }
+
+  return true;
 }
 
 function isExternalUrl(url: string | null): boolean {
