@@ -227,7 +227,7 @@ export function Header() {
                 {language === 'ky' ? 'Iyandikishe' : t.nav.subscribe}
               </Link>
             </div>
-            {navItems.map((item) => {
+            {NAV_CATEGORY_ITEMS.map((item) => {
               const parts = item.key.split('.');
               const label = (t as any)[parts[0]]?.[parts[1]] || item.key;
               return (
