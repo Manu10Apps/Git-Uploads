@@ -17,7 +17,7 @@ export default function TermsPage() {
         <section className="bg-gradient-to-r from-primary-600 to-primary-500 text-white py-3">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 className="text-4xl font-bold mb-4">Amategeko n'Amabwiriza</h1>
-            <p className="text-lg text-primary-100">Guhera kuwa 23 Gashyantare 2026</p>
+            <p className="text-lg text-primary-100"> Guhera muri 2026</p>
           </div>
         </section>
 
