@@ -7,6 +7,7 @@ import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 import { Header, FactCheckBox, Footer } from '@/app/components';
 import { ArticleImage } from '@/app/components/ArticleImage';
+import { ArticleContent } from '@/app/components/ArticleContent';
 import { Bookmark, Copy, Check } from 'lucide-react';
 
 interface Article {
@@ -360,9 +361,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
 
           {/* Article Content */}
           <div className="prose dark:prose-dark max-w-none mb-8 sm:mb-10 md:mb-12">
-            <div className="text-sm sm:text-base text-neutral-700 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap text-justify">
-              {article.content}
-            </div>
+            <ArticleContent content={article.content} />
           </div>
 
           {/* Gallery Section */}
