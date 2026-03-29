@@ -8,6 +8,30 @@ import { normalizeArticleImageUrl } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
+async function getAuthorizedAdmin(request: NextRequest) {
+  const requesterEmail = request.headers.get('x-admin-email')?.trim().toLowerCase();
+  const envAdminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+
+  if (!requesterEmail) {
+    return { error: 'Unauthorized: missing admin identity', status: 401 as const };
+  }
+
+  if (envAdminEmail && requesterEmail === envAdminEmail) {
+    return { success: true as const };
+  }
+
+  const requester = await prisma.adminUser.findUnique({
+    where: { email: requesterEmail },
+    select: { role: true },
+  });
+
+  if (!requester || requester.role !== 'admin') {
+    return { error: 'Only admins can run article image recovery', status: 403 as const };
+  }
+
+  return { success: true as const };
+}
+
 const IMAGE_EXTENSIONS_REGEX = /\.(jpg|jpeg|png|gif|webp|avif|svg|bmp)$/i;
 
 function extractImageFilename(rawImage: string | null | undefined): string | null {
@@ -117,6 +141,11 @@ function pickBestReplacementImage(
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await getAuthorizedAdmin(request);
+    if ('error' in auth) {
+      return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+    }
+
     const body = await request.json().catch(() => ({}));
     const mode: string = body?.mode || 'preview';
 
