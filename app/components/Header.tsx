@@ -56,8 +56,8 @@ export function Header() {
 
   const navItems = NAV_CATEGORY_ITEMS;
 
-  const visibleItems = navItems.slice(0, 7);
-  const moreItems = navItems.slice(7);
+  const visibleItems = navItems.slice(0, 6);
+  const moreItems = navItems.slice(6);
   const activeLanguageLabel = language === 'ky' ? 'RW' : language.toUpperCase();
   const languageOptions = [
     { code: 'ky', label: 'Kinyarwanda' },
