@@ -54,8 +54,14 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handlePointerDown);
   }, []);
 
-  const visibleItems = NAV_CATEGORY_ITEMS.slice(0, 6);
-  const moreItems = NAV_CATEGORY_ITEMS.slice(6);
+  const homeItem = NAV_CATEGORY_ITEMS.find((item) => item.href === '/');
+  const directCategorySlugs = ['amakuru', 'politiki', 'ubuzima', 'uburezi', 'ubukungu'] as const;
+  const directCategoryItems = directCategorySlugs
+    .map((slug) => NAV_CATEGORY_ITEMS.find((item) => item.slug === slug))
+    .filter((item): item is (typeof NAV_CATEGORY_ITEMS)[number] => Boolean(item));
+  const visibleItems = homeItem ? [homeItem, ...directCategoryItems] : directCategoryItems;
+  const visibleItemHrefs = new Set(visibleItems.map((item) => item.href));
+  const moreItems = NAV_CATEGORY_ITEMS.filter((item) => !visibleItemHrefs.has(item.href));
   const activeLanguageLabel = language === 'ky' ? 'RW' : language.toUpperCase();
   const languageOptions = [
     { code: 'ky', label: 'Kinyarwanda' },
