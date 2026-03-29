@@ -4,6 +4,7 @@ import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { AlertCircle, CheckCircle, Upload, X } from 'lucide-react';
 import AdminHeader from '@/app/admin/components/AdminHeader';
+import ContentEditor from '@/app/admin/components/ContentEditor';
 import { ArticleImage } from '@/app/components/ArticleImage';
 import { normalizeArticleImageUrl } from '@/lib/utils';
 import { NAV_CATEGORY_SLUGS } from '@/lib/nav-categories';
@@ -377,13 +378,13 @@ export default function EditArticlePage() {
               <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
                 Article Content *
               </label>
-              <textarea
-                name="content"
+              <ContentEditor
                 value={form.content}
-                onChange={handleChange}
+                onChange={(value) => setForm((prev) => ({ ...prev, content: value }))}
+                name="content"
                 placeholder="Full article content"
                 rows={10}
-                className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-amber-700 focus:border-transparent outline-none font-mono text-sm"
+                focusRingClassName="focus:ring-2 focus:ring-amber-700"
                 required
               />
             </div>
