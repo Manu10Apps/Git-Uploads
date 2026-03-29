@@ -17,7 +17,7 @@ export default function EthicsPage() {
         <section className="bg-gradient-to-r from-primary-600 to-primary-500 text-white py-3">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 className="text-4xl font-bold mb-4">Amahame Ngenderwaho y'Ubwanditsi</h1>
-            <p className="text-lg text-primary-100">Kugera Gashyantare 23, 2026</p>
+            <p className="text-lg text-primary-100"> Guhera muri 2026</p>
           </div>
         </section>
 
