@@ -522,7 +522,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               ) : (
                 <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900">
                   <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">Nta nkuru bifitanye isano zibashije kuboneka</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru (0) bifitanye isano</p>
                   </div>
                 </article>
               )}
@@ -568,7 +568,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               ) : (
                 <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900">
                   <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">Nta nkuru bifitanye isano zibashije kuboneka</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru (0) bifitanye isano</p>
                   </div>
                 </article>
               )}
@@ -620,7 +620,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                   ) : (
                     <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900">
                       <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Nta nkuru bifitanye isano zibashije kuboneka</p>
+                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru (0) bifitanye isano</p>
                       </div>
                     </article>
                   )}
