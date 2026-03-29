@@ -210,7 +210,7 @@ export default function Home() {
                             />
                           </div>
                         </Link>
-                      <h4 className="text-base font-serif font-bold text-neutral-900 dark:text-white mb-1 leading-tight text-justify line-clamp-3">
+                      <h4 className="text-base font-serif font-bold text-neutral-900 dark:text-white mb-1 leading-tight text-justify line-clamp-2">
                         <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
                           {article.title}
                         </Link>
@@ -232,7 +232,7 @@ export default function Home() {
                             />
                           </div>
                         </Link>
-                      <h4 className="text-base font-serif font-bold text-neutral-900 dark:text-white mb-1 leading-tight text-justify line-clamp-3">
+                      <h4 className="text-base font-serif font-bold text-neutral-900 dark:text-white mb-1 leading-tight text-justify line-clamp-2">
                         <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
                           {article.title}
                         </Link>
