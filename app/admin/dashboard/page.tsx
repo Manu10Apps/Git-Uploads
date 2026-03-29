@@ -2,20 +2,28 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { AlertTriangle, CheckCircle2, ImageIcon, Wrench } from 'lucide-react';
 import AdminHeader from '@/app/admin/components/AdminHeader';
 import DashboardStats from '@/app/admin/components/DashboardStats';
 import { Footer } from '@/app/components';
 
-type ImageFixApiResponse = {
-  success?: boolean;
-  mode?: string;
-  error?: string;
-  message?: string;
+type FixImagesApiResponse = {
+  success: boolean;
+  mode?: 'preview' | 'fix';
   totalArticles?: number;
   brokenArticles?: number;
+  brokenBefore?: number;
   availableImages?: number;
   fixed?: number;
   failed?: number;
+  error?: string;
+  broken?: Array<{
+    id: number;
+    title: string;
+    currentImage: string | null;
+    reason: string;
+    suggestedImage?: string;
+  }>;
 };
 
 export default function DashboardPage() {
@@ -24,9 +32,10 @@ export default function DashboardPage() {
   const [adminName, setAdminName] = useState('Admin');
   const [adminEmail, setAdminEmail] = useState('');
   const [adminRole, setAdminRole] = useState('editor');
-  const [isImageActionRunning, setIsImageActionRunning] = useState(false);
-  const [imageActionStatus, setImageActionStatus] = useState('');
-  const [imageActionSummary, setImageActionSummary] = useState<ImageFixApiResponse | null>(null);
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [actionMessage, setActionMessage] = useState('');
+  const [actionError, setActionError] = useState('');
+  const [lastPreview, setLastPreview] = useState<FixImagesApiResponse | null>(null);
 
   useEffect(() => {
     const isAdminAuth = localStorage.getItem('adminAuth');
@@ -40,60 +49,55 @@ export default function DashboardPage() {
     }
   }, [router]);
 
-  const runImageRecovery = async (mode: 'preview' | 'fix') => {
-    if (!adminEmail) {
-      setImageActionStatus('Missing admin identity. Please log in again.');
-      return;
-    }
-
+  const runImageFixAction = async (mode: 'preview' | 'fix') => {
     if (adminRole !== 'admin') {
-      setImageActionStatus('Only admin users can run image recovery.');
+      setActionError('Only full admins can run image diagnostics and repair.');
       return;
     }
 
-    const confirmationMessage =
-      mode === 'fix'
-        ? 'Run LIVE image repair now? This will update article featured image values in the database.'
-        : 'Run preview scan for broken featured images now?';
-
-    if (!window.confirm(confirmationMessage)) {
-      return;
+    if (mode === 'fix') {
+      const confirmed = window.confirm(
+        'This will update featured image fields for articles with broken paths. Continue?'
+      );
+      if (!confirmed) {
+        return;
+      }
     }
+
+    setIsActionLoading(true);
+    setActionError('');
+    setActionMessage('');
 
     try {
-      setIsImageActionRunning(true);
-      setImageActionStatus(mode === 'fix' ? 'Running image repair...' : 'Scanning featured images...');
-
       const response = await fetch('/api/admin/fix-images', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-email': adminEmail,
+          ...(adminEmail ? { 'x-admin-email': adminEmail } : {}),
         },
         body: JSON.stringify({ mode }),
       });
 
-      const payload = (await response.json().catch(() => ({}))) as ImageFixApiResponse;
-      if (!response.ok || payload.success === false) {
-        setImageActionSummary(payload);
-        setImageActionStatus(payload.error || payload.message || 'Image recovery request failed.');
-        return;
+      const data = (await response.json()) as FixImagesApiResponse;
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Image action failed');
       }
 
-      setImageActionSummary(payload);
       if (mode === 'preview') {
-        setImageActionStatus(
-          `Preview complete: ${payload.brokenArticles ?? 0} broken of ${payload.totalArticles ?? 0} articles.`
+        setLastPreview(data);
+        setActionMessage(
+          `Preview complete: ${data.brokenArticles ?? 0} broken of ${data.totalArticles ?? 0} articles.`
         );
       } else {
-        setImageActionStatus(
-          `Fix complete: ${payload.fixed ?? 0} updated, ${payload.failed ?? 0} failed.`
+        setActionMessage(
+          `Repair complete: fixed ${data.fixed ?? 0}, failed ${data.failed ?? 0}.`
         );
       }
-    } catch {
-      setImageActionStatus('Network error while running image recovery.');
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Image action failed');
     } finally {
-      setIsImageActionRunning(false);
+      setIsActionLoading(false);
     }
   };
 
@@ -123,59 +127,71 @@ export default function DashboardPage() {
           {/* Dashboard Stats */}
           <DashboardStats />
 
-          <section className="mt-8 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 sm:p-6 shadow-sm">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <section className="mt-8 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 dark:text-neutral-100">
-                  Featured Image Recovery
-                </h2>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
-                  One-click tool to preview or repair broken featured image references.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={() => runImageRecovery('preview')}
-                  disabled={isImageActionRunning || adminRole !== 'admin'}
-                  className="px-4 py-2 rounded-lg text-sm font-medium border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Preview Broken Images
-                </button>
-                <button
-                  type="button"
-                  onClick={() => runImageRecovery('fix')}
-                  disabled={isImageActionRunning || adminRole !== 'admin'}
-                  className="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Run Fix Now
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-2">
-              {adminRole !== 'admin' && (
-                <p className="text-sm text-amber-700 dark:text-amber-300">
-                  Admin role required to run recovery actions.
-                </p>
-              )}
-
-              {imageActionStatus && (
-                <p className="text-sm text-neutral-700 dark:text-neutral-300">{imageActionStatus}</p>
-              )}
-
-              {imageActionSummary && (
-                <div className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 rounded-lg bg-neutral-50 dark:bg-neutral-800/60 p-3">
-                  <div>Mode: {imageActionSummary.mode || 'unknown'}</div>
-                  <div>Total Articles: {imageActionSummary.totalArticles ?? '-'}</div>
-                  <div>Broken Articles: {imageActionSummary.brokenArticles ?? '-'}</div>
-                  <div>Available Images: {imageActionSummary.availableImages ?? '-'}</div>
-                  <div>Fixed: {imageActionSummary.fixed ?? '-'}</div>
-                  <div>Failed: {imageActionSummary.failed ?? '-'}</div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 dark:bg-blue-950/30 px-3 py-1 text-sm font-medium text-blue-700 dark:text-blue-300 mb-3">
+                  <ImageIcon className="w-4 h-4" />
+                  Media Recovery
                 </div>
-              )}
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-white">Featured Image Repair</h2>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                  Safely preview and repair broken featured image paths for existing articles.
+                </p>
+              </div>
+              <div className="text-sm text-neutral-500 dark:text-neutral-400">
+                Role: <span className="font-semibold text-neutral-700 dark:text-neutral-200">{adminRole}</span>
+              </div>
             </div>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => runImageFixAction('preview')}
+                disabled={isActionLoading || adminRole !== 'admin'}
+                className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 dark:border-neutral-700 px-4 py-2.5 text-sm font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <AlertTriangle className="w-4 h-4" />
+                {isActionLoading ? 'Working...' : 'Preview Broken Images'}
+              </button>
+              <button
+                type="button"
+                onClick={() => runImageFixAction('fix')}
+                disabled={isActionLoading || adminRole !== 'admin'}
+                className="inline-flex items-center gap-2 rounded-lg bg-red-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Wrench className="w-4 h-4" />
+                {isActionLoading ? 'Applying...' : 'Fix Broken Images'}
+              </button>
+            </div>
+
+            {actionMessage && (
+              <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-300">
+                <CheckCircle2 className="w-4 h-4" />
+                {actionMessage}
+              </p>
+            )}
+
+            {actionError && (
+              <p className="mt-4 text-sm font-medium text-red-700 dark:text-red-300">{actionError}</p>
+            )}
+
+            {lastPreview && (
+              <div className="mt-5 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 bg-neutral-50 dark:bg-neutral-800/50">
+                <p className="text-sm text-neutral-700 dark:text-neutral-200 font-semibold">
+                  Preview Summary: {lastPreview.brokenArticles ?? 0} broken / {lastPreview.totalArticles ?? 0} total, {lastPreview.availableImages ?? 0} available image files.
+                </p>
+                {Boolean(lastPreview.broken?.length) && (
+                  <ul className="mt-3 space-y-2 text-sm text-neutral-700 dark:text-neutral-300 max-h-48 overflow-auto pr-1">
+                    {lastPreview.broken?.slice(0, 12).map((item) => (
+                      <li key={item.id} className="rounded border border-neutral-200 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900">
+                        <span className="font-semibold">#{item.id}</span> {item.title} ({item.reason})
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
           </section>
         </div>
       </main>

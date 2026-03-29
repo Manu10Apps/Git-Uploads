@@ -2,13 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import { existsSync } from 'fs';
 import path from 'path';
+import type { PrismaClient } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { getUploadsDir } from '@/lib/upload-config';
 import { normalizeArticleImageUrl } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
-async function getAuthorizedAdmin(request: NextRequest) {
+const IMAGE_EXTENSIONS_REGEX = /\.(jpg|jpeg|png|gif|webp|avif|svg|bmp)$/i;
+
+async function getAuthorizedAdmin(request: NextRequest, db: PrismaClient) {
   const requesterEmail = request.headers.get('x-admin-email')?.trim().toLowerCase();
   const envAdminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
 
@@ -20,19 +23,17 @@ async function getAuthorizedAdmin(request: NextRequest) {
     return { success: true as const };
   }
 
-  const requester = await prisma.adminUser.findUnique({
+  const requester = await db.adminUser.findUnique({
     where: { email: requesterEmail },
     select: { role: true },
   });
 
   if (!requester || requester.role !== 'admin') {
-    return { error: 'Only admins can run article image recovery', status: 403 as const };
+    return { error: 'Only admins can run image repair', status: 403 as const };
   }
 
   return { success: true as const };
 }
-
-const IMAGE_EXTENSIONS_REGEX = /\.(jpg|jpeg|png|gif|webp|avif|svg|bmp)$/i;
 
 function extractImageFilename(rawImage: string | null | undefined): string | null {
   if (!rawImage) {
@@ -141,7 +142,7 @@ function pickBestReplacementImage(
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await getAuthorizedAdmin(request);
+    const auth = await getAuthorizedAdmin(request, prisma);
     if ('error' in auth) {
       return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
     }
