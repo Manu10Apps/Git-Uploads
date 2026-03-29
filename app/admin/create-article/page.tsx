@@ -64,6 +64,8 @@ export default function CreateArticlePage() {
   const [uploadedImage, setUploadedImage] = useState<{ name: string; url: string } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [galleryCaption, setGalleryCaption] = useState('');
+  const galleryFileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const [selectedGalleryFiles, setSelectedGalleryFiles] = useState<File[]>([]);
 
 
 
@@ -485,7 +487,7 @@ export default function CreateArticlePage() {
               <div className="space-y-3 p-4 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-300 dark:border-neutral-700 rounded-lg">
                 <div>
                   <label htmlFor="galleryFile" className="block text-xs font-semibold text-neutral-900 dark:text-white mb-2">
-                    Upload Image
+                    Upload Images
                   </label>
                   <label className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg hover:border-amber-500 dark:hover:border-amber-500 transition-colors cursor-pointer bg-white dark:bg-neutral-800">
                     <div className="text-center">
@@ -499,11 +501,21 @@ export default function CreateArticlePage() {
                     </div>
                     <input
                       id="galleryFile"
+                      ref={galleryFileInputRef}
                       type="file"
                       accept="image/*"
+                      multiple
+                      onChange={(e) => setSelectedGalleryFiles(Array.from(e.target.files || []))}
                       className="hidden"
                     />
                   </label>
+                  {selectedGalleryFiles.length > 0 && (
+                    <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-400">
+                      {selectedGalleryFiles.length === 1
+                        ? `Selected: ${selectedGalleryFiles[0].name}`
+                        : `${selectedGalleryFiles.length} files selected`}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-neutral-900 dark:text-white mb-2">
@@ -520,55 +532,76 @@ export default function CreateArticlePage() {
                 <button
                   type="button"
                   onClick={async () => {
-                    const fileInput = document.getElementById('galleryFile') as HTMLInputElement;
-                    const file = fileInput.files?.[0];
+                    const files = selectedGalleryFiles;
 
-                    if (!file) {
-                      setMessage({ type: 'error', text: 'Please select an image file' });
+                    if (files.length === 0) {
+                      setMessage({ type: 'error', text: 'Please select at least one image file' });
                       return;
                     }
 
-                    // Validate file type
-                    if (!file.type.startsWith('image/')) {
-                      setMessage({ type: 'error', text: 'Please upload an image file' });
+                    const invalidType = files.find((file) => !file.type.startsWith('image/'));
+                    if (invalidType) {
+                      setMessage({ type: 'error', text: `Invalid file type: ${invalidType.name}` });
                       return;
                     }
 
-                    // Validate file size (max 10MB)
-                    if (file.size > 10 * 1024 * 1024) {
-                      setMessage({ type: 'error', text: 'Image size must be less than 10MB' });
+                    const oversized = files.find((file) => file.size > 10 * 1024 * 1024);
+                    if (oversized) {
+                      setMessage({ type: 'error', text: `Image too large (max 10MB): ${oversized.name}` });
                       return;
                     }
 
                     setUploading(true);
                     try {
-                      const formData = new FormData();
-                      formData.append('file', file);
+                      const uploads = await Promise.allSettled(
+                        files.map(async (file) => {
+                          const formData = new FormData();
+                          formData.append('file', file);
 
-                      const response = await fetch('/api/upload', {
-                        method: 'POST',
-                        body: formData,
-                      });
+                          const response = await fetch('/api/upload', {
+                            method: 'POST',
+                            body: formData,
+                          });
 
-                      const data = await response.json();
+                          const data = await response.json();
+                          if (!data.success) {
+                            throw new Error(data.error || `Failed to upload ${file.name}`);
+                          }
 
-                      if (data.success) {
+                          return { url: data.url as string, caption: galleryCaption.trim() };
+                        })
+                      );
+
+                      const successful = uploads
+                        .filter((result): result is PromiseFulfilledResult<{ url: string; caption: string }> => result.status === 'fulfilled')
+                        .map((result) => result.value);
+                      const failedCount = uploads.length - successful.length;
+
+                      if (successful.length > 0) {
                         setForm((prev) => ({
                           ...prev,
-                          gallery: [
-                            ...prev.gallery,
-                            { url: data.url, caption: galleryCaption },
-                          ],
+                          gallery: [...prev.gallery, ...successful],
                         }));
-                        fileInput.value = '';
+                        setSelectedGalleryFiles([]);
+                        if (galleryFileInputRef.current) {
+                          galleryFileInputRef.current.value = '';
+                        }
                         setGalleryCaption('');
-                        setMessage({ type: 'success', text: 'Image added to gallery!' });
-                        setTimeout(() => setMessage(null), 2000);
+
+                        if (failedCount === 0) {
+                          setMessage({ type: 'success', text: `${successful.length} image(s) added to gallery!` });
+                        } else {
+                          setMessage({
+                            type: 'error',
+                            text: `${successful.length} uploaded, ${failedCount} failed. Please retry failed files.`,
+                          });
+                        }
+                        setTimeout(() => setMessage(null), 3000);
                       } else {
-                        setMessage({ type: 'error', text: data.error || 'Failed to upload image' });
+                        setMessage({ type: 'error', text: 'Failed to upload selected images' });
                       }
                     } catch (error) {
-                      setMessage({ type: 'error', text: 'Failed to upload image' });
+                      setMessage({ type: 'error', text: 'Failed to upload selected images' });
                     } finally {
                       setUploading(false);
                     }
