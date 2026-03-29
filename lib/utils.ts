@@ -76,46 +76,67 @@ export function normalizeArticleImageUrl(imageUrl?: string | null): string | nul
     return `https:${normalizedSlashes}`;
   }
 
-  const normalizeUploadPath = (path: string) => {
-    if (path.startsWith('/public/uploads/')) {
-      return path.replace('/public/uploads/', '/uploads/');
+  const toUploadsPathFromAnyPath = (inputPath: string): string | null => {
+    const sanitizedPath = inputPath.split('?')[0]?.split('#')[0] || inputPath;
+    const pathMatch = sanitizedPath.match(/(?:^|\/)(?:public\/)?uploads\/(.+)$/i);
+    if (!pathMatch?.[1]) {
+      return null;
     }
 
-    if (path.startsWith('public/uploads/')) {
-      return `/${path.replace(/^public\//, '')}`;
+    const relativeUploadPath = pathMatch[1].replace(/^\/+/, '');
+    return relativeUploadPath ? `/uploads/${relativeUploadPath}` : null;
+  };
+
+  const normalizeUploadPath = (pathValue: string) => {
+    if (pathValue.startsWith('/public/uploads/')) {
+      return pathValue.replace('/public/uploads/', '/uploads/');
     }
 
-    if (path.startsWith('./uploads/')) {
-      return `/${path.replace(/^\.\//, '')}`;
+    if (pathValue.startsWith('public/uploads/')) {
+      return `/${pathValue.replace(/^public\//, '')}`;
     }
 
-    if (path.startsWith('/admin/uploads/')) {
-      return path.replace('/admin/uploads/', '/uploads/');
+    if (pathValue.startsWith('./uploads/')) {
+      return `/${pathValue.replace(/^\.\//, '')}`;
     }
 
-    if (path.startsWith('admin/uploads/')) {
-      return `/${path.replace(/^admin\//, '')}`;
+    if (pathValue.startsWith('/admin/uploads/')) {
+      return pathValue.replace('/admin/uploads/', '/uploads/');
     }
 
-    if (path.startsWith('uploads/')) {
-      return `/${path}`;
+    if (pathValue.startsWith('admin/uploads/')) {
+      return `/${pathValue.replace(/^admin\//, '')}`;
     }
 
-    if (path.startsWith('/uploads/')) {
-      return path;
+    if (pathValue.startsWith('uploads/')) {
+      return `/${pathValue}`;
     }
 
-    return path;
+    if (pathValue.startsWith('/uploads/')) {
+      return pathValue;
+    }
+
+    return pathValue;
   };
 
   if (/^https?:\/\//i.test(normalizedSlashes)) {
     try {
       const parsedUrl = new URL(normalizedSlashes);
-      parsedUrl.pathname = normalizeUploadPath(parsedUrl.pathname);
+      const embeddedUploadsFromUrl = toUploadsPathFromAnyPath(parsedUrl.pathname);
+      parsedUrl.pathname = embeddedUploadsFromUrl || normalizeUploadPath(parsedUrl.pathname);
       return parsedUrl.toString();
     } catch {
       return normalizedSlashes;
     }
+  }
+
+  const embeddedUploadPath = toUploadsPathFromAnyPath(normalizedSlashes);
+  if (embeddedUploadPath) {
+    return embeddedUploadPath;
+  }
+
+  if (/^[^/]+\.(avif|bmp|gif|jpe?g|png|svg|webp)$/i.test(normalizedSlashes)) {
+    return `/uploads/${normalizedSlashes}`;
   }
 
   if (/^[\w.-]+\.[a-z]{2,}(\/|$)/i.test(normalizedSlashes)) {
@@ -125,6 +146,10 @@ export function normalizeArticleImageUrl(imageUrl?: string | null): string | nul
   const normalizedPath = normalizeUploadPath(normalizedSlashes);
   if (normalizedPath.startsWith('/')) {
     return normalizedPath;
+  }
+
+  if (/^[^/]+\.(avif|bmp|gif|jpe?g|png|svg|webp)$/i.test(normalizedPath)) {
+    return `/uploads/${normalizedPath}`;
   }
 
   return `/${normalizedPath}`;

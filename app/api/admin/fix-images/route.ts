@@ -8,6 +8,29 @@ import { normalizeArticleImageUrl } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
+const IMAGE_EXTENSIONS_REGEX = /\.(jpg|jpeg|png|gif|webp|avif|svg|bmp)$/i;
+
+function extractImageFilename(rawImage: string | null | undefined): string | null {
+  if (!rawImage) {
+    return null;
+  }
+
+  const normalized = rawImage.trim().replace(/\\/g, '/');
+  if (!normalized) {
+    return null;
+  }
+
+  const withoutQueryAndHash = normalized.split('?')[0]?.split('#')[0] || normalized;
+  const segments = withoutQueryAndHash.split('/').filter(Boolean);
+  const filename = segments.at(-1);
+
+  if (!filename || !IMAGE_EXTENSIONS_REGEX.test(filename)) {
+    return null;
+  }
+
+  return filename;
+}
+
 async function getAvailableImages(): Promise<string[]> {
   const imageSet = new Set<string>();
   const imageFilter = (f: string) =>
@@ -45,7 +68,7 @@ function isImageBroken(
   }
 
   if (/^https?:\/\//i.test(normalized)) {
-    return { broken: true, reason: 'external_url' };
+    return { broken: false, reason: 'external_url_preserved' };
   }
 
   if (normalized.startsWith('/uploads/')) {
@@ -59,7 +82,37 @@ function isImageBroken(
     return { broken: false, reason: 'ok' };
   }
 
+  const filename = extractImageFilename(normalized);
+  if (filename) {
+    const primaryPath = path.join(uploadsDir, filename);
+    const publicPath = path.join(process.cwd(), 'public', 'uploads', filename);
+    if (!existsSync(primaryPath) && !existsSync(publicPath)) {
+      return { broken: true, reason: 'filename_not_found_on_disk' };
+    }
+    return { broken: true, reason: 'legacy_filename_path' };
+  }
+
   return { broken: true, reason: 'unknown_path_format' };
+}
+
+function pickBestReplacementImage(
+  rawImage: string | null,
+  availableImagesByFilename: Map<string, string>,
+  availableImages: string[],
+  fallbackIndex: number
+): { newImage: string; strategy: 'filename_match' | 'round_robin' } {
+  const filename = extractImageFilename(rawImage);
+  if (filename) {
+    const matched = availableImagesByFilename.get(filename.toLowerCase());
+    if (matched) {
+      return { newImage: matched, strategy: 'filename_match' };
+    }
+  }
+
+  return {
+    newImage: availableImages[fallbackIndex % availableImages.length],
+    strategy: 'round_robin',
+  };
 }
 
 export async function POST(request: NextRequest) {
@@ -80,6 +133,13 @@ export async function POST(request: NextRequest) {
 
     const uploadsDir = getUploadsDir();
     const availableImages = await getAvailableImages();
+    const availableImagesByFilename = new Map<string, string>();
+    for (const imagePath of availableImages) {
+      const filename = extractImageFilename(imagePath);
+      if (filename) {
+        availableImagesByFilename.set(filename.toLowerCase(), imagePath);
+      }
+    }
 
     const brokenArticles = articles
       .map((a) => {
@@ -102,6 +162,12 @@ export async function POST(request: NextRequest) {
           title: a.title?.substring(0, 80),
           currentImage: a.image,
           reason: a.reason,
+          suggestedImage: pickBestReplacementImage(
+            a.image,
+            availableImagesByFilename,
+            availableImages,
+            0
+          ).newImage,
         })),
         availableImagesList: availableImages.slice(0, 30),
         instruction:
@@ -136,7 +202,13 @@ export async function POST(request: NextRequest) {
 
     for (let i = 0; i < brokenArticles.length; i++) {
       const article = brokenArticles[i];
-      const newImage = availableImages[i % availableImages.length];
+      const selection = pickBestReplacementImage(
+        article.image,
+        availableImagesByFilename,
+        availableImages,
+        i
+      );
+      const newImage = selection.newImage;
 
       try {
         await prisma.article.update({
@@ -149,7 +221,7 @@ export async function POST(request: NextRequest) {
           title: article.title?.substring(0, 80) || '',
           oldImage: article.image,
           newImage,
-          reason: article.reason,
+          reason: `${article.reason} -> ${selection.strategy}`,
           status: 'fixed',
         });
       } catch (e) {
@@ -158,7 +230,7 @@ export async function POST(request: NextRequest) {
           title: article.title?.substring(0, 80) || '',
           oldImage: article.image,
           newImage,
-          reason: article.reason,
+          reason: `${article.reason} -> ${selection.strategy}`,
           status: `failed: ${String(e)}`,
         });
       }
