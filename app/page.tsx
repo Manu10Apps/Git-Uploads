@@ -198,7 +198,7 @@ export default function Home() {
                 </div>
 
                 {/* Secondary Articles - Middle Column */}
-                <div className="md:col-span-1 flex flex-col gap-6">
+                <div className="md:col-span-1 flex flex-col gap-4">
                   {secondaryFeaturedArticles.map((article) => (
                     <article key={article.id} className="pb-4 border-b border-neutral-200 dark:border-neutral-700 last:border-0">
                       <Link href={`/article/${article.slug}`}>
