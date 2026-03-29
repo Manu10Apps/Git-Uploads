@@ -115,7 +115,7 @@ export function Footer() {
                 <button
                   key={lang.code}
                   onClick={() => setLanguage(lang.code as any)}
-                  className={`px-3 py-2 rounded text-xs font-medium transition-colors min-h-[44px] ${
+                  className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                     language === lang.code
                       ? 'bg-primary-600 text-white'
                       : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 hover:bg-neutral-300 dark:hover:bg-neutral-700'
