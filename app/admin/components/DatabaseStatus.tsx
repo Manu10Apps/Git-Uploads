@@ -24,7 +24,7 @@ export default function DatabaseStatus() {
 
         if (data.degraded) {
           setStatus('degraded');
-          setMessage('Using Fallback Storage (Database Unavailable)');
+          setMessage('Fallback Storage (db failure)');
         } else if (response.ok) {
           setStatus('connected');
           setMessage('Db Connected');
@@ -34,7 +34,7 @@ export default function DatabaseStatus() {
         }
       } catch (error) {
         setStatus('degraded');
-        setMessage('Using Fallback Storage (Connection Failed)');
+        setMessage('Fallback Storage (db failure)');
       }
     };
 
