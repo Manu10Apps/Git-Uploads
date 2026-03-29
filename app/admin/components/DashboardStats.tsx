@@ -28,7 +28,7 @@ export default function DashboardStats() {
         setRole(currentRole);
 
         const [articlesRes, categoriesRes] = await Promise.all([
-          fetch('/api/articles'),
+          fetch('/api/articles?includeAll=true&limit=1000'),
           fetch('/api/admin/categories'),
         ]);
 
@@ -47,11 +47,12 @@ export default function DashboardStats() {
         }
 
         const articles = articlesData.data || [];
+        const totalArticles = articlesData.pagination?.total || articles.length;
         const published = articles.filter((a: any) => a.status === 'published').length;
         const draft = articles.filter((a: any) => a.status === 'draft').length;
 
         setStats({
-          totalArticles: articles.length,
+          totalArticles,
           publishedArticles: published,
           draftArticles: draft,
           totalUsers,
