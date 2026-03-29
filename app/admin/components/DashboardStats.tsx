@@ -27,12 +27,16 @@ export default function DashboardStats() {
         const currentRole = (localStorage.getItem('adminRole') || 'editor') as 'admin' | 'sub-admin' | 'editor';
         setRole(currentRole);
 
-        const [articlesRes, categoriesRes] = await Promise.all([
-          fetch('/api/articles?includeAll=true&limit=1000'),
+        const [articlesRes, publishedRes, draftRes, categoriesRes] = await Promise.all([
+          fetch('/api/articles?includeAll=true&limit=5'),
+          fetch('/api/articles?includeAll=true&status=published&limit=1'),
+          fetch('/api/articles?includeAll=true&status=draft&limit=1'),
           fetch('/api/admin/categories'),
         ]);
 
         const articlesData = await articlesRes.json();
+        const publishedData = await publishedRes.json();
+        const draftData = await draftRes.json();
         const categoriesData = await categoriesRes.json();
 
         let totalUsers = 0;
@@ -48,8 +52,8 @@ export default function DashboardStats() {
 
         const articles = articlesData.data || [];
         const totalArticles = articlesData.pagination?.total || articles.length;
-        const published = articles.filter((a: any) => a.status === 'published').length;
-        const draft = articles.filter((a: any) => a.status === 'draft').length;
+        const published = publishedData.pagination?.total || 0;
+        const draft = draftData.pagination?.total || 0;
 
         setStats({
           totalArticles,
