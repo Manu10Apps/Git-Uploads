@@ -54,9 +54,8 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handlePointerDown);
   }, []);
 
-  const [homeItem, ...categoryItems] = NAV_CATEGORY_ITEMS;
-  const visibleItems = homeItem ? [homeItem, ...categoryItems.slice(0, 5)] : categoryItems.slice(0, 5);
-  const moreItems = categoryItems.slice(5);
+  const visibleItems = NAV_CATEGORY_ITEMS.slice(0, 5);
+  const moreItems = NAV_CATEGORY_ITEMS.slice(5);
   const activeLanguageLabel = language === 'ky' ? 'RW' : language.toUpperCase();
   const languageOptions = [
     { code: 'ky', label: 'Kinyarwanda' },
