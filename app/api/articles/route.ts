@@ -128,6 +128,7 @@ const allowFallbackStorage = process.env.NODE_ENV !== 'production' || process.en
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const slug = searchParams.get('slug');
   const category = searchParams.get('category');
   const limit = searchParams.get('limit');
   const featured = searchParams.get('featured');
@@ -158,6 +159,10 @@ export async function GET(request: NextRequest) {
 
     if (featured === 'true') {
       where.featured = true;
+    }
+
+    if (slug) {
+      where.slug = slug;
     }
 
     const take = limit ? parseInt(limit) : includeAll ? 100 : 10;
@@ -235,6 +240,10 @@ export async function GET(request: NextRequest) {
       }
 
       if (featured === 'true' && !article.featured) {
+        return false;
+      }
+
+      if (slug && article.slug !== slug) {
         return false;
       }
 

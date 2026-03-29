@@ -62,7 +62,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     const fetchArticle = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/articles');
+        const response = await fetch(`/api/articles?slug=${encodeURIComponent(slug)}`);
         const result = await response.json();
         const articles = result.data || [];
         const foundArticle = articles.find((a: Article) => a.slug === slug);
