@@ -72,7 +72,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
           <Link
@@ -142,12 +142,12 @@ export function Header() {
           </nav>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-3">
             {/* Theme Toggle */}
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               aria-label="Toggle theme"
-              className="flex items-center justify-center px-3 py-2 text-sm font-medium text-neutral-900 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+              className="hidden min-[390px]:flex items-center justify-center px-2 sm:px-3 py-2 text-sm font-medium text-neutral-900 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
             >
               {theme === 'dark' ? (
                 <Sun className="w-4 sm:w-5 h-4 sm:h-5" />
@@ -162,14 +162,14 @@ export function Header() {
                 onClick={() => setIsLanguageOpen((open) => !open)}
                 aria-label={t.common.language}
                 aria-expanded={isLanguageOpen}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-900 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 text-sm font-medium text-neutral-900 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
               >
                 <Globe className="w-4 h-4" aria-hidden="true" />
-                  <span className="uppercase text-xs tracking-wide">{activeLanguageLabel}</span>
+                <span className="uppercase text-xs tracking-wide hidden min-[390px]:inline">{activeLanguageLabel}</span>
               </button>
 
               {isLanguageOpen && (
-                <div className="absolute right-0 mt-2 w-40 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-800 z-40">
+                <div className="absolute right-0 mt-2 w-40 max-w-[calc(100vw-1rem)] overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-800 z-40">
                   {languageOptions.map((option) => (
                     <button
                       key={option.code}
@@ -196,7 +196,7 @@ export function Header() {
               onClick={() => setIsSearchOpen(true)}
               aria-label="Open search (Ctrl+K)"
               title="Search articles (Ctrl+K)"
-              className="flex items-center justify-center px-3 py-2 text-sm font-medium text-neutral-900 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+              className="flex items-center justify-center px-2 sm:px-3 py-2 text-sm font-medium text-neutral-900 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
             >
               <Search className="w-4 sm:w-5 h-4 sm:h-5" aria-hidden="true" />
             </button>
@@ -230,7 +230,7 @@ export function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <nav className="md:hidden pb-3 sm:pb-4 space-y-1 sm:space-y-2 border-t border-neutral-200 dark:border-neutral-800 mt-2">
+          <nav className="md:hidden pb-3 sm:pb-4 space-y-1 sm:space-y-2 border-t border-neutral-200 dark:border-neutral-800 mt-2 max-h-[70vh] overflow-y-auto overscroll-contain">
             <div className="px-3 sm:px-4 pt-3">
               <Link
                 href="/#social-media-links"
