@@ -131,6 +131,7 @@ export async function GET(request: NextRequest) {
   const slug = searchParams.get('slug');
   const category = searchParams.get('category');
   const limit = searchParams.get('limit');
+  const summary = searchParams.get('summary') === 'true';
   const featured = searchParams.get('featured');
   const status = searchParams.get('status');
   const includeAll = searchParams.get('includeAll') === 'true';
@@ -168,33 +169,96 @@ export async function GET(request: NextRequest) {
     const take = limit ? parseInt(limit) : includeAll ? 100 : 10;
     const skip = (page - 1) * take;
 
-    const [articles, total] = await Promise.all([
-      prisma.article.findMany({
-        where,
-        include: { category: true },
-        orderBy: { publishedAt: 'desc' },
-        take,
-        skip,
-      }),
-      prisma.article.count({ where }),
-    ]);
+    const articlesPromise = summary
+      ? prisma.article.findMany({
+          where,
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            excerpt: true,
+            image: true,
+            author: true,
+            publishedAt: true,
+            readTime: true,
+            featured: true,
+            category: {
+              select: {
+                slug: true,
+              },
+            },
+          },
+          orderBy: { publishedAt: 'desc' },
+          take,
+          skip,
+        })
+      : prisma.article.findMany({
+          where,
+          include: { category: true },
+          orderBy: { publishedAt: 'desc' },
+          take,
+          skip,
+        });
+
+    const [articles, total] = await Promise.all([articlesPromise, prisma.article.count({ where })]);
 
     // Format response to match frontend expectations
-    const formattedArticles = articles.map((article) => ({
-      id: article.id,
-      title: article.title,
-      slug: article.slug,
-      excerpt: article.excerpt,
-      content: article.content,
+    const formattedArticles = summary
+      ? (articles as Array<{
+          id: number;
+          title: string;
+          slug: string;
+          excerpt: string;
+          image: string | null;
+          author: string;
+          publishedAt: Date | null;
+          readTime: number;
+          featured: boolean;
+          category: { slug: string };
+        }>).map((article) => ({
+          id: article.id,
+          title: article.title,
+          slug: article.slug,
+          excerpt: article.excerpt,
+          image: resolveArticleImage(article.image, ''),
+          category: article.category.slug,
+          author: article.author,
+          publishedAt: article.publishedAt?.toLocaleDateString(),
+          readTime: article.readTime,
+          featured: article.featured,
+          views: 0,
+        }))
+      : (articles as Array<{
+          id: number;
+          title: string;
+          slug: string;
+          excerpt: string;
+          content: string;
+          image: string | null;
+          gallery: string | null;
+          author: string;
+          publishedAt: Date | null;
+          readTime: number;
+          featured: boolean;
+          tags: string | null;
+          category: { slug: string };
+          views?: number;
+        }>).map((article) => ({
+          id: article.id,
+          title: article.title,
+          slug: article.slug,
+          excerpt: article.excerpt,
+          content: article.content,
           image: resolveArticleImage(article.image, article.gallery),
-      category: article.category.slug,
-      author: article.author,
-      publishedAt: article.publishedAt?.toLocaleDateString(),
-      readTime: article.readTime,
-      featured: article.featured,
-      tags: article.tags ? JSON.parse(article.tags) : [],
-      gallery: article.gallery ? JSON.parse(article.gallery) : [],
-    }));
+          category: article.category.slug,
+          author: article.author,
+          publishedAt: article.publishedAt?.toLocaleDateString(),
+          readTime: article.readTime,
+          featured: article.featured,
+          views: article.views || 0,
+          tags: article.tags ? JSON.parse(article.tags) : [],
+          gallery: article.gallery ? JSON.parse(article.gallery) : [],
+        }));
 
     return NextResponse.json({
       success: true,
@@ -258,7 +322,25 @@ export async function GET(request: NextRequest) {
 
     const total = filtered.length;
     const skip = (page - 1) * take;
-    const paginated = filtered.slice(skip, skip + take).map(toClientArticle);
+    const paginated = filtered.slice(skip, skip + take).map((article) => {
+      const item = toClientArticle(article);
+      if (!summary) {
+        return item;
+      }
+      return {
+        id: item.id,
+        title: item.title,
+        slug: item.slug,
+        excerpt: item.excerpt,
+        image: item.image,
+        category: item.category,
+        author: item.author,
+        publishedAt: item.publishedAt,
+        readTime: item.readTime,
+        featured: item.featured,
+        views: 0,
+      };
+    });
 
     return NextResponse.json(
       {

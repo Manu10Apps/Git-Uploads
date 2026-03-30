@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { normalizeArticleImageUrl } from '@/lib/utils';
 
 const FALLBACK_ARTICLE_IMAGE = '/uploads/article-fallback.svg';
@@ -12,9 +13,15 @@ function withRetryQuery(url: string, retryCount: number): string {
   return `${baseWithQuery}${separator}img_retry=${retryCount}${hash ? `#${hash}` : ''}`;
 }
 
-type ArticleImageProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
+type ArticleImageProps = {
   src?: string | null;
+  alt?: string;
   fallbackSrc?: string;
+  className?: string;
+  loading?: 'eager' | 'lazy';
+  fetchPriority?: 'high' | 'low' | 'auto';
+  sizes?: string;
+  onError?: React.ReactEventHandler<HTMLImageElement>;
 };
 
 export function ArticleImage({
@@ -23,9 +30,9 @@ export function ArticleImage({
   fallbackSrc = FALLBACK_ARTICLE_IMAGE,
   className,
   loading,
-  decoding,
+  fetchPriority,
+  sizes,
   onError,
-  ...props
 }: ArticleImageProps) {
   const [currentSrc, setCurrentSrc] = React.useState(normalizeArticleImageUrl(src) ?? fallbackSrc);
   const [hasErrored, setHasErrored] = React.useState(false);
@@ -48,7 +55,6 @@ export function ArticleImage({
 
   const handleError = (event: React.SyntheticEvent<HTMLImageElement>) => {
     const normalizedOriginalSrc = normalizeArticleImageUrl(src);
-    // First failure: retry once after a short delay to recover from transient hot-reload/network glitches.
     if (!hasErrored && normalizedOriginalSrc && retryCountRef.current < 1) {
       if (retryTimerRef.current) {
         return;
@@ -62,29 +68,31 @@ export function ArticleImage({
       return;
     }
 
-    // Do not lock to fallback while a retry is still pending.
     if (retryTimerRef.current) {
       return;
     }
 
-    // Retry also failed — show fallback permanently.
     if (!hasErrored && currentSrc !== fallbackSrc) {
       setHasErrored(true);
       setCurrentSrc(fallbackSrc);
       return;
     }
+
     onError?.(event);
   };
 
   return (
-    <img
-      {...props}
-      src={currentSrc}
-      alt={alt ?? 'Article image'}
-      loading={loading ?? 'lazy'}
-      decoding={decoding ?? 'async'}
-      className={className || ''}
-      onError={handleError}
-    />
+    <span className="relative block w-full h-full">
+      <Image
+        src={currentSrc}
+        alt={alt ?? 'Article image'}
+        fill
+        sizes={sizes ?? '100vw'}
+        loading={loading ?? 'lazy'}
+        fetchPriority={fetchPriority}
+        className={className || 'object-cover'}
+        onError={handleError}
+      />
+    </span>
   );
 }
