@@ -46,11 +46,25 @@ model Article {
   seoDescription  String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  comments        Comment[]
 
   @@index([categoryId])
   @@index([status])
   @@index([publishedAt])
   @@map("articles")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  articleId Int
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  name      String
+  email     String
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([articleId])
+  @@map("comments")
 }
 
 model AdminUser {

@@ -46,7 +46,10 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({ name: '', email: '', comment: '' });
-  const [comments, setComments] = useState<Array<{ name: string; email: string; comment: string }>>([]);
+  const [comments, setComments] = useState<Array<{ id: number; name: string; content: string; createdAt: string }>>([]);
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [commentSuccess, setCommentSuccess] = useState(false);
+  const [commentError, setCommentError] = useState('');
   const [recentArticles, setRecentArticles] = useState<Article[]>([]);
   const [recentLoading, setRecentLoading] = useState(true);
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
@@ -162,11 +165,47 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
   };
 
-  const handleCommentSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}`);
+        const data = await res.json();
+        setComments(data.comments || []);
+      } catch {
+        // silently ignore comment fetch errors
+      }
+    };
+    fetchComments();
+  }, [slug]);
+
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.name && formData.email && formData.comment) {
-      setComments([...comments, formData]);
-      setFormData({ name: '', email: '', comment: '' });
+    setCommentError('');
+    setCommentSuccess(false);
+    setCommentSubmitting(true);
+    try {
+      const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          comment: formData.comment,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCommentError(data.error || 'Habaye ikosa, ongera ugerageze.');
+      } else {
+        setComments(prev => [...prev, data.comment]);
+        setFormData({ name: '', email: '', comment: '' });
+        setCommentSuccess(true);
+        setTimeout(() => setCommentSuccess(false), 4000);
+      }
+    } catch {
+      setCommentError('Habaye ikosa, ongera ugerageze.');
+    } finally {
+      setCommentSubmitting(false);
     }
   };
 
@@ -459,23 +498,34 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                     required
                   />
                 </div>
+
+                {commentError && (
+                  <p className="text-sm text-red-600 dark:text-red-400 mb-3">{commentError}</p>
+                )}
+                {commentSuccess && (
+                  <p className="text-sm text-green-600 dark:text-green-400 mb-3">Igitekerezo cyawe cyoherejwe!</p>
+                )}
+
                 <div className="flex justify-end">
                   <button
                     className="rounded-md focus:opacity-90 hover:opacity-95 transition duration-300 flex flex-nowrap text-center items-center py-2 px-4 text-base bg-red-700 hover:bg-red-800 text-white disabled:bg-neutral-400"
                     type="submit"
+                    disabled={commentSubmitting}
                   >
-                    Ohereza Igitekerezo
+                    {commentSubmitting ? 'Kohereza...' : 'Ohereza Igitekerezo'}
                   </button>
                 </div>
               </form>
 
               {/* Comments List */}
               <ul className="flex flex-col gap-4 ml-2 my-2">
-                {comments.map((comment, index) => (
-                  <li key={index} className="border-l-4 border-red-600 pl-4 py-2">
+                {comments.map((comment) => (
+                  <li key={comment.id} className="border-l-4 border-red-600 pl-4 py-2">
                     <p className="font-semibold text-neutral-900 dark:text-white">{comment.name}</p>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-2">{comment.email}</p>
-                    <p className="text-neutral-700 dark:text-neutral-300">{comment.comment}</p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-500 mb-2">
+                      {new Date(comment.createdAt).toLocaleDateString('rw-RW', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
+                    <p className="text-neutral-700 dark:text-neutral-300">{comment.content}</p>
                   </li>
                 ))}
               </ul>
