@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, CheckCircle2, ImageIcon, Wrench } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ImageIcon, RefreshCcw, ShieldCheck, Wrench, XCircle } from 'lucide-react';
 import AdminHeader from '@/app/admin/components/AdminHeader';
 import DashboardStats from '@/app/admin/components/DashboardStats';
 import { Footer } from '@/app/components';
@@ -36,6 +36,11 @@ export default function DashboardPage() {
   const [actionMessage, setActionMessage] = useState('');
   const [actionError, setActionError] = useState('');
   const [lastPreview, setLastPreview] = useState<FixImagesApiResponse | null>(null);
+  const [isCacheModalOpen, setIsCacheModalOpen] = useState(false);
+  const [isClearCacheLoading, setIsClearCacheLoading] = useState(false);
+  const [cacheSuccessMessage, setCacheSuccessMessage] = useState('');
+  const [cacheErrorMessage, setCacheErrorMessage] = useState('');
+  const [cacheExecutionSummary, setCacheExecutionSummary] = useState<string[]>([]);
 
   useEffect(() => {
     const isAdminAuth = localStorage.getItem('adminAuth');
@@ -48,6 +53,19 @@ export default function DashboardPage() {
       setIsLoading(false);
     }
   }, [router]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const existing = sessionStorage.getItem('adminCsrfToken');
+    const token = existing || `${crypto.randomUUID()}-${Date.now()}`;
+    sessionStorage.setItem('adminCsrfToken', token);
+
+    const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
+    document.cookie = `admin_csrf_token=${encodeURIComponent(token)}; Path=/; SameSite=Lax${secureFlag}`;
+  }, []);
 
   const runImageFixAction = async (mode: 'preview' | 'fix') => {
     if (adminRole !== 'admin') {
@@ -98,6 +116,48 @@ export default function DashboardPage() {
       setActionError(error instanceof Error ? error.message : 'Image action failed');
     } finally {
       setIsActionLoading(false);
+    }
+  };
+
+  const clearWebsiteCache = async () => {
+    setIsClearCacheLoading(true);
+    setCacheErrorMessage('');
+    setCacheSuccessMessage('');
+    setCacheExecutionSummary([]);
+
+    try {
+      const csrfToken = sessionStorage.getItem('adminCsrfToken') || '';
+      const response = await fetch('/api/admin/clear-cache', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(adminEmail ? { 'x-admin-email': adminEmail } : {}),
+          ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+        },
+        body: JSON.stringify({ trigger: 'admin-dashboard' }),
+      });
+
+      const data = await response.json();
+      const summary = Array.isArray(data?.results)
+        ? data.results.map((item: { name?: string; status?: string; message?: string }) => `${item.name || 'task'}: ${item.status || 'unknown'} - ${item.message || ''}`)
+        : [];
+
+      if (!response.ok && response.status !== 207) {
+        throw new Error(data?.message || 'Failed to clear cache');
+      }
+
+      if (data?.success) {
+        setCacheSuccessMessage(data?.message || 'Website cache cleared successfully.');
+      } else {
+        setCacheErrorMessage(data?.message || 'Cache clear completed with warnings.');
+      }
+
+      setCacheExecutionSummary(summary);
+    } catch (error) {
+      setCacheErrorMessage(error instanceof Error ? error.message : 'Failed to clear cache');
+    } finally {
+      setIsClearCacheLoading(false);
+      setIsCacheModalOpen(false);
     }
   };
 
@@ -193,6 +253,97 @@ export default function DashboardPage() {
               </div>
             )}
           </section>
+
+          <section className="mt-8 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 dark:bg-amber-950/30 px-3 py-1 text-sm font-medium text-amber-700 dark:text-amber-300 mb-3">
+                  <RefreshCcw className="w-4 h-4" />
+                  Infrastructure Control
+                </div>
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-white">Clear Website Cache</h2>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                  Revalidate application and route cache, trigger query cache invalidation, and optionally purge CDN cache.
+                </p>
+              </div>
+              <div className="inline-flex items-center gap-2 text-xs sm:text-sm text-neutral-600 dark:text-neutral-300 rounded-lg border border-neutral-200 dark:border-neutral-700 px-3 py-2">
+                <ShieldCheck className="w-4 h-4" />
+                Allowed roles: admin, sub-admin, editor
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <button
+                type="button"
+                onClick={() => setIsCacheModalOpen(true)}
+                disabled={isClearCacheLoading}
+                className="inline-flex items-center gap-2 rounded-lg bg-red-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <RefreshCcw className={`w-4 h-4 ${isClearCacheLoading ? 'animate-spin' : ''}`} />
+                {isClearCacheLoading ? 'Clearing Cache...' : 'Clear Cache'}
+              </button>
+            </div>
+
+            {cacheSuccessMessage && (
+              <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-300">
+                <CheckCircle2 className="w-4 h-4" />
+                {cacheSuccessMessage}
+              </p>
+            )}
+
+            {cacheErrorMessage && (
+              <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-red-700 dark:text-red-300">
+                <XCircle className="w-4 h-4" />
+                {cacheErrorMessage}
+              </p>
+            )}
+
+            {cacheExecutionSummary.length > 0 && (
+              <ul className="mt-4 rounded-lg border border-neutral-200 dark:border-neutral-700 p-3 bg-neutral-50 dark:bg-neutral-800/50 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 space-y-1">
+                {cacheExecutionSummary.map((line, index) => (
+                  <li key={`cache-summary-${index}`}>{line}</li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          {isCacheModalOpen && (
+            <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4">
+              <div className="w-full max-w-lg rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow-xl p-6">
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white">Confirm Cache Clear</h3>
+                <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+                  This action will clear website caches, revalidate routes, and may trigger optional CDN/query cache purge integrations.
+                </p>
+                <ul className="mt-3 text-sm text-neutral-700 dark:text-neutral-300 list-disc pl-5 space-y-1">
+                  <li>Application cache revalidation</li>
+                  <li>Route/view cache refresh</li>
+                  <li>Database/query cache purge (if configured)</li>
+                  <li>CDN purge (if configured)</li>
+                  <li>Cache worker restart webhook (if configured)</li>
+                </ul>
+
+                <div className="mt-6 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsCacheModalOpen(false)}
+                    disabled={isClearCacheLoading}
+                    className="px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 text-sm font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearWebsiteCache}
+                    disabled={isClearCacheLoading}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-700 text-sm font-semibold text-white hover:bg-red-800 disabled:opacity-50"
+                  >
+                    <RefreshCcw className={`w-4 h-4 ${isClearCacheLoading ? 'animate-spin' : ''}`} />
+                    {isClearCacheLoading ? 'Clearing...' : 'Confirm Clear Cache'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
       <Footer />
