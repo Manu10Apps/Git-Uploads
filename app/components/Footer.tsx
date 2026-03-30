@@ -143,7 +143,7 @@ export function Footer() {
               href="https://x.com/intambwemedias"
               target="_blank"
               rel="noopener noreferrer"
-              className="social-link p-3 hover:scale-110 transition-transform"
+              className="social-link social-link--x p-3 hover:scale-110 transition-transform"
               aria-label="X"
             >
               <svg
@@ -158,7 +158,7 @@ export function Footer() {
               href="https://www.facebook.com/intambwemedia"
               target="_blank"
               rel="noopener noreferrer"
-              className="social-link p-3 hover:scale-110 transition-transform"
+              className="social-link social-link--facebook p-3 hover:scale-110 transition-transform"
               aria-label="Facebook"
             >
               <svg
@@ -173,7 +173,7 @@ export function Footer() {
               href="https://www.linkedin.com/in/intambwemedia/"
               target="_blank"
               rel="noopener noreferrer"
-              className="social-link p-3 hover:scale-110 transition-transform"
+              className="social-link social-link--linkedin p-3 hover:scale-110 transition-transform"
               aria-label="LinkedIn"
             >
               <svg
@@ -188,7 +188,7 @@ export function Footer() {
               href="https://www.youtube.com/@intambwemedia"
               target="_blank"
               rel="noopener noreferrer"
-              className="social-link p-3 hover:scale-110 transition-transform"
+              className="social-link social-link--youtube p-3 hover:scale-110 transition-transform"
               aria-label="YouTube"
             >
               <svg
@@ -203,7 +203,7 @@ export function Footer() {
               href="https://www.tiktok.com/@intambwemedia"
               target="_blank"
               rel="noopener noreferrer"
-              className="social-link p-3 hover:scale-110 transition-transform"
+              className="social-link social-link--tiktok p-3 hover:scale-110 transition-transform"
               aria-label="TikTok"
             >
               <svg
@@ -218,7 +218,7 @@ export function Footer() {
               href="https://whatsapp.com/channel/0029VaKte5oCcW4zwZMhIf24"
               target="_blank"
               rel="noopener noreferrer"
-              className="social-link p-3 hover:scale-110 transition-transform"
+              className="social-link social-link--whatsapp p-3 hover:scale-110 transition-transform"
               aria-label="WhatsApp"
             >
               <svg
@@ -233,7 +233,7 @@ export function Footer() {
               href="https://www.instagram.com/intambwemedia/"
               target="_blank"
               rel="noopener noreferrer"
-              className="social-link p-3 hover:scale-110 transition-transform"
+              className="social-link social-link--instagram p-3 hover:scale-110 transition-transform"
               aria-label="Instagram"
             >
               <svg
