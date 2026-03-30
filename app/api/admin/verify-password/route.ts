@@ -85,17 +85,45 @@ export async function POST(request: NextRequest) {
     try {
       const { prisma } = await import('@/lib/prisma');
 
-      const user = await prisma.adminUser.findUnique({
-        where: { email },
-        select: {
-          id: true,
-          email: true,
-          password: true,
-          role: true,
-          name: true,
-          emailVerified: true,
-        },
-      });
+      let user:
+        | {
+            id: number;
+            email: string;
+            password: string;
+            role: string;
+            name: string;
+            emailVerified?: boolean;
+            emailVerificationToken?: string | null;
+          }
+        | null = null;
+
+      try {
+        user = await prisma.adminUser.findUnique({
+          where: { email },
+          select: {
+            id: true,
+            email: true,
+            password: true,
+            role: true,
+            name: true,
+            emailVerified: true,
+            emailVerificationToken: true,
+          },
+        });
+      } catch {
+        // Backward compatibility for deployments where the admin_users table
+        // has not yet been migrated with email verification columns.
+        user = await prisma.adminUser.findUnique({
+          where: { email },
+          select: {
+            id: true,
+            email: true,
+            password: true,
+            role: true,
+            name: true,
+          },
+        });
+      }
 
       if (user) {
         let passwordMatch = false;
@@ -117,7 +145,10 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        if (!user.emailVerified) {
+        const requiresVerification =
+          user.emailVerified === false && Boolean(user.emailVerificationToken);
+
+        if (requiresVerification) {
           return NextResponse.json(
             {
               success: false,
