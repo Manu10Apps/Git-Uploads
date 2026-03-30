@@ -138,6 +138,7 @@ export default function LoginPage() {
           email: email.toLowerCase(),
           password,
           role,
+          replaceExisting: true,
         }),
       });
 
