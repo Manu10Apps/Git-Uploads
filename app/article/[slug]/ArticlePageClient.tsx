@@ -670,7 +670,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                 href="https://www.instagram.com/dir.bignem/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-md bg-red-600 hover:bg-red-700 text-white p-3 transition-colors"
+                className="inline-flex items-center justify-center rounded-md bg-gradient-to-br from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500 text-white p-3 transition-all hover:scale-110"
                 aria-label="Instagram"
                 title="Instagram"
               >
@@ -682,12 +682,13 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                 href="https://www.tiktok.com/@dir.bignem"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-md bg-red-600 hover:bg-red-700 text-white p-3 transition-colors"
+                className="inline-flex items-center justify-center rounded-md bg-black text-white p-3 transition-all hover:scale-110 hover:shadow-[0_0_0_2px_#25F4EE,0_0_0_4px_#FE2C55]"
                 aria-label="TikTok"
                 title="TikTok"
               >
-                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M19.498 7.094a4.994 4.994 0 0 1-3.622-1.49A4.992 4.992 0 0 1 13.364 1h-3.75v14.25a2.625 2.625 0 1 1-5.25-2.625 2.63 2.63 0 0 1 .81.125v-3.82a6.375 6.375 0 1 0 9.375 6.177V8.78a8.088 8.088 0 0 0 4.969 1.594V6.59a4.966 4.966 0 0 1-.5-.496z" />
+                <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="#25F4EE" d="M19.498 7.094a4.994 4.994 0 0 1-3.622-1.49A4.992 4.992 0 0 1 13.364 1h-3.75v14.25a2.625 2.625 0 1 1-5.25-2.625 2.63 2.63 0 0 1 .81.125v-3.82a6.375 6.375 0 1 0 9.375 6.177V8.78a8.088 8.088 0 0 0 4.969 1.594V6.59a4.966 4.966 0 0 1-.5-.496z" />
+                  <path fill="#FE2C55" d="M19.498 7.094a4.994 4.994 0 0 1-3.622-1.49A4.992 4.992 0 0 1 13.364 1h-3.75v14.25a2.625 2.625 0 1 1-5.25-2.625 2.63 2.63 0 0 1 .81.125v-3.82a6.375 6.375 0 1 0 9.375 6.177V8.78a8.088 8.088 0 0 0 4.969 1.594V6.59a4.966 4.966 0 0 1-.5-.496z" opacity="0.5" />
                 </svg>
               </a>
             </div>

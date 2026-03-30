@@ -247,6 +247,49 @@ button:disabled {
   fill: #e2001a;
 }
 
+.social-link.social-link--x:hover,
+.dark .social-link.social-link--x:hover {
+  color: #ffffff !important;
+  fill: #ffffff;
+}
+
+.social-link.social-link--facebook:hover,
+.dark .social-link.social-link--facebook:hover {
+  color: #1877f2 !important;
+  fill: #1877f2;
+}
+
+.social-link.social-link--linkedin:hover,
+.dark .social-link.social-link--linkedin:hover {
+  color: #0a66c2 !important;
+  fill: #0a66c2;
+}
+
+.social-link.social-link--youtube:hover,
+.dark .social-link.social-link--youtube:hover {
+  color: #ff0000 !important;
+  fill: #ff0000;
+}
+
+.social-link.social-link--whatsapp:hover,
+.dark .social-link.social-link--whatsapp:hover {
+  color: #25d366 !important;
+  fill: #25d366;
+}
+
+.social-link.social-link--instagram:hover,
+.dark .social-link.social-link--instagram:hover {
+  color: #e4405f !important;
+  fill: #e4405f;
+}
+
+.social-link.social-link--tiktok:hover,
+.dark .social-link.social-link--tiktok:hover {
+  color: #ffffff !important;
+  fill: #ffffff;
+  filter: drop-shadow(-1px -1px 0 #25f4ee) drop-shadow(1px 1px 0 #fe2c55);
+}
+
 .shimmer {
   animation: shimmer 2s infinite;
   background: linear-gradient(
