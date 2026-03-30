@@ -35,6 +35,10 @@ model Article {
   categoryId      Int
   category        Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   author          String
+  authorSocialPlatform String?
+  authorSocialUrl  String?
+  authorSocialPlatform2 String?
+  authorSocialUrl2 String?
   status          String    @default("draft") // "draft" | "published" | "scheduled" | "archived"
   publishedAt     DateTime?
   scheduledFor    DateTime?

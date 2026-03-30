@@ -16,6 +16,10 @@ interface Article {
   excerpt: string;
   content: string;
   author: string;
+  authorSocialPlatform?: string;
+  authorSocialUrl?: string;
+  authorSocialPlatform2?: string;
+  authorSocialUrl2?: string;
   category: string;
   tags: string[];
   image: string;
@@ -48,6 +52,17 @@ const formatDateInKinyarwanda = (dateString: string) => {
     'Nyakanga', 'Kanama', 'Nzeri', 'Ukwakira', 'Ugushyingo', 'Ukuboza'
   ];
   return `Tariki ya ${date.getDate()} ${months[date.getMonth()]}, ${date.getFullYear()}`;
+};
+
+const AUTHOR_SOCIAL_LABELS: Record<string, string> = {
+  x: 'X (Twitter)',
+  facebook: 'Facebook',
+  linkedin: 'LinkedIn',
+  instagram: 'Instagram',
+  youtube: 'YouTube',
+  tiktok: 'TikTok',
+  telegram: 'Telegram',
+  whatsapp: 'WhatsApp',
 };
 
 export default function ArticlePageClient({ slug }: ArticleClientProps) {
@@ -479,6 +494,23 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   }
 
   const totalComments = countComments(comments);
+  const authorContactLinks = [
+    {
+      platform: article.authorSocialPlatform,
+      url: article.authorSocialUrl,
+    },
+    {
+      platform: article.authorSocialPlatform2,
+      url: article.authorSocialUrl2,
+    },
+  ]
+    .filter((item) => item.url && /^https?:\/\//i.test(item.url))
+    .map((item) => ({
+      url: item.url as string,
+      label: item.platform
+        ? (AUTHOR_SOCIAL_LABELS[item.platform.toLowerCase()] || item.platform)
+        : 'Social Media',
+    }));
 
   return (
     <>
@@ -666,6 +698,29 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                 </a>
               ))}
             </div>
+          )}
+
+          {/* Contact Author */}
+          {authorContactLinks.length > 0 && (
+            <section className="mb-8 sm:mb-10 md:mb-12 rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white mb-2">Andikira Umwanditsi</h2>
+              <p className="text-sm sm:text-base text-neutral-700 dark:text-neutral-300 mb-4">
+                Ushobora kuvugana na {article.author} ukoresheje imbuga nkoranyambaga zatoranyijwe.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {authorContactLinks.map((link) => (
+                  <a
+                    key={`${link.label}-${link.url}`}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center rounded-md bg-red-700 hover:bg-red-800 text-white px-4 py-2.5 text-sm font-semibold transition-colors"
+                  >
+                    Andikira kuri {link.label}
+                  </a>
+                ))}
+              </div>
+            </section>
           )}
 
           {/* Comments Section */}

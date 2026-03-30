@@ -15,6 +15,10 @@ type FallbackArticle = {
   image: string | null;
   category: string;
   author: string;
+  authorSocialPlatform?: string | null;
+  authorSocialUrl?: string | null;
+  authorSocialPlatform2?: string | null;
+  authorSocialUrl2?: string | null;
   status: string;
   publishedAt: string | null;
   scheduledFor: string | null;
@@ -87,6 +91,16 @@ async function writeFallbackArticles(articles: FallbackArticle[]) {
   await fs.writeFile(getFallbackArticlesPath(), JSON.stringify(payload, null, 2));
 }
 
+async function ensureArticleAuthorSocialColumns() {
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "articles"
+    ADD COLUMN IF NOT EXISTS "authorSocialPlatform" TEXT,
+    ADD COLUMN IF NOT EXISTS "authorSocialUrl" TEXT,
+    ADD COLUMN IF NOT EXISTS "authorSocialPlatform2" TEXT,
+    ADD COLUMN IF NOT EXISTS "authorSocialUrl2" TEXT
+  `);
+}
+
 function toClientArticle(article: FallbackArticle) {
   return {
     id: article.id,
@@ -97,6 +111,10 @@ function toClientArticle(article: FallbackArticle) {
     image: resolveArticleImage(article.image, typeof article.gallery === 'string' ? article.gallery : JSON.stringify(article.gallery || [])),
     category: article.category,
     author: article.author,
+    authorSocialPlatform: article.authorSocialPlatform || undefined,
+    authorSocialUrl: article.authorSocialUrl || undefined,
+    authorSocialPlatform2: article.authorSocialPlatform2 || undefined,
+    authorSocialUrl2: article.authorSocialUrl2 || undefined,
     publishedAt: article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : undefined,
     readTime: article.readTime,
     featured: article.featured,
@@ -138,6 +156,8 @@ export async function GET(request: NextRequest) {
   const page = parseInt(searchParams.get('page') || '1');
 
   try {
+    await ensureArticleAuthorSocialColumns();
+
     const now = new Date();
 
     let where: any = {};
@@ -211,6 +231,10 @@ export async function GET(request: NextRequest) {
           excerpt: string;
           image: string | null;
           author: string;
+          authorSocialPlatform: string | null;
+          authorSocialUrl: string | null;
+          authorSocialPlatform2: string | null;
+          authorSocialUrl2: string | null;
           publishedAt: Date | null;
           readTime: number;
           featured: boolean;
@@ -223,6 +247,10 @@ export async function GET(request: NextRequest) {
           image: resolveArticleImage(article.image, ''),
           category: article.category.slug,
           author: article.author,
+          authorSocialPlatform: article.authorSocialPlatform || undefined,
+          authorSocialUrl: article.authorSocialUrl || undefined,
+          authorSocialPlatform2: article.authorSocialPlatform2 || undefined,
+          authorSocialUrl2: article.authorSocialUrl2 || undefined,
           publishedAt: article.publishedAt?.toLocaleDateString(),
           readTime: article.readTime,
           featured: article.featured,
@@ -237,6 +265,10 @@ export async function GET(request: NextRequest) {
           image: string | null;
           gallery: string | null;
           author: string;
+          authorSocialPlatform: string | null;
+          authorSocialUrl: string | null;
+          authorSocialPlatform2: string | null;
+          authorSocialUrl2: string | null;
           publishedAt: Date | null;
           readTime: number;
           featured: boolean;
@@ -252,6 +284,10 @@ export async function GET(request: NextRequest) {
           image: resolveArticleImage(article.image, article.gallery),
           category: article.category.slug,
           author: article.author,
+          authorSocialPlatform: article.authorSocialPlatform || undefined,
+          authorSocialUrl: article.authorSocialUrl || undefined,
+          authorSocialPlatform2: article.authorSocialPlatform2 || undefined,
+          authorSocialUrl2: article.authorSocialUrl2 || undefined,
           publishedAt: article.publishedAt?.toLocaleDateString(),
           readTime: article.readTime,
           featured: article.featured,
@@ -379,6 +415,10 @@ export async function POST(request: NextRequest) {
       content,
       category_id,
       author,
+      authorSocialPlatform,
+      authorSocialUrl,
+      authorSocialPlatform2,
+      authorSocialUrl2,
       image,
       tags,
       gallery,
@@ -431,6 +471,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const normalizedAuthorSocialPlatform =
+      typeof authorSocialPlatform === 'string' && authorSocialPlatform.trim()
+        ? authorSocialPlatform.trim()
+        : null;
+
+    const normalizedAuthorSocialUrl =
+      typeof authorSocialUrl === 'string' && authorSocialUrl.trim()
+        ? authorSocialUrl.trim()
+        : null;
+
+    const normalizedAuthorSocialPlatform2 =
+      typeof authorSocialPlatform2 === 'string' && authorSocialPlatform2.trim()
+        ? authorSocialPlatform2.trim()
+        : null;
+
+    const normalizedAuthorSocialUrl2 =
+      typeof authorSocialUrl2 === 'string' && authorSocialUrl2.trim()
+        ? authorSocialUrl2.trim()
+        : null;
+
+    if (normalizedAuthorSocialUrl && !/^https?:\/\//i.test(normalizedAuthorSocialUrl)) {
+      return NextResponse.json(
+        { success: false, error: 'Author social URL must start with http:// or https://' },
+        { status: 400 }
+      );
+    }
+
+    if (normalizedAuthorSocialUrl2 && !/^https?:\/\//i.test(normalizedAuthorSocialUrl2)) {
+      return NextResponse.json(
+        { success: false, error: 'Second author social URL must start with http:// or https://' },
+        { status: 400 }
+      );
+    }
+
+    await ensureArticleAuthorSocialColumns();
+
     // Resolve category by ID first; fallback to slug for compatibility.
     const categoryIdRaw = String(category_id).trim();
     const parsedCategoryId = Number(categoryIdRaw);
@@ -465,6 +541,10 @@ export async function POST(request: NextRequest) {
         content: content.trim(),
         categoryId: category.id,
         author: author.trim(),
+        authorSocialPlatform: normalizedAuthorSocialPlatform,
+        authorSocialUrl: normalizedAuthorSocialUrl,
+        authorSocialPlatform2: normalizedAuthorSocialPlatform2,
+        authorSocialUrl2: normalizedAuthorSocialUrl2,
         image: imageToStore,
         tags: tags && Array.isArray(tags) ? JSON.stringify(tags) : null,
         gallery: gallery && Array.isArray(gallery) ? JSON.stringify(gallery) : null,
@@ -488,6 +568,10 @@ export async function POST(request: NextRequest) {
           image: resolveArticleImage(article.image, article.gallery),
           category: article.category.slug,
           author: article.author,
+          authorSocialPlatform: article.authorSocialPlatform || undefined,
+          authorSocialUrl: article.authorSocialUrl || undefined,
+          authorSocialPlatform2: article.authorSocialPlatform2 || undefined,
+          authorSocialUrl2: article.authorSocialUrl2 || undefined,
           publishedAt: article.publishedAt?.toLocaleDateString(),
           readTime: article.readTime,
           featured: article.featured,
@@ -517,6 +601,10 @@ export async function POST(request: NextRequest) {
         const excerpt = String(body?.excerpt || '').trim();
         const content = String(body?.content || '').trim();
         const author = String(body?.author || '').trim();
+        const authorSocialPlatform = String(body?.authorSocialPlatform || '').trim();
+        const authorSocialUrl = String(body?.authorSocialUrl || '').trim();
+        const authorSocialPlatform2 = String(body?.authorSocialPlatform2 || '').trim();
+        const authorSocialUrl2 = String(body?.authorSocialUrl2 || '').trim();
         const status = String(body?.status || 'draft');
         const featured = Boolean(body?.featured);
         const readTime = Number(body?.readTime) || 5;
@@ -583,6 +671,10 @@ export async function POST(request: NextRequest) {
           image: body?.image ? (normalizeArticleImageUrl(String(body.image)) ?? null) : null,
           category: categorySlug,
           author,
+          authorSocialPlatform: authorSocialPlatform || null,
+          authorSocialUrl: authorSocialUrl || null,
+          authorSocialPlatform2: authorSocialPlatform2 || null,
+          authorSocialUrl2: authorSocialUrl2 || null,
           status,
           publishedAt,
           scheduledFor,

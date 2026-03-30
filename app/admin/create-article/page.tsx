@@ -18,6 +18,10 @@ interface ArticleForm {
   content: string;
   category: string;
   author: string;
+  authorSocialPlatform: string;
+  authorSocialUrl: string;
+  authorSocialPlatform2: string;
+  authorSocialUrl2: string;
   image: string;
   tags: string;
   readTime: number;
@@ -39,6 +43,10 @@ export default function CreateArticlePage() {
     content: '',
     category: '',
     author: '',
+    authorSocialPlatform: '',
+    authorSocialUrl: '',
+    authorSocialPlatform2: '',
+    authorSocialUrl2: '',
     image: '',
     tags: '',
     readTime: 5,
@@ -190,6 +198,10 @@ export default function CreateArticlePage() {
           content: form.content.trim(),
           category_id: categoryId,
           author: form.author.trim(),
+          authorSocialPlatform: form.authorSocialPlatform || null,
+          authorSocialUrl: form.authorSocialUrl.trim() || null,
+          authorSocialPlatform2: form.authorSocialPlatform2 || null,
+          authorSocialUrl2: form.authorSocialUrl2.trim() || null,
           image: normalizedFeaturedImage,
           tags: tagArray,
           readTime: parseInt(form.readTime.toString()) || 5,
@@ -217,6 +229,10 @@ export default function CreateArticlePage() {
           content: '',
           category: '',
           author: '',
+          authorSocialPlatform: '',
+          authorSocialUrl: '',
+          authorSocialPlatform2: '',
+          authorSocialUrl2: '',
           image: '',
           tags: '',
           readTime: 5,
@@ -329,6 +345,80 @@ export default function CreateArticlePage() {
                 className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-700 focus:border-transparent outline-none"
                 required
               />
+            </div>
+
+            <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
+                  Preferred Social Media 1
+                </label>
+                <select
+                  name="authorSocialPlatform"
+                  value={form.authorSocialPlatform}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-700 focus:border-transparent outline-none"
+                >
+                  <option value="">No contact platform</option>
+                  <option value="x" disabled={form.authorSocialPlatform2 === 'x'}>X (Twitter)</option>
+                  <option value="facebook" disabled={form.authorSocialPlatform2 === 'facebook'}>Facebook</option>
+                  <option value="linkedin" disabled={form.authorSocialPlatform2 === 'linkedin'}>LinkedIn</option>
+                  <option value="instagram" disabled={form.authorSocialPlatform2 === 'instagram'}>Instagram</option>
+                  <option value="youtube" disabled={form.authorSocialPlatform2 === 'youtube'}>YouTube</option>
+                  <option value="tiktok" disabled={form.authorSocialPlatform2 === 'tiktok'}>TikTok</option>
+                  <option value="telegram" disabled={form.authorSocialPlatform2 === 'telegram'}>Telegram</option>
+                  <option value="whatsapp" disabled={form.authorSocialPlatform2 === 'whatsapp'}>WhatsApp</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
+                  Social Profile URL 1
+                </label>
+                <input
+                  type="url"
+                  name="authorSocialUrl"
+                  value={form.authorSocialUrl}
+                  onChange={handleChange}
+                  placeholder="https://..."
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-700 focus:border-transparent outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
+                  Preferred Social Media 2
+                </label>
+                <select
+                  name="authorSocialPlatform2"
+                  value={form.authorSocialPlatform2}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-700 focus:border-transparent outline-none"
+                >
+                  <option value="">No second platform</option>
+                  <option value="x" disabled={form.authorSocialPlatform === 'x'}>X (Twitter)</option>
+                  <option value="facebook" disabled={form.authorSocialPlatform === 'facebook'}>Facebook</option>
+                  <option value="linkedin" disabled={form.authorSocialPlatform === 'linkedin'}>LinkedIn</option>
+                  <option value="instagram" disabled={form.authorSocialPlatform === 'instagram'}>Instagram</option>
+                  <option value="youtube" disabled={form.authorSocialPlatform === 'youtube'}>YouTube</option>
+                  <option value="tiktok" disabled={form.authorSocialPlatform === 'tiktok'}>TikTok</option>
+                  <option value="telegram" disabled={form.authorSocialPlatform === 'telegram'}>Telegram</option>
+                  <option value="whatsapp" disabled={form.authorSocialPlatform === 'whatsapp'}>WhatsApp</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
+                  Social Profile URL 2
+                </label>
+                <input
+                  type="url"
+                  name="authorSocialUrl2"
+                  value={form.authorSocialUrl2}
+                  onChange={handleChange}
+                  placeholder="https://..."
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-700 focus:border-transparent outline-none"
+                />
+              </div>
             </div>
 
             {/* Excerpt */}

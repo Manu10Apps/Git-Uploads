@@ -50,6 +50,10 @@ type FallbackArticle = {
   image: string | null;
   category: string;
   author: string;
+  authorSocialPlatform?: string | null;
+  authorSocialUrl?: string | null;
+  authorSocialPlatform2?: string | null;
+  authorSocialUrl2?: string | null;
   status: string;
   publishedAt: string | null;
   scheduledFor: string | null;
@@ -122,6 +126,16 @@ async function writeFallbackArticles(articles: FallbackArticle[]) {
   await fs.writeFile(getFallbackArticlesPath(), JSON.stringify(payload, null, 2));
 }
 
+async function ensureArticleAuthorSocialColumns() {
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "articles"
+    ADD COLUMN IF NOT EXISTS "authorSocialPlatform" TEXT,
+    ADD COLUMN IF NOT EXISTS "authorSocialUrl" TEXT,
+    ADD COLUMN IF NOT EXISTS "authorSocialPlatform2" TEXT,
+    ADD COLUMN IF NOT EXISTS "authorSocialUrl2" TEXT
+  `);
+}
+
 function toClientArticle(article: FallbackArticle) {
   return {
     id: article.id,
@@ -132,6 +146,10 @@ function toClientArticle(article: FallbackArticle) {
     image: resolveArticleImage(article.image, typeof article.gallery === 'string' ? article.gallery : JSON.stringify(article.gallery || [])),
     category: article.category,
     author: article.author,
+    authorSocialPlatform: article.authorSocialPlatform || undefined,
+    authorSocialUrl: article.authorSocialUrl || undefined,
+    authorSocialPlatform2: article.authorSocialPlatform2 || undefined,
+    authorSocialUrl2: article.authorSocialUrl2 || undefined,
     publishedAt: article.publishedAt || undefined,
     readTime: article.readTime,
     featured: article.featured,
@@ -161,6 +179,8 @@ export async function PATCH(
 
     parsedBody = await request.json();
     const body = parsedBody;
+
+    await ensureArticleAuthorSocialColumns();
 
     // Normalize image path for DB storage only (no existsSync – that belongs only in GET responses).
     // If body.image is absent/empty, imageToStore is null → existing DB value will be preserved.
@@ -213,6 +233,40 @@ export async function PATCH(
           ? (article.publishedAt || new Date())
           : null;
 
+    const normalizedAuthorSocialPlatform =
+      typeof body.authorSocialPlatform === 'string' && body.authorSocialPlatform.trim()
+        ? body.authorSocialPlatform.trim()
+        : null;
+
+    const normalizedAuthorSocialUrl =
+      typeof body.authorSocialUrl === 'string' && body.authorSocialUrl.trim()
+        ? body.authorSocialUrl.trim()
+        : null;
+
+    const normalizedAuthorSocialPlatform2 =
+      typeof body.authorSocialPlatform2 === 'string' && body.authorSocialPlatform2.trim()
+        ? body.authorSocialPlatform2.trim()
+        : null;
+
+    const normalizedAuthorSocialUrl2 =
+      typeof body.authorSocialUrl2 === 'string' && body.authorSocialUrl2.trim()
+        ? body.authorSocialUrl2.trim()
+        : null;
+
+    if (normalizedAuthorSocialUrl && !/^https?:\/\//i.test(normalizedAuthorSocialUrl)) {
+      return NextResponse.json(
+        { success: false, error: 'Author social URL must start with http:// or https://' },
+        { status: 400 }
+      );
+    }
+
+    if (normalizedAuthorSocialUrl2 && !/^https?:\/\//i.test(normalizedAuthorSocialUrl2)) {
+      return NextResponse.json(
+        { success: false, error: 'Second author social URL must start with http:// or https://' },
+        { status: 400 }
+      );
+    }
+
     // Update the article
     const updatedArticle = await prisma.article.update({
       where: { id },
@@ -225,6 +279,14 @@ export async function PATCH(
         image: imageToStore ?? article.image,
         categoryId: body.categoryId || article.categoryId,
         author: body.author || article.author,
+        authorSocialPlatform:
+          body.authorSocialPlatform !== undefined ? normalizedAuthorSocialPlatform : article.authorSocialPlatform,
+        authorSocialUrl:
+          body.authorSocialUrl !== undefined ? normalizedAuthorSocialUrl : article.authorSocialUrl,
+        authorSocialPlatform2:
+          body.authorSocialPlatform2 !== undefined ? normalizedAuthorSocialPlatform2 : article.authorSocialPlatform2,
+        authorSocialUrl2:
+          body.authorSocialUrl2 !== undefined ? normalizedAuthorSocialUrl2 : article.authorSocialUrl2,
         featured: body.featured !== undefined ? body.featured : article.featured,
         readTime: body.readTime || article.readTime,
         tags: tagsToStore,
@@ -244,6 +306,10 @@ export async function PATCH(
       image: resolveArticleImage(updatedArticle.image, updatedArticle.gallery),
       category: updatedArticle.category.slug,
       author: updatedArticle.author,
+      authorSocialPlatform: updatedArticle.authorSocialPlatform || undefined,
+      authorSocialUrl: updatedArticle.authorSocialUrl || undefined,
+      authorSocialPlatform2: updatedArticle.authorSocialPlatform2 || undefined,
+      authorSocialUrl2: updatedArticle.authorSocialUrl2 || undefined,
       publishedAt: updatedArticle.publishedAt?.toISOString(),
       readTime: updatedArticle.readTime,
       featured: updatedArticle.featured,
@@ -326,6 +392,22 @@ export async function PATCH(
             : current.image,
           category: resolveFallbackCategorySlug(body.categoryId, current.category),
           author: body.author ? String(body.author).trim() : current.author,
+          authorSocialPlatform:
+            body.authorSocialPlatform !== undefined
+              ? (String(body.authorSocialPlatform || '').trim() || null)
+              : (current.authorSocialPlatform || null),
+          authorSocialUrl:
+            body.authorSocialUrl !== undefined
+              ? (String(body.authorSocialUrl || '').trim() || null)
+              : (current.authorSocialUrl || null),
+          authorSocialPlatform2:
+            body.authorSocialPlatform2 !== undefined
+              ? (String(body.authorSocialPlatform2 || '').trim() || null)
+              : (current.authorSocialPlatform2 || null),
+          authorSocialUrl2:
+            body.authorSocialUrl2 !== undefined
+              ? (String(body.authorSocialUrl2 || '').trim() || null)
+              : (current.authorSocialUrl2 || null),
           featured: body.featured !== undefined ? Boolean(body.featured) : current.featured,
           readTime: body.readTime ? Number(body.readTime) || current.readTime : current.readTime,
           tags: nextTags,
@@ -367,6 +449,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await ensureArticleAuthorSocialColumns();
+
     const { id: rawId } = await params;
     const id = parseInt(rawId);
     if (isNaN(id)) {
@@ -460,6 +544,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await ensureArticleAuthorSocialColumns();
+
     const { id: rawId } = await params;
     const id = parseInt(rawId);
     if (isNaN(id)) {
@@ -491,6 +577,10 @@ export async function GET(
       image: resolveArticleImage(article.image, article.gallery),
       category: article.category.slug,
       author: article.author,
+      authorSocialPlatform: article.authorSocialPlatform || undefined,
+      authorSocialUrl: article.authorSocialUrl || undefined,
+      authorSocialPlatform2: article.authorSocialPlatform2 || undefined,
+      authorSocialUrl2: article.authorSocialUrl2 || undefined,
       publishedAt: article.publishedAt?.toISOString(),
       readTime: article.readTime,
       featured: article.featured,
