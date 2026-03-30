@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
           password: true,
           role: true,
           name: true,
+          emailVerified: true,
         },
       });
 
@@ -113,6 +114,17 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             { success: false, message: 'Invalid email or password' },
             { status: 200 }
+          );
+        }
+
+        if (!user.emailVerified) {
+          return NextResponse.json(
+            {
+              success: false,
+              message: 'Please verify your email before logging in.',
+              code: 'EMAIL_NOT_VERIFIED',
+            },
+            { status: 403 }
           );
         }
 

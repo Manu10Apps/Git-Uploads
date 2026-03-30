@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { hashPassword } from '@/lib/auth';
+import { generateSecureToken, sendAdminVerificationEmail } from '@/lib/admin-account';
 import type { PrismaClient } from '@prisma/client';
 
 const VALID_ROLES = new Set(['admin', 'sub-admin', 'editor']);
@@ -110,6 +111,7 @@ export async function GET(request: NextRequest) {
         name: true,
         email: true,
         role: true,
+        emailVerified: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -185,26 +187,35 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await hashPassword(password);
 
+    const verificationToken = generateSecureToken();
+    const verificationExpires = new Date(Date.now() + 1000 * 60 * 60 * 24);
+
     const createdUser = await prisma.adminUser.create({
       data: {
         name,
         email,
         password: hashedPassword,
         role,
+        emailVerified: false,
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: verificationExpires,
       },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
+        emailVerified: true,
         createdAt: true,
       },
     });
 
+    await sendAdminVerificationEmail(createdUser.email, createdUser.name, verificationToken);
+
     return NextResponse.json(
       {
         success: true,
-        message: 'User created successfully',
+        message: 'User created successfully. Verification link sent to email.',
         user: createdUser,
       },
       { status: 201 }
@@ -303,6 +314,7 @@ export async function PATCH(request: NextRequest) {
         name: true,
         email: true,
         role: true,
+        emailVerified: true,
         createdAt: true,
         updatedAt: true,
       },
