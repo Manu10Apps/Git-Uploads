@@ -33,10 +33,17 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: adverts.map(toAdvertResponse),
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        data: adverts.map(toAdvertResponse),
+      },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        },
+      }
+    );
   } catch (error) {
     console.error('Failed to fetch public adverts:', error);
     return NextResponse.json({

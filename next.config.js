@@ -5,6 +5,9 @@ const nextConfig = {
   reactStrictMode: true,
   compress: true,
   outputFileTracingRoot: path.join(__dirname),
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
   images: {
     remotePatterns: [
       {

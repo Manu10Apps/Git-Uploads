@@ -19,7 +19,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const response = await fetch('/api/articles');
+        const response = await fetch('/api/articles?summary=true&limit=12');
         if (response.ok) {
           const result = await response.json();
           const data = result.data || [];
@@ -32,8 +32,8 @@ export default function HomePage() {
             category: article.category,
             author: article.author,
             publishedAt: article.publishedAt || new Date().toLocaleDateString(),
-            readTime: Math.ceil((article.content?.split(' ').length || 0) / 200) || 5,
-            tags: article.tags ? (typeof article.tags === 'string' ? JSON.parse(article.tags) : article.tags) : [],
+            readTime: article.readTime || 5,
+            tags: [],
             featured: article.featured,
           }));
           setArticles(formattedArticles);
