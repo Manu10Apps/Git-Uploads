@@ -125,8 +125,8 @@ export default function BreakingNewsCarousel({ articles = [] }: BreakingNewsCaro
                 className="flex-shrink-0 px-3 py-2 font-bold text-xs sm:text-sm border-b-2 border-transparent hover:text-black dark:hover:text-white transition-colors whitespace-nowrap flex items-center gap-2"
                 style={{ backgroundColor: 'rgba(226, 0, 26, 0.1)', color: '#e2001a' }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 flex-shrink-0" aria-hidden="true">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 flex-shrink-0 text-green-500 drop-shadow-sm" aria-hidden="true">
+                  <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
                 </svg>
                 Amakuru Agezweho
               </Link>
