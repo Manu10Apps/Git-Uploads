@@ -125,11 +125,7 @@ input::placeholder, textarea::placeholder {
 
 /* Buttons */
 button {
-  @apply transition-all duration-200 min-h-[2.5rem] sm:min-h-[2.75rem];
-}
-
-button:not([class*="p-"]) {
-  @apply px-3 sm:px-4 py-2 sm:py-2.5;
+  @apply transition-all duration-200;
 }
 
 button:disabled {

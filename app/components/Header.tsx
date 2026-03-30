@@ -82,11 +82,11 @@ export function Header() {
             <Image
               src="/logo.png"
               alt="Intambwe Media"
-              width={56}
-              height={56}
+              width={48}
+              height={48}
               priority
-              sizes="56px"
-              className="h-[56px] w-[56px] rounded-lg"
+              sizes="48px"
+              className="h-12 w-12 rounded-lg"
             />
           </Link>
 

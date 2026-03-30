@@ -115,7 +115,7 @@ export function NewsCard({
   return (
     <article
       onClick={handleCardClick}
-      className={`group glass rounded-lg sm:rounded-xl overflow-hidden hover:shadow-2xl sm:hover:scale-105 transition-all duration-300 cursor-pointer ${
+      className={`group glass rounded-lg sm:rounded-xl overflow-hidden hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 cursor-pointer ${
         featured ? 'sm:col-span-2' : ''
       }`}
     >

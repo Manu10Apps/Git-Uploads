@@ -280,7 +280,7 @@ export function TopBar() {
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink min-w-0 border-l border-neutral-600 pl-2">
             <span className="flex-shrink-0">{data.weather.icon}</span>
             <span className="text-white/80 text-xs flex-shrink-0">{data.weather.temp}°C</span>
-            <span className="text-neutral-400 text-xs truncate hidden xs:inline sm:inline">{data.weather.conditionKy}</span>
+            <span className="text-neutral-400 text-xs truncate hidden sm:inline">{data.weather.conditionKy}</span>
           </div>
 
           {/* USD Only */}
