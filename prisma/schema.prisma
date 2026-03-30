@@ -89,13 +89,18 @@ model CommentVote {
 }
 
 model AdminUser {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  password  String    // Hash with bcrypt
-  name      String
-  role      String    @default("editor") // "admin" | "sub-admin" | "editor"
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id                       Int       @id @default(autoincrement())
+  email                    String    @unique
+  password                 String    // Hash with bcrypt
+  name                     String
+  role                     String    @default("editor") // "admin" | "sub-admin" | "editor"
+  emailVerified            Boolean   @default(false)
+  emailVerificationToken   String?   @unique
+  emailVerificationExpires DateTime?
+  passwordResetToken       String?   @unique
+  passwordResetExpires     DateTime?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 
   @@map("admin_users")
 }

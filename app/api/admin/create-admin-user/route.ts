@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { hashPassword } from '@/lib/auth';
+import { generateSecureToken, sendAdminVerificationEmail } from '@/lib/admin-account';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
@@ -34,19 +35,27 @@ export async function POST(request: NextRequest) {
 
     if (existingUser) {
       // Update existing user
+      const verificationToken = generateSecureToken();
+      const verificationExpires = new Date(Date.now() + 1000 * 60 * 60 * 24);
+
       const updatedUser = await prisma.adminUser.update({
         where: { email: email.toLowerCase() },
         data: {
           password: hashedPassword,
           name,
           role,
+          emailVerified: false,
+          emailVerificationToken: verificationToken,
+          emailVerificationExpires: verificationExpires,
         },
       });
+
+      await sendAdminVerificationEmail(updatedUser.email, updatedUser.name, verificationToken);
 
       return NextResponse.json(
         {
           success: true,
-          message: 'Admin user updated successfully',
+          message: 'Admin user updated successfully. Verification link sent to email.',
           user: {
             email: updatedUser.email,
             name: updatedUser.name,
@@ -58,19 +67,27 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new user
+    const verificationToken = generateSecureToken();
+    const verificationExpires = new Date(Date.now() + 1000 * 60 * 60 * 24);
+
     const newUser = await prisma.adminUser.create({
       data: {
         email: email.toLowerCase(),
         password: hashedPassword,
         name,
         role,
+        emailVerified: false,
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: verificationExpires,
       },
     });
+
+    await sendAdminVerificationEmail(newUser.email, newUser.name, verificationToken);
 
     return NextResponse.json(
       {
         success: true,
-        message: 'Admin user created successfully',
+        message: 'Admin user created successfully. Verification link sent to email.',
         user: {
           email: newUser.email,
           name: newUser.name,

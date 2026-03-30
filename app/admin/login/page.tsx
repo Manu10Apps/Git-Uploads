@@ -1,11 +1,12 @@
 'use client';
 
 import { FormEvent, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, Lock, Mail, User, UserPlus } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [mode, setMode] = useState<'login' | 'create'>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -16,10 +17,25 @@ export default function LoginPage() {
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetToken, setResetToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
   useEffect(() => {
     setIsLoggedIn(localStorage.getItem('adminAuth') === 'true');
   }, []);
+
+  useEffect(() => {
+    const modeFromQuery = searchParams.get('mode');
+    const tokenFromQuery = searchParams.get('token');
+
+    if (modeFromQuery === 'reset' && tokenFromQuery) {
+      setMode('login');
+      setShowForgotPassword(false);
+      setResetToken(tokenFromQuery);
+    }
+  }, [searchParams]);
   const getPasswordStrength = (pwd: string) => {
     if (!pwd) return { strength: 0, label: '', color: '' };
     if (pwd.length < 8) return { strength: 1, label: 'Weak', color: 'text-red-500' };
@@ -147,6 +163,73 @@ export default function LoginPage() {
     }
   };
 
+  const handleRequestPasswordReset = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/admin/password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'request', email: email.toLowerCase() }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        setError(data.message || 'Failed to send reset link.');
+      } else {
+        setSuccess(data.message || 'Reset link sent. Check your email.');
+      }
+    } catch {
+      setError('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleConfirmPasswordReset = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setIsLoading(true);
+
+    if (newPassword.length < 8) {
+      setError('Password must be at least 8 characters.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setError('Passwords do not match.');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/admin/password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'confirm', token: resetToken, password: newPassword }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        setError(data.message || 'Failed to reset password.');
+      } else {
+        setSuccess('Password changed successfully. You can now log in.');
+        setResetToken('');
+        setNewPassword('');
+        setConfirmNewPassword('');
+      }
+    } catch {
+      setError('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-800 to-black flex items-center justify-center px-3 sm:px-4">
       <div className="bg-white dark:bg-slate-900 rounded-lg shadow-2xl p-5 sm:p-8 max-w-md w-full">
@@ -160,14 +243,20 @@ export default function LoginPage() {
           Admin Access
         </h1>
         <p className="text-center text-slate-600 dark:text-slate-400 mb-8">
-          {mode === 'login' ? 'Enter your credentials to access the admin panel' : 'Create a new admin or editor account'}
+          {resetToken
+            ? 'Set a new password for your admin account'
+            : mode === 'login'
+            ? 'Enter your credentials to access the admin panel'
+            : 'Create a new admin or editor account'}
         </p>
 
+        {!resetToken && (
         <div className="grid grid-cols-2 gap-2 mb-6 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
           <button
             type="button"
             onClick={() => {
               setMode('login');
+              setShowForgotPassword(false);
               setError('');
               setSuccess('');
               setPassword('');
@@ -184,6 +273,7 @@ export default function LoginPage() {
             type="button"
             onClick={() => {
               setMode('create');
+              setShowForgotPassword(false);
               setError('');
               setSuccess('');
               setPassword('');
@@ -197,9 +287,21 @@ export default function LoginPage() {
             Create User
           </button>
         </div>
+        )}
 
-        <form onSubmit={mode === 'login' ? handleLogin : handleCreateUser} className="space-y-4">
-          {mode === 'create' && (
+        <form
+          onSubmit={
+            resetToken
+              ? handleConfirmPasswordReset
+              : showForgotPassword
+              ? handleRequestPasswordReset
+              : mode === 'login'
+              ? handleLogin
+              : handleCreateUser
+          }
+          className="space-y-4"
+        >
+          {!resetToken && mode === 'create' && (
             <div>
               <label htmlFor="name" className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
                 Full Name
@@ -220,6 +322,7 @@ export default function LoginPage() {
             </div>
           )}
 
+          {!resetToken && (
           <div>
             <label htmlFor="email" className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
               Email Address
@@ -245,7 +348,9 @@ export default function LoginPage() {
               )}
             </div>
           </div>
+          )}
 
+          {!resetToken && !showForgotPassword && (
           <div>
             <label htmlFor="password" className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
               Password
@@ -302,8 +407,46 @@ export default function LoginPage() {
               </div>
             )}
           </div>
+          )}
 
-          {mode === 'create' && (
+          {resetToken && (
+            <>
+              <div>
+                <label htmlFor="new-password" className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
+                  New Password
+                </label>
+                <input
+                  id="new-password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Create new password (min 8 chars)"
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                  disabled={isLoading}
+                  required
+                  minLength={8}
+                />
+              </div>
+              <div>
+                <label htmlFor="confirm-new-password" className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
+                  Confirm New Password
+                </label>
+                <input
+                  id="confirm-new-password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                  disabled={isLoading}
+                  required
+                  minLength={8}
+                />
+              </div>
+            </>
+          )}
+
+          {!resetToken && mode === 'create' && (
             <div>
               <label htmlFor="role" className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
                 Role
@@ -334,21 +477,46 @@ export default function LoginPage() {
             </div>
           )}
 
+          {!resetToken && mode === 'login' && (
+            <div className="flex justify-between items-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForgotPassword((prev) => !prev);
+                  setError('');
+                  setSuccess('');
+                }}
+                className="text-sm text-red-700 hover:underline dark:text-red-400"
+              >
+                {showForgotPassword ? 'Back to Login' : 'Forgot password?'}
+              </button>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={
               isLoading ||
-              !email ||
-              !password ||
-              !isEmailValid ||
-              (mode === 'create' && (!name || password.length < 8))
+              (resetToken
+                ? !newPassword || !confirmNewPassword
+                : showForgotPassword
+                ? !email || !isEmailValid
+                : !email || !password || !isEmailValid || (mode === 'create' && (!name || password.length < 8)))
             }
             className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
           >
             {isLoading
-              ? mode === 'login'
+              ? resetToken
+                ? 'Resetting Password...'
+                : showForgotPassword
+                ? 'Sending Reset Link...'
+                : mode === 'login'
                 ? 'Verifying...'
                 : 'Creating User...'
+              : resetToken
+              ? 'Set New Password'
+              : showForgotPassword
+              ? 'Send Reset Link'
               : mode === 'login'
               ? 'Access Admin Panel'
               : 'Create Account'}
