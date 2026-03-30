@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
@@ -11,12 +11,23 @@ interface SearchModalProps {
   onClose: () => void;
 }
 
+interface RelatedSearchResult {
+  id: number;
+  title: string;
+  slug: string;
+  categoryName: string;
+}
+
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isRelatedLoading, setIsRelatedLoading] = useState(false);
+  const [relatedResults, setRelatedResults] = useState<RelatedSearchResult[]>([]);
+  const [relatedError, setRelatedError] = useState('');
   const router = useRouter();
   const { language } = useAppStore();
   const t = getTranslation(language);
+  const trimmedQuery = useMemo(() => query.trim(), [query]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +42,14 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSelectRelated = (slug: string) => {
+    router.push(`/article/${slug}`);
+    setQuery('');
+    setRelatedResults([]);
+    setRelatedError('');
+    onClose();
   };
 
   // Close on Escape key
@@ -49,6 +68,53 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       document.body.style.overflow = 'auto';
     };
   }, [isOpen, onClose]);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const currentQuery = trimmedQuery;
+
+    if (currentQuery.length < 2) {
+      setRelatedResults([]);
+      setRelatedError('');
+      setIsRelatedLoading(false);
+      return;
+    }
+
+    const timer = window.setTimeout(async () => {
+      setIsRelatedLoading(true);
+      setRelatedError('');
+
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(currentQuery)}&limit=6`);
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          setRelatedResults([]);
+          setRelatedError(data.error || 'Failed to load related searches');
+          return;
+        }
+
+        const nextResults = Array.isArray(data.data)
+          ? data.data.map((item: any) => ({
+              id: Number(item.id),
+              title: String(item.title || ''),
+              slug: String(item.slug || ''),
+              categoryName: String(item.categoryName || ''),
+            }))
+          : [];
+
+        setRelatedResults(nextResults);
+      } catch {
+        setRelatedResults([]);
+        setRelatedError('Failed to load related searches');
+      } finally {
+        setIsRelatedLoading(false);
+      }
+    }, 220);
+
+    return () => window.clearTimeout(timer);
+  }, [trimmedQuery, isOpen]);
 
   if (!isOpen) return null;
 
@@ -101,6 +167,43 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 autoFocus
               />
             </div>
+
+            {trimmedQuery.length >= 2 && (
+              <div className="mt-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 overflow-hidden">
+                <div className="px-3 py-2 text-xs font-semibold tracking-wide text-neutral-600 dark:text-neutral-300 border-b border-neutral-200 dark:border-neutral-700">
+                  Related Searches
+                </div>
+
+                {isRelatedLoading ? (
+                  <div className="px-3 py-3 text-sm text-neutral-500 dark:text-neutral-400">
+                    {t.common.searching}
+                  </div>
+                ) : relatedError ? (
+                  <div className="px-3 py-3 text-sm text-red-600 dark:text-red-400">{relatedError}</div>
+                ) : relatedResults.length === 0 ? (
+                  <div className="px-3 py-3 text-sm text-neutral-500 dark:text-neutral-400">
+                    No related searches found
+                  </div>
+                ) : (
+                  <ul className="max-h-64 overflow-y-auto">
+                    {relatedResults.map((result) => (
+                      <li key={result.id}>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectRelated(result.slug)}
+                          className="w-full text-left px-3 py-2 hover:bg-white dark:hover:bg-neutral-700 transition-colors"
+                        >
+                          <div className="text-sm font-medium text-neutral-900 dark:text-white line-clamp-1">
+                            {result.title}
+                          </div>
+                          <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{result.categoryName}</div>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
 
             <button
               type="submit"
