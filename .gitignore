@@ -13,6 +13,10 @@ out
 dist
 build
 
+# TypeScript build info (must not be committed - Nixpacks mounts this path as a cache dir)
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
 # Environment variables
 .env
 .env.local
