@@ -183,8 +183,8 @@ export default function CategoryPage({ params: paramsPromise }: { params: Promis
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  Showing {currentArticles.length} of {articles.length} articles
-                  {totalPages > 1 && ` (Page ${currentPage} of ${totalPages})`}
+                  Hagaragara {currentArticles.length} mu nkuru {articles.length}
+                  {totalPages > 1 && ` (Urupapuro ${currentPage} mu ${totalPages})`}
                 </p>
               </div>
               <div className="flex items-center gap-2 sm:gap-3">
