@@ -1,6 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+type PublicCommentNode = {
+  id: number;
+  name: string;
+  content: string;
+  likes: number;
+  dislikes: number;
+  createdAt: Date;
+  visitorReaction: string | null;
+  replies: PublicCommentNode[];
+};
+
+type InternalCommentNode = {
+  id: number;
+  name: string;
+  content: string;
+  likes: number;
+  dislikes: number;
+  createdAt: Date;
+  visitorReaction: string | null;
+  replies: InternalCommentNode[];
+  parentId: number | null;
+};
+
 function getVisitorId(req: NextRequest) {
   return req.cookies.get('commentVisitorId')?.value || null;
 }
@@ -34,9 +57,10 @@ export async function GET(req: NextRequest) {
     }
 
     const comments = await prisma.comment.findMany({
-      where: { articleId: article.id, parentId: null },
+      where: { articleId: article.id },
       select: {
         id: true,
+        parentId: true,
         name: true,
         content: true,
         likes: true,
@@ -48,47 +72,49 @@ export async function GET(req: NextRequest) {
               select: { reaction: true },
             }
           : undefined,
-        replies: {
-          select: {
-            id: true,
-            name: true,
-            content: true,
-            likes: true,
-            dislikes: true,
-            createdAt: true,
-            votes: visitorId
-              ? {
-                  where: { visitorId },
-                  select: { reaction: true },
-                }
-              : undefined,
-          },
-          orderBy: { createdAt: 'asc' },
-        },
       },
       orderBy: { createdAt: 'asc' },
     });
 
-    const normalizedComments = comments.map((comment) => ({
-      id: comment.id,
-      name: comment.name,
-      content: comment.content,
-      likes: comment.likes,
-      dislikes: comment.dislikes,
-      createdAt: comment.createdAt,
-      visitorReaction: comment.votes?.[0]?.reaction || null,
-      replies: comment.replies.map((reply) => ({
-        id: reply.id,
-        name: reply.name,
-        content: reply.content,
-        likes: reply.likes,
-        dislikes: reply.dislikes,
-        createdAt: reply.createdAt,
-        visitorReaction: reply.votes?.[0]?.reaction || null,
-      })),
-    }));
+    const commentMap = new Map<number, InternalCommentNode>();
 
-    return NextResponse.json({ comments: normalizedComments });
+    for (const comment of comments) {
+      commentMap.set(comment.id, {
+        id: comment.id,
+        parentId: comment.parentId,
+        name: comment.name,
+        content: comment.content,
+        likes: comment.likes,
+        dislikes: comment.dislikes,
+        createdAt: comment.createdAt,
+        visitorReaction: comment.votes?.[0]?.reaction || null,
+        replies: [],
+      });
+    }
+
+    const normalizedComments = Array.from(commentMap.values()).reduce<InternalCommentNode[]>((roots, comment) => {
+      if (comment.parentId === null) {
+        roots.push(comment);
+        return roots;
+      }
+
+      const parent = commentMap.get(comment.parentId);
+      if (parent) {
+        parent.replies.push(comment);
+      } else {
+        roots.push(comment);
+      }
+
+      return roots;
+    }, []);
+
+    const stripParentId = (items: InternalCommentNode[]): PublicCommentNode[] =>
+      items.map(({ parentId: _parentId, replies, ...comment }) => ({
+        ...comment,
+        replies: stripParentId(replies),
+      }));
+
+    return NextResponse.json({ comments: stripParentId(normalizedComments) });
   } catch (error) {
     console.error('[Comments GET Error]', error instanceof Error ? error.message : String(error));
     // Return empty comments instead of error to avoid breaking the page
@@ -156,7 +182,6 @@ export async function POST(req: NextRequest) {
         where: {
           id: parentId,
           articleId: article.id,
-          parentId: null,
         },
         select: { id: true },
       });

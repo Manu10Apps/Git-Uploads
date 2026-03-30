@@ -28,16 +28,6 @@ interface ArticleClientProps {
   slug: string;
 }
 
-interface CommentReply {
-  id: number;
-  name: string;
-  content: string;
-  likes: number;
-  dislikes: number;
-  createdAt: string;
-  visitorReaction: CommentReaction | null;
-}
-
 interface ArticleComment {
   id: number;
   name: string;
@@ -46,7 +36,7 @@ interface ArticleComment {
   dislikes: number;
   createdAt: string;
   visitorReaction: CommentReaction | null;
-  replies: CommentReply[];
+  replies: ArticleComment[];
 }
 
 type CommentReaction = 'like' | 'dislike';
@@ -297,18 +287,131 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     likes: number,
     dislikes: number,
     visitorReaction: CommentReaction
-  ) => items.map((item) => {
+  ): ArticleComment[] => items.map((item) => {
     if (item.id === commentId) {
       return { ...item, likes, dislikes, visitorReaction };
     }
 
     return {
       ...item,
-      replies: item.replies.map((reply) =>
-        reply.id === commentId ? { ...reply, likes, dislikes, visitorReaction } : reply
-      ),
+      replies: updateCommentReaction(item.replies, commentId, likes, dislikes, visitorReaction),
     };
   });
+
+  const countComments = (items: ArticleComment[]): number =>
+    items.reduce((total, item) => total + 1 + countComments(item.replies), 0);
+
+  const renderCommentNode = (comment: ArticleComment, depth = 0): React.ReactElement => {
+    const isReply = depth > 0;
+    const reactionButtonSize = isReply ? 'text-xs' : 'text-sm';
+    const iconSize = isReply ? 'h-3.5 w-3.5' : 'h-4 w-4';
+
+    return (
+      <li key={comment.id} className={isReply ? 'py-1' : 'border-l-4 border-red-600 pl-4 py-2'}>
+        <p className={isReply ? 'font-medium text-sm text-neutral-900 dark:text-white' : 'font-semibold text-neutral-900 dark:text-white'}>
+          {comment.name}
+        </p>
+        <p className={`text-xs text-neutral-500 dark:text-neutral-500 ${isReply ? 'mb-1' : 'mb-2'}`}>
+          {new Date(comment.createdAt).toLocaleDateString('rw-RW', { year: 'numeric', month: 'long', day: 'numeric' })}
+        </p>
+        <p className={isReply ? 'text-sm text-neutral-700 dark:text-neutral-300' : 'text-neutral-700 dark:text-neutral-300'}>
+          {comment.content}
+        </p>
+
+        <div className={`mt-${isReply ? '2' : '3'} flex items-center gap-3`}>
+          <button
+            type="button"
+            onClick={() => openReplyForm(comment.id)}
+            className="text-sm font-medium text-red-700 dark:text-red-400 hover:underline"
+          >
+            Musubize
+          </button>
+          <button
+            type="button"
+            onClick={() => handleCommentReaction(comment.id, 'like')}
+            disabled={reactionLoadingId === comment.id}
+            className={`inline-flex items-center gap-1 ${reactionButtonSize} transition-colors disabled:opacity-50 ${comment.visitorReaction === 'like' ? 'text-green-700 dark:text-green-400' : 'text-neutral-600 hover:text-green-700 dark:text-neutral-300 dark:hover:text-green-400'}`}
+          >
+            <ThumbsUp className={iconSize} />
+            <span>{comment.likes}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleCommentReaction(comment.id, 'dislike')}
+            disabled={reactionLoadingId === comment.id}
+            className={`inline-flex items-center gap-1 ${reactionButtonSize} transition-colors disabled:opacity-50 ${comment.visitorReaction === 'dislike' ? 'text-red-700 dark:text-red-400' : 'text-neutral-600 hover:text-red-700 dark:text-neutral-300 dark:hover:text-red-400'}`}
+          >
+            <ThumbsDown className={iconSize} />
+            <span>{comment.dislikes}</span>
+          </button>
+          {replySuccessId === comment.id && (
+            <span className="text-xs text-green-600 dark:text-green-400">Igisubizo cyoherejwe.</span>
+          )}
+        </div>
+
+        {activeReplyId === comment.id && (
+          <form className="mt-3 bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded-lg p-3" onSubmit={(e) => handleReplySubmit(e, comment.id)}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+              <input
+                name="name"
+                value={replyFormData.name}
+                onChange={handleReplyInputChange}
+                className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 text-neutral-900 dark:text-white text-sm rounded-lg focus:ring-0 focus:outline-none block w-full p-2.5"
+                placeholder="Andika izina ryawe"
+                required
+                pattern="[A-Za-z\s]{3,20}"
+                type="text"
+              />
+              <input
+                name="email"
+                value={replyFormData.email}
+                onChange={handleReplyInputChange}
+                className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 text-neutral-900 dark:text-white text-sm rounded-lg focus:ring-0 focus:outline-none block w-full p-2.5"
+                placeholder="Andika Imeli yawe"
+                required
+                pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
+                type="email"
+              />
+            </div>
+            <textarea
+              name="comment"
+              value={replyFormData.comment}
+              onChange={handleReplyInputChange}
+              rows={3}
+              className="px-3 py-2 w-full text-sm text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-600 rounded-lg focus:ring-0 focus:outline-none resize-none bg-transparent"
+              placeholder="Andika igisubizo..."
+              required
+            />
+            {replyError && (
+              <p className="text-xs text-red-600 dark:text-red-400 mt-2">{replyError}</p>
+            )}
+            <div className="mt-3 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveReplyId(null)}
+                className="rounded-md py-2 px-3 text-sm bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-600 dark:hover:bg-neutral-500 text-neutral-800 dark:text-white"
+              >
+                Hagarika
+              </button>
+              <button
+                type="submit"
+                disabled={replySubmitting}
+                className="rounded-md py-2 px-3 text-sm bg-red-700 hover:bg-red-800 text-white disabled:bg-neutral-400"
+              >
+                {replySubmitting ? 'Kohereza...' : 'Ohereza Igisubizo'}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {comment.replies.length > 0 && (
+          <ul className="mt-4 ml-2 sm:ml-6 border-l-2 border-neutral-200 dark:border-neutral-700 pl-3 space-y-3">
+            {comment.replies.map((reply) => renderCommentNode(reply, depth + 1))}
+          </ul>
+        )}
+      </li>
+    );
+  };
 
   const handleCommentReaction = async (commentId: number, reaction: CommentReaction) => {
     setReactionLoadingId(commentId);
@@ -374,6 +477,8 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
       </>
     );
   }
+
+  const totalComments = countComments(comments);
 
   return (
     <>
@@ -565,14 +670,14 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
 
           {/* Comments Section */}
           <section className="mt-8 sm:mt-10 md:mt-12 bg-neutral-100 dark:bg-neutral-800 p-4 sm:p-6 md:p-8 rounded-lg sm:rounded-md">
-            <h2 className="mb-4 sm:mb-6 text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">Ibitekerezo ({comments.length})</h2>
+            <h2 className="mb-4 sm:mb-6 text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">Ibitekerezo ({totalComments})</h2>
             <div>
-              <div className="mb-4 sm:mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
+              <div className="mb-4 sm:mb-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-100">
                 <div className="flex items-start gap-3">
                   <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0" />
                   <p className="text-sm leading-6">
-                    <span className="font-semibold">Warning! </span>
-                    Ibitekerezo bitangwa mu bwisanzure n'ubwubahane, imvugo z'urwango no kutagira imyitwarire myiza bihanwa n'amategeko.
+                    <span className="font-semibold">Umuburo! </span>
+                    Ibitekerezo bitangwa mu bwisanzure n'ubwubahane, imvugo z'urwango no kutagira imyitwarire iboneye bihanwa n'amategeko y'ibihugu.
                   </p>
                 </div>
               </div>
@@ -649,135 +754,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
 
               {/* Comments List */}
               <ul className="flex flex-col gap-4 ml-2 my-2">
-                {comments.map((comment) => (
-                  <li key={comment.id} className="border-l-4 border-red-600 pl-4 py-2">
-                    <p className="font-semibold text-neutral-900 dark:text-white">{comment.name}</p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-500 mb-2">
-                      {new Date(comment.createdAt).toLocaleDateString('rw-RW', { year: 'numeric', month: 'long', day: 'numeric' })}
-                    </p>
-                    <p className="text-neutral-700 dark:text-neutral-300">{comment.content}</p>
-
-                    <div className="mt-3 flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => openReplyForm(comment.id)}
-                        className="text-sm font-medium text-red-700 dark:text-red-400 hover:underline"
-                      >
-                        Musubize
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleCommentReaction(comment.id, 'like')}
-                        disabled={reactionLoadingId === comment.id}
-                        className={`inline-flex items-center gap-1 text-sm transition-colors disabled:opacity-50 ${comment.visitorReaction === 'like' ? 'text-green-700 dark:text-green-400' : 'text-neutral-600 hover:text-green-700 dark:text-neutral-300 dark:hover:text-green-400'}`}
-                      >
-                        <ThumbsUp className="h-4 w-4" />
-                        <span>{comment.likes}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleCommentReaction(comment.id, 'dislike')}
-                        disabled={reactionLoadingId === comment.id}
-                        className={`inline-flex items-center gap-1 text-sm transition-colors disabled:opacity-50 ${comment.visitorReaction === 'dislike' ? 'text-red-700 dark:text-red-400' : 'text-neutral-600 hover:text-red-700 dark:text-neutral-300 dark:hover:text-red-400'}`}
-                      >
-                        <ThumbsDown className="h-4 w-4" />
-                        <span>{comment.dislikes}</span>
-                      </button>
-                      {replySuccessId === comment.id && (
-                        <span className="text-xs text-green-600 dark:text-green-400">Igisubizo cyoherejwe.</span>
-                      )}
-                    </div>
-
-                    {activeReplyId === comment.id && (
-                      <form className="mt-3 bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded-lg p-3" onSubmit={(e) => handleReplySubmit(e, comment.id)}>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
-                          <input
-                            name="name"
-                            value={replyFormData.name}
-                            onChange={handleReplyInputChange}
-                            className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 text-neutral-900 dark:text-white text-sm rounded-lg focus:ring-0 focus:outline-none block w-full p-2.5"
-                            placeholder="Andika izina ryawe"
-                            required
-                            pattern="[A-Za-z\s]{3,20}"
-                            type="text"
-                          />
-                          <input
-                            name="email"
-                            value={replyFormData.email}
-                            onChange={handleReplyInputChange}
-                            className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 text-neutral-900 dark:text-white text-sm rounded-lg focus:ring-0 focus:outline-none block w-full p-2.5"
-                            placeholder="Andika Imeli yawe"
-                            required
-                            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
-                            type="email"
-                          />
-                        </div>
-                        <textarea
-                          name="comment"
-                          value={replyFormData.comment}
-                          onChange={handleReplyInputChange}
-                          rows={3}
-                          className="px-3 py-2 w-full text-sm text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-600 rounded-lg focus:ring-0 focus:outline-none resize-none bg-transparent"
-                          placeholder="Andika igisubizo..."
-                          required
-                        />
-                        {replyError && (
-                          <p className="text-xs text-red-600 dark:text-red-400 mt-2">{replyError}</p>
-                        )}
-                        <div className="mt-3 flex justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setActiveReplyId(null)}
-                            className="rounded-md py-2 px-3 text-sm bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-600 dark:hover:bg-neutral-500 text-neutral-800 dark:text-white"
-                          >
-                            Hagarika
-                          </button>
-                          <button
-                            type="submit"
-                            disabled={replySubmitting}
-                            className="rounded-md py-2 px-3 text-sm bg-red-700 hover:bg-red-800 text-white disabled:bg-neutral-400"
-                          >
-                            {replySubmitting ? 'Kohereza...' : 'Ohereza Igisubizo'}
-                          </button>
-                        </div>
-                      </form>
-                    )}
-
-                    {comment.replies.length > 0 && (
-                      <ul className="mt-4 ml-2 sm:ml-6 border-l-2 border-neutral-200 dark:border-neutral-700 pl-3 space-y-3">
-                        {comment.replies.map((reply) => (
-                          <li key={reply.id} className="py-1">
-                            <p className="font-medium text-sm text-neutral-900 dark:text-white">{reply.name}</p>
-                            <p className="text-xs text-neutral-500 dark:text-neutral-500 mb-1">
-                              {new Date(reply.createdAt).toLocaleDateString('rw-RW', { year: 'numeric', month: 'long', day: 'numeric' })}
-                            </p>
-                            <p className="text-sm text-neutral-700 dark:text-neutral-300">{reply.content}</p>
-                            <div className="mt-2 flex items-center gap-3">
-                              <button
-                                type="button"
-                                onClick={() => handleCommentReaction(reply.id, 'like')}
-                                disabled={reactionLoadingId === reply.id}
-                                className={`inline-flex items-center gap-1 text-xs transition-colors disabled:opacity-50 ${reply.visitorReaction === 'like' ? 'text-green-700 dark:text-green-400' : 'text-neutral-600 hover:text-green-700 dark:text-neutral-300 dark:hover:text-green-400'}`}
-                              >
-                                <ThumbsUp className="h-3.5 w-3.5" />
-                                <span>{reply.likes}</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleCommentReaction(reply.id, 'dislike')}
-                                disabled={reactionLoadingId === reply.id}
-                                className={`inline-flex items-center gap-1 text-xs transition-colors disabled:opacity-50 ${reply.visitorReaction === 'dislike' ? 'text-red-700 dark:text-red-400' : 'text-neutral-600 hover:text-red-700 dark:text-neutral-300 dark:hover:text-red-400'}`}
-                              >
-                                <ThumbsDown className="h-3.5 w-3.5" />
-                                <span>{reply.dislikes}</span>
-                              </button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                ))}
+                {comments.map((comment) => renderCommentNode(comment))}
               </ul>
             </div>
           </section>
