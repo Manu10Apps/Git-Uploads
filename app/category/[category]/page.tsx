@@ -31,6 +31,8 @@ export default function CategoryPage({ params: paramsPromise }: { params: Promis
     ibidukikije: 'Ibidukikije',
     iyobokamana: 'Siporo',
     imyemerere: 'Imyemerere',
+    'afurika-yiburasirazuba': 'Afurika y\'Iburasirazuba',
+    'mu-mahanga': 'Mu Mahanga',
   };
 
   const categoryDescription: Record<string, string> = {
@@ -46,6 +48,8 @@ export default function CategoryPage({ params: paramsPromise }: { params: Promis
     ibidukikije: 'Inkuru n\'ibiganiro birebana n\'ibidukikije, isi n\'Ibiyikorerwaho birimo Ubuhinzi n\'Ubworozi',
     iyobokamana: 'Inkuru zivuga ku Imikino itandukanye',
     imyemerere: 'Inkuru n\'ibiganiro birebana n\'imanudi n\'imyemerere y\'ikiristo',
+    'afurika-yiburasirazuba': 'Amakuru acukumbuye yerekeranye n\'Afurika y\'Iburasirazuba',
+    'mu-mahanga': 'Amakuru yose yo hanze ya Afurika y\'Iburasirazuba',
   };
 
   // Fetch articles from API
