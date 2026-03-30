@@ -105,7 +105,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     const fetchRecentArticles = async () => {
       try {
         setRecentLoading(true);
-        const response = await fetch('/api/articles?limit=4');
+        const response = await fetch('/api/articles?limit=4&summary=true');
         const result = await response.json();
         const articles = result.data || [];
         setRecentArticles(articles.slice(0, 4));
@@ -125,7 +125,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     const fetchRelatedArticles = async () => {
       try {
         setRelatedLoading(true);
-        const response = await fetch(`/api/articles?category=${article.category}&limit=6`);
+        const response = await fetch(`/api/articles?category=${article.category}&limit=6&summary=true`);
         const result = await response.json();
         const articles = result.data || [];
         const filtered = articles.filter((a: Article) => a.slug !== article.slug);
@@ -145,7 +145,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     const fetchMostViewedArticles = async () => {
       try {
         setMostViewedLoading(true);
-        const response = await fetch('/api/articles?limit=3&featured=true');
+        const response = await fetch('/api/articles?limit=3&featured=true&summary=true');
         const result = await response.json();
         const articles = result.data || [];
         setMostViewedArticles(articles.slice(0, 3));

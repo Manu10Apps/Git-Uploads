@@ -260,16 +260,23 @@ export async function GET(request: NextRequest) {
           gallery: article.gallery ? JSON.parse(article.gallery) : [],
         }));
 
-    return NextResponse.json({
-      success: true,
-      data: formattedArticles,
-      pagination: {
-        total,
-        page,
-        limit: take,
-        pages: Math.ceil(total / take),
+    return NextResponse.json(
+      {
+        success: true,
+        data: formattedArticles,
+        pagination: {
+          total,
+          page,
+          limit: take,
+          pages: Math.ceil(total / take),
+        },
       },
-    });
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        },
+      }
+    );
   } catch (error) {
     console.error('Failed to fetch articles:', error);
 

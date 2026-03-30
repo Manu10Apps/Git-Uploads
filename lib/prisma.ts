@@ -89,7 +89,12 @@ function getPrismaClient() {
     : 'postgresql://placeholder:placeholder@localhost:5432/placeholder';
 
   // PostgreSQL: use the pg driver adapter (required by Prisma 7 client engine mode).
-  const pool = new Pool({ connectionString: runtimeConnectionString });
+  const pool = new Pool({
+    connectionString: runtimeConnectionString,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+  });
   const pgAdapter = new PrismaPg(pool as any);
   const client: PrismaClient = new PrismaClient({ adapter: pgAdapter } as any);
 
