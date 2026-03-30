@@ -5,6 +5,28 @@ import type { PrismaClient } from '@prisma/client';
 
 const VALID_ROLES = new Set(['admin', 'sub-admin', 'editor']);
 
+async function ensureAdminVerificationColumns(prisma: PrismaClient) {
+  // Best-effort schema healing for deployments that missed the latest migration.
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "admin_users"
+      ADD COLUMN IF NOT EXISTS "emailVerified" BOOLEAN DEFAULT FALSE,
+      ADD COLUMN IF NOT EXISTS "emailVerificationToken" TEXT,
+      ADD COLUMN IF NOT EXISTS "emailVerificationExpires" TIMESTAMP(3),
+      ADD COLUMN IF NOT EXISTS "passwordResetToken" TEXT,
+      ADD COLUMN IF NOT EXISTS "passwordResetExpires" TIMESTAMP(3);
+  `);
+
+  await prisma.$executeRawUnsafe(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "admin_users_emailVerificationToken_key" ON "admin_users"("emailVerificationToken");`
+  );
+  await prisma.$executeRawUnsafe(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "admin_users_passwordResetToken_key" ON "admin_users"("passwordResetToken");`
+  );
+  await prisma.$executeRawUnsafe(
+    `UPDATE "admin_users" SET "emailVerified" = FALSE WHERE "emailVerified" IS NULL;`
+  );
+}
+
 function toUsersRouteErrorResponse(error: unknown) {
   const prismaCode =
     typeof error === 'object' && error !== null && 'code' in error
@@ -105,20 +127,51 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
     }
 
-    const users = await prisma.adminUser.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
+    let users: Array<{
+      id: number;
+      name: string;
+      email: string;
+      role: string;
+      emailVerified: boolean;
+      createdAt: Date;
+      updatedAt: Date;
+    }> = [];
+
+    try {
+      users = await prisma.adminUser.findMany({
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          emailVerified: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    } catch {
+      const legacyUsers = await prisma.adminUser.findMany({
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      users = legacyUsers.map((user) => ({
+        ...user,
         emailVerified: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+      }));
+    }
 
     return NextResponse.json({ success: true, users }, { status: 200 });
   } catch (error) {
@@ -134,6 +187,7 @@ export async function POST(request: NextRequest) {
     const email = String(body?.email || '').trim().toLowerCase();
     const password = String(body?.password || '');
     const role = String(body?.role || 'editor').trim().toLowerCase();
+    const replaceExisting = body?.replaceExisting !== false;
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -160,16 +214,10 @@ export async function POST(request: NextRequest) {
     if ('errorResponse' in prismaResult) return prismaResult.errorResponse;
     const { prisma } = prismaResult;
 
-    const existingUser = await prisma.adminUser.findUnique({
-      where: { email },
-      select: { id: true },
-    });
-
-    if (existingUser) {
-      return NextResponse.json(
-        { success: false, message: 'User already exists with this email' },
-        { status: 409 }
-      );
+    try {
+      await ensureAdminVerificationColumns(prisma);
+    } catch (schemaError) {
+      console.warn('Unable to auto-ensure admin verification columns:', schemaError);
     }
 
     const usersCount = await prisma.adminUser.count();
@@ -190,24 +238,37 @@ export async function POST(request: NextRequest) {
     const verificationToken = generateSecureToken();
     const verificationExpires = new Date(Date.now() + 1000 * 60 * 60 * 24);
 
-    const createdUser = await prisma.adminUser.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role,
-        emailVerified: false,
-        emailVerificationToken: verificationToken,
-        emailVerificationExpires: verificationExpires,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        emailVerified: true,
-        createdAt: true,
-      },
+    const existingUser = await prisma.adminUser.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+
+    const createdUser = await prisma.$transaction(async (tx) => {
+      if (existingUser && replaceExisting) {
+        await tx.adminUser.delete({ where: { id: existingUser.id } });
+      } else if (existingUser) {
+        throw Object.assign(new Error('User already exists with this email'), { code: 'USER_EXISTS' });
+      }
+
+      return tx.adminUser.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          role,
+          emailVerified: false,
+          emailVerificationToken: verificationToken,
+          emailVerificationExpires: verificationExpires,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          emailVerified: true,
+          createdAt: true,
+        },
+      });
     });
 
     await sendAdminVerificationEmail(createdUser.email, createdUser.name, verificationToken);
@@ -215,12 +276,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        message: 'User created successfully. Verification link sent to email.',
+        message: existingUser
+          ? 'Existing user replaced successfully. Verification link sent to email.'
+          : 'User created successfully. Verification link sent to email.',
         user: createdUser,
       },
       { status: 201 }
     );
   } catch (error) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      String((error as { code?: unknown }).code || '') === 'USER_EXISTS'
+    ) {
+      return NextResponse.json(
+        { success: false, message: 'User already exists with this email' },
+        { status: 409 }
+      );
+    }
+
     console.error('Create admin user error:', error);
     return toUsersRouteErrorResponse(error);
   }
