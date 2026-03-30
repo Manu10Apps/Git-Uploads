@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 
 interface Article {
   id: string;
@@ -126,13 +125,9 @@ export default function BreakingNewsCarousel({ articles = [] }: BreakingNewsCaro
                 className="flex-shrink-0 px-3 py-2 font-bold text-xs sm:text-sm border-b-2 border-transparent hover:text-black dark:hover:text-white transition-colors whitespace-nowrap flex items-center gap-2"
                 style={{ backgroundColor: 'rgba(226, 0, 26, 0.1)', color: '#e2001a' }}
               >
-                <Image
-                  src="https://images.openai.com/static-rsc-3/qI6V75UtA0r464HNBW9eTps_4dW0gXdkmTDut-rjNqhhxXOtCfmFvlcPA3rYVGHxxpcOLvq4xFriS83tDD5WHIzfWtKrPp5q1d6jYHO28gM?purpose=fullsize&v=1"
-                  alt="Trending"
-                  width={18}
-                  height={18}
-                  className="w-4 h-4 object-contain"
-                />
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 flex-shrink-0" aria-hidden="true">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+                </svg>
                 Amakuru Agezweho
               </Link>
 

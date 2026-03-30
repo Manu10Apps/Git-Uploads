@@ -73,52 +73,6 @@ async function getPrismaSafely() {
   }
 }
 
-function getCookieValue(request: NextRequest, name: string) {
-  return request.cookies.get(name)?.value || '';
-}
-
-function isSameOriginRequest(request: NextRequest) {
-  const originHeader = request.headers.get('origin');
-  const refererHeader = request.headers.get('referer');
-  const expectedOrigin = request.nextUrl.origin;
-
-  if (!originHeader && !refererHeader) {
-    return false;
-  }
-
-  if (originHeader && originHeader !== expectedOrigin) {
-    return false;
-  }
-
-  if (refererHeader) {
-    try {
-      const referer = new URL(refererHeader);
-      if (referer.origin !== expectedOrigin) {
-        return false;
-      }
-    } catch {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function isCsrfTokenValid(request: NextRequest) {
-  const headerToken = request.headers.get('x-csrf-token') || '';
-  const cookieToken = getCookieValue(request, 'admin_csrf_token');
-
-  if (!headerToken || !cookieToken) {
-    return false;
-  }
-
-  if (headerToken.length < 20 || cookieToken.length < 20) {
-    return false;
-  }
-
-  return headerToken === cookieToken;
-}
-
 function checkRateLimit(identity: string) {
   const now = Date.now();
   const current = rateLimitStore.get(identity);
@@ -347,13 +301,6 @@ export async function POST(request: NextRequest) {
   let actorRole = 'unknown';
 
   try {
-    if (!isSameOriginRequest(request) || !isCsrfTokenValid(request)) {
-      return NextResponse.json(
-        { success: false, message: 'Forbidden: invalid CSRF or origin validation' },
-        { status: 403 }
-      );
-    }
-
     const prismaResult = await getPrismaSafely();
     if ('errorResponse' in prismaResult) {
       return prismaResult.errorResponse;

@@ -53,11 +53,11 @@ export function Footer() {
           <div className="space-y-4">
             <Image
               src="/logo.png"
-              alt="Amakuru"
-              width={140}
+              alt="Intambwe Media"
+              width={48}
               height={48}
-              sizes="140px"
-              className="h-12 w-[140px] rounded-lg"
+              sizes="48px"
+              className="h-12 w-12 rounded-lg"
             />
             <p className="text-sm text-neutral-400 font-light leading-relaxed">
               Inkuru zicukumbuye ku bibazo bikomeye muri Afurika y’Iburasirazuba, zikozwe mu buryo bwigenga kandi bwizewe.

@@ -54,19 +54,6 @@ export default function DashboardPage() {
     }
   }, [router]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const existing = sessionStorage.getItem('adminCsrfToken');
-    const token = existing || `${crypto.randomUUID()}-${Date.now()}`;
-    sessionStorage.setItem('adminCsrfToken', token);
-
-    const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
-    document.cookie = `admin_csrf_token=${encodeURIComponent(token)}; Path=/; SameSite=Lax${secureFlag}`;
-  }, []);
-
   const runImageFixAction = async (mode: 'preview' | 'fix') => {
     if (adminRole !== 'admin') {
       setActionError('Only full admins can run image diagnostics and repair.');
@@ -126,13 +113,11 @@ export default function DashboardPage() {
     setCacheExecutionSummary([]);
 
     try {
-      const csrfToken = sessionStorage.getItem('adminCsrfToken') || '';
       const response = await fetch('/api/admin/clear-cache', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(adminEmail ? { 'x-admin-email': adminEmail } : {}),
-          ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
         },
         body: JSON.stringify({ trigger: 'admin-dashboard' }),
       });

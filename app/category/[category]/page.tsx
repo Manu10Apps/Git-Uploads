@@ -176,15 +176,15 @@ export default function CategoryPage({ params: paramsPromise }: { params: Promis
         {/* Filters & Sorting */}
         <section className="bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 py-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
                   Showing {currentArticles.length} of {articles.length} articles
                   {totalPages > 1 && ` (Page ${currentPage} of ${totalPages})`}
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <label className="text-sm font-medium">Kurikiranya uhereye:</label>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <label className="text-xs sm:text-sm font-medium whitespace-nowrap">Kurikiranya:</label>
                 <select 
                   value={sortOption}
                   onChange={handleSortChange}
@@ -207,7 +207,7 @@ export default function CategoryPage({ params: paramsPromise }: { params: Promis
                 <p className="text-neutral-600 dark:text-neutral-400">Inkuru ziri gufunguka...</p>
               </div>
             ) : currentArticles.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {currentArticles.map((article) => (
                   <NewsCard key={article.id} {...article} sources={[]} />
                 ))}
