@@ -25,8 +25,10 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({ comments });
-  } catch {
-    return NextResponse.json({ error: 'Habaye ikosa' }, { status: 500 });
+  } catch (error) {
+    console.error('[Comments GET Error]', error instanceof Error ? error.message : String(error));
+    // Return empty comments instead of error to avoid breaking the page
+    return NextResponse.json({ comments: [] }, { status: 200 });
   }
 }
 
@@ -91,7 +93,20 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ comment: newComment }, { status: 201 });
-  } catch {
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error('[Comments POST Error]', errorMsg);
+    
+    // Check if it's a table not found error
+    if (errorMsg.includes('relation "comments" does not exist') || 
+        errorMsg.includes('Unknown table') ||
+        errorMsg.includes('no such table')) {
+      console.error('[Comments] Table does not exist. Run migrations on production.');
+      return NextResponse.json({ 
+        error: 'Igitekerezo si rimwe mu myanda. Ongera ugerageze.' 
+      }, { status: 503 });
+    }
+    
     return NextResponse.json({ error: 'Habaye ikosa' }, { status: 500 });
   }
 }
