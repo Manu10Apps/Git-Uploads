@@ -1,9 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+function getVisitorId(req: NextRequest) {
+  return req.cookies.get('commentVisitorId')?.value || null;
+}
+
+function applyVisitorCookie(response: NextResponse, visitorId: string) {
+  response.cookies.set('commentVisitorId', visitorId, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 365,
+    path: '/',
+  });
+}
+
 // GET /api/comments?slug=<articleSlug>
 export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get('slug');
+  const visitorId = getVisitorId(req);
   if (!slug) {
     return NextResponse.json({ comments: [] }, { status: 200 });
   }
@@ -24,16 +39,56 @@ export async function GET(req: NextRequest) {
         id: true,
         name: true,
         content: true,
+        likes: true,
+        dislikes: true,
         createdAt: true,
+        votes: visitorId
+          ? {
+              where: { visitorId },
+              select: { reaction: true },
+            }
+          : undefined,
         replies: {
-          select: { id: true, name: true, content: true, createdAt: true },
+          select: {
+            id: true,
+            name: true,
+            content: true,
+            likes: true,
+            dislikes: true,
+            createdAt: true,
+            votes: visitorId
+              ? {
+                  where: { visitorId },
+                  select: { reaction: true },
+                }
+              : undefined,
+          },
           orderBy: { createdAt: 'asc' },
         },
       },
       orderBy: { createdAt: 'asc' },
     });
 
-    return NextResponse.json({ comments });
+    const normalizedComments = comments.map((comment) => ({
+      id: comment.id,
+      name: comment.name,
+      content: comment.content,
+      likes: comment.likes,
+      dislikes: comment.dislikes,
+      createdAt: comment.createdAt,
+      visitorReaction: comment.votes?.[0]?.reaction || null,
+      replies: comment.replies.map((reply) => ({
+        id: reply.id,
+        name: reply.name,
+        content: reply.content,
+        likes: reply.likes,
+        dislikes: reply.dislikes,
+        createdAt: reply.createdAt,
+        visitorReaction: reply.votes?.[0]?.reaction || null,
+      })),
+    }));
+
+    return NextResponse.json({ comments: normalizedComments });
   } catch (error) {
     console.error('[Comments GET Error]', error instanceof Error ? error.message : String(error));
     // Return empty comments instead of error to avoid breaking the page
@@ -119,7 +174,7 @@ export async function POST(req: NextRequest) {
         email: trimmedEmail,
         content: trimmedComment,
       },
-      select: { id: true, name: true, content: true, createdAt: true, parentId: true },
+      select: { id: true, name: true, content: true, likes: true, dislikes: true, createdAt: true, parentId: true },
     });
 
     return NextResponse.json({ comment: newComment }, { status: 201 });
@@ -137,6 +192,104 @@ export async function POST(req: NextRequest) {
       }, { status: 503 });
     }
     
+    return NextResponse.json({ error: 'Habaye ikosa' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  let body: unknown;
+
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Inyandiko si yo' }, { status: 400 });
+  }
+
+  if (
+    typeof body !== 'object' ||
+    body === null ||
+    typeof (body as Record<string, unknown>).commentId !== 'number' ||
+    !['like', 'dislike'].includes(String((body as Record<string, unknown>).reaction || ''))
+  ) {
+    return NextResponse.json({ error: 'Ubusabe si bwo' }, { status: 400 });
+  }
+
+  const { commentId, reaction } = body as { commentId: number; reaction: 'like' | 'dislike' };
+  const cookieVisitorId = getVisitorId(req);
+  const visitorId = cookieVisitorId || crypto.randomUUID();
+
+  try {
+    const updatedComment = await prisma.$transaction(async (tx) => {
+      const existingVote = await tx.commentVote.findUnique({
+        where: {
+          commentId_visitorId: {
+            commentId,
+            visitorId,
+          },
+        },
+      });
+
+      if (!existingVote) {
+        await tx.commentVote.create({
+          data: {
+            commentId,
+            visitorId,
+            reaction,
+          },
+        });
+
+        return tx.comment.update({
+          where: { id: commentId },
+          data: reaction === 'like' ? { likes: { increment: 1 } } : { dislikes: { increment: 1 } },
+          select: { id: true, likes: true, dislikes: true, parentId: true },
+        });
+      }
+
+      if (existingVote.reaction === reaction) {
+        return tx.comment.findUnique({
+          where: { id: commentId },
+          select: { id: true, likes: true, dislikes: true, parentId: true },
+        });
+      }
+
+      await tx.commentVote.update({
+        where: {
+          commentId_visitorId: {
+            commentId,
+            visitorId,
+          },
+        },
+        data: { reaction },
+      });
+
+      return tx.comment.update({
+        where: { id: commentId },
+        data:
+          reaction === 'like'
+            ? { likes: { increment: 1 }, dislikes: { decrement: 1 } }
+            : { likes: { decrement: 1 }, dislikes: { increment: 1 } },
+        select: { id: true, likes: true, dislikes: true, parentId: true },
+      });
+    });
+
+    const response = NextResponse.json(
+      {
+        comment: {
+          ...updatedComment,
+          visitorReaction: reaction,
+        },
+      },
+      { status: 200 }
+    );
+
+    if (!cookieVisitorId) {
+      applyVisitorCookie(response, visitorId);
+    }
+
+    return response;
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error('[Comments PATCH Error]', errorMsg);
     return NextResponse.json({ error: 'Habaye ikosa' }, { status: 500 });
   }
 }
