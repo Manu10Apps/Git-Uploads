@@ -13,6 +13,7 @@ export default function Home() {
   const [articles, setArticles] = useState<any[]>([]);
   const [mostViewed, setMostViewed] = useState<any[]>([]);
   const [adverts, setAdverts] = useState<any[]>([]);
+  const [advertsLoading, setAdvertsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [latestPage, setLatestPage] = useState(0);
   const [mostViewedPage, setMostViewedPage] = useState(0);
@@ -38,6 +39,8 @@ export default function Home() {
   const mostViewedPageArticles = getPageItems(mostViewed, mostViewedPage, MOST_VIEWED_PAGE_SIZE);
   const homepageTopAdverts = adverts.filter((ad: any) => ad.position === 'homepage_top' && ad.isActive);
   const homepageBottomAdverts = adverts.filter((ad: any) => ad.position === 'homepage_bottom' && ad.isActive);
+  const latestSkeletonItems = Array.from({ length: LATEST_PAGE_SIZE }, (_, index) => index);
+  const mostViewedSkeletonItems = Array.from({ length: MOST_VIEWED_PAGE_SIZE }, (_, index) => index);
 
   const PagerControls = ({
     page,
@@ -111,11 +114,68 @@ export default function Home() {
     </div>
   );
 
+  const FeaturedSkeleton = () => (
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="md:col-span-2 animate-pulse">
+        <div className="mb-4 rounded overflow-hidden bg-neutral-200 dark:bg-neutral-800 h-48 sm:h-64 md:h-80 lg:h-96" />
+        <div className="h-6 w-5/6 bg-neutral-200 dark:bg-neutral-800 rounded mb-3" />
+        <div className="h-4 w-1/2 bg-neutral-200 dark:bg-neutral-800 rounded" />
+      </div>
+      <div className="md:col-span-1 flex flex-col gap-4">
+        {[0, 1].map((item) => (
+          <div key={item} className="pb-4 border-b border-neutral-200 dark:border-neutral-700 last:border-0 animate-pulse">
+            <div className="mb-3 rounded overflow-hidden bg-neutral-200 dark:bg-neutral-800 h-32" />
+            <div className="h-5 w-4/5 bg-neutral-200 dark:bg-neutral-800 rounded" />
+          </div>
+        ))}
+      </div>
+      <div className="md:col-span-1 flex flex-col gap-4">
+        {[0, 1].map((item) => (
+          <div key={item} className="pb-4 border-b border-neutral-200 dark:border-neutral-700 last:border-0 animate-pulse">
+            <div className="mb-3 rounded overflow-hidden bg-neutral-200 dark:bg-neutral-800 h-32" />
+            <div className="h-5 w-4/5 bg-neutral-200 dark:bg-neutral-800 rounded" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const LatestCardSkeleton = () => (
+    <article className="border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 animate-pulse">
+      <div className="overflow-hidden bg-neutral-200 dark:bg-neutral-800 h-24" />
+      <div className="p-3 sm:p-4 md:p-6">
+        <div className="h-3 w-20 bg-neutral-200 dark:bg-neutral-800 rounded mb-2" />
+        <div className="h-5 w-full bg-neutral-200 dark:bg-neutral-800 rounded mb-2" />
+        <div className="h-5 w-4/5 bg-neutral-200 dark:bg-neutral-800 rounded mb-3" />
+        <div className="h-4 w-full bg-neutral-200 dark:bg-neutral-800 rounded mb-2" />
+        <div className="h-4 w-2/3 bg-neutral-200 dark:bg-neutral-800 rounded mb-4" />
+        <div className="h-3 w-1/3 bg-neutral-200 dark:bg-neutral-800 rounded" />
+      </div>
+    </article>
+  );
+
+  const MostViewedCardSkeleton = () => (
+    <article className="border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden bg-white dark:bg-neutral-800 animate-pulse">
+      <div className="overflow-hidden bg-neutral-200 dark:bg-neutral-700 h-56" />
+      <div className="p-5">
+        <div className="h-3 w-20 bg-neutral-200 dark:bg-neutral-700 rounded mb-2" />
+        <div className="h-5 w-full bg-neutral-200 dark:bg-neutral-700 rounded mb-2" />
+        <div className="h-5 w-4/5 bg-neutral-200 dark:bg-neutral-700 rounded mb-3" />
+        <div className="h-4 w-full bg-neutral-200 dark:bg-neutral-700 rounded mb-2" />
+        <div className="h-4 w-2/3 bg-neutral-200 dark:bg-neutral-700 rounded mb-3" />
+        <div className="flex items-center justify-between">
+          <div className="h-3 w-1/4 bg-neutral-200 dark:bg-neutral-700 rounded" />
+          <div className="h-3 w-1/4 bg-neutral-200 dark:bg-neutral-700 rounded" />
+        </div>
+      </div>
+    </article>
+  );
+
   useEffect(() => {
     const fetchArticles = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/articles?limit=48');
+        const response = await fetch('/api/articles?limit=24&summary=true');
         const data = await response.json();
         const allArticles = data.data || [];
         
@@ -139,6 +199,8 @@ export default function Home() {
         setAdverts(data.data || []);
       } catch (error) {
         console.error('Failed to fetch adverts:', error);
+      } finally {
+        setAdvertsLoading(false);
       }
     };
 
@@ -165,9 +227,7 @@ export default function Home() {
         <section className="py-6 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {loading ? (
-              <div className="text-center py-8">
-                <p className="text-neutral-600 dark:text-neutral-400">Inkuru ziri gushakishwa...</p>
-              </div>
+              <FeaturedSkeleton />
             ) : featuredArticle && featuredPageArticles.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {/* Main Featured Article - Left Column */}
@@ -178,6 +238,8 @@ export default function Home() {
                           <ArticleImage
                             src={featuredArticle.image}
                             alt={featuredArticle.title}
+                            loading="eager"
+                            fetchPriority="high"
                             className="w-full h-full object-cover"
                           />
                         </div>
@@ -250,7 +312,7 @@ export default function Home() {
         </section>
 
         {/* Headline Advertisement Section */}
-        {homepageTopAdverts.length > 0 && (
+        {(advertsLoading || homepageTopAdverts.length > 0) && (
           <section className="py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               {homepageTopAdverts.slice(0, 1).map((advert: any) => (
@@ -270,6 +332,9 @@ export default function Home() {
                   </div>
                 </a>
               ))}
+              {advertsLoading && homepageTopAdverts.length === 0 && (
+                <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-28 border border-neutral-200 dark:border-neutral-700 animate-pulse" />
+              )}
             </div>
           </section>
         )}
@@ -278,8 +343,10 @@ export default function Home() {
         <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {loading ? (
-              <div className="text-center py-8">
-                <p className="text-neutral-600 dark:text-neutral-400">Inkuru ziri gushakishwa...</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                {latestSkeletonItems.map((item) => (
+                  <LatestCardSkeleton key={`latest-skeleton-${item}`} />
+                ))}
               </div>
             ) : latestPageArticles.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
@@ -320,7 +387,7 @@ export default function Home() {
               </div>
             )}
 
-            <div className="mt-4 flex items-center justify-between gap-4">
+            <div className="mt-4 flex items-center justify-between gap-4 min-h-10">
               <div>
                 <div className="text-xs font-extrabold tracking-widest mb-2" style={{ color: '#ff2000' }}>INKURU ZIHERUKA</div>
               </div>
@@ -341,8 +408,10 @@ export default function Home() {
         <section className="py-8 bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {loading ? (
-              <div className="text-center py-8">
-                <p className="text-neutral-600 dark:text-neutral-400">Inkuru ziri gushakishwa...</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                {mostViewedSkeletonItems.map((item) => (
+                  <MostViewedCardSkeleton key={`most-viewed-skeleton-${item}`} />
+                ))}
               </div>
             ) : mostViewedPageArticles.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
@@ -380,7 +449,7 @@ export default function Home() {
               </div>
             ) : null}
 
-            <div className="mt-4 flex items-center justify-between gap-4">
+            <div className="mt-4 flex items-center justify-between gap-4 min-h-10">
               <div>
                 <div className="text-xs font-extrabold tracking-widest mb-2" style={{ color: '#ff2000' }}>IZIKUNZWE CYANE</div>
               </div>
@@ -398,7 +467,7 @@ export default function Home() {
         </section>
 
         {/* Homepage Bottom Advertisement */}
-        {homepageBottomAdverts.length > 0 && (
+        {(advertsLoading || homepageBottomAdverts.length > 0) && (
           <section className="py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               {homepageBottomAdverts.slice(0, 1).map((advert: any) => (
@@ -418,6 +487,9 @@ export default function Home() {
                   </div>
                 </a>
               ))}
+              {advertsLoading && homepageBottomAdverts.length === 0 && (
+                <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-28 border border-neutral-200 dark:border-neutral-700 animate-pulse" />
+              )}
             </div>
           </section>
         )}

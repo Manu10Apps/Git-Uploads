@@ -84,7 +84,7 @@ export default async function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="canonical" href="https://intambwemedia.com" />
-        <link rel="icon" href="/logo.png" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
         {showMaintenance && <meta name="robots" content="noindex, nofollow" />}
         <script

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 import { NAV_CATEGORY_ITEMS } from '@/lib/nav-categories';
@@ -78,7 +79,15 @@ export function Header() {
             href="/"
             className="flex items-center gap-1 sm:gap-2 font-semibold text-base sm:text-lg tracking-wider text-neutral-900 dark:text-white flex-shrink-0"
           >
-            <img src="/logo.png" alt="Intambwe Media" className="h-10 sm:h-14 w-auto rounded-lg" />
+            <Image
+              src="/logo.png"
+              alt="Intambwe Media"
+              width={56}
+              height={56}
+              priority
+              sizes="56px"
+              className="h-[56px] w-[56px] rounded-lg"
+            />
           </Link>
 
           {/* Desktop Navigation */}

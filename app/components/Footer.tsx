@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Category {
   id: number;
@@ -50,7 +51,14 @@ export function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-12 mb-8 sm:mb-12">
           {/* Brand */}
           <div className="space-y-4">
-            <img src="/logo.png" alt="Amakuru" className="h-12 w-auto rounded-lg" />
+            <Image
+              src="/logo.png"
+              alt="Amakuru"
+              width={140}
+              height={48}
+              sizes="140px"
+              className="h-12 w-[140px] rounded-lg"
+            />
             <p className="text-sm text-neutral-400 font-light leading-relaxed">
               Inkuru zicukumbuye ku bibazo bikomeye muri Afurika y’Iburasirazuba, zikozwe mu buryo bwigenga kandi bwizewe.
             </p>
