@@ -488,6 +488,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">INKURU BIFITANYE ISANO</div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {relatedLoading ? (
                 <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-100 dark:hover:border-red-900/50 transition-colors">
                   <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
                     <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru ziri gushakishwa...</p>
@@ -533,6 +534,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">IZIKUNZWE CYANE</div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {mostViewedLoading ? (
                 <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-100 dark:hover:border-red-900/50 transition-colors">
                   <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
                     <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru ziri gushakishwa...</p>
