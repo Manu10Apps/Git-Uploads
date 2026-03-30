@@ -18,8 +18,26 @@ async function run() {
         REFERENCES articles(id) ON DELETE CASCADE
     )
   `);
+  await client.query(`ALTER TABLE comments ADD COLUMN IF NOT EXISTS "parentId" INTEGER`);
+  await client.query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'fk_comments_parent'
+      ) THEN
+        ALTER TABLE comments
+          ADD CONSTRAINT fk_comments_parent
+          FOREIGN KEY ("parentId") REFERENCES comments(id) ON DELETE CASCADE;
+      END IF;
+    END $$;
+  `);
   await client.query(
     `CREATE INDEX IF NOT EXISTS comments_article_id_idx ON comments("articleId")`
+  );
+  await client.query(
+    `CREATE INDEX IF NOT EXISTS comments_parent_id_idx ON comments("parentId")`
   );
   console.log('OK: comments table ready');
   await client.end();

@@ -58,12 +58,16 @@ model Comment {
   id        Int      @id @default(autoincrement())
   articleId Int
   article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  parentId  Int?
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
   name      String
   email     String
   content   String
   createdAt DateTime @default(now())
 
   @@index([articleId])
+  @@index([parentId])
   @@map("comments")
 }
 

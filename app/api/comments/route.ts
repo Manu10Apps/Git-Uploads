@@ -19,8 +19,17 @@ export async function GET(req: NextRequest) {
     }
 
     const comments = await prisma.comment.findMany({
-      where: { articleId: article.id },
-      select: { id: true, name: true, content: true, createdAt: true },
+      where: { articleId: article.id, parentId: null },
+      select: {
+        id: true,
+        name: true,
+        content: true,
+        createdAt: true,
+        replies: {
+          select: { id: true, name: true, content: true, createdAt: true },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
       orderBy: { createdAt: 'asc' },
     });
 
@@ -56,7 +65,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Uzuza ibibanza byose' }, { status: 400 });
   }
 
-  const { name, email, comment } = body as { name: string; email: string; comment: string };
+  const { name, email, comment, parentId } = body as {
+    name: string;
+    email: string;
+    comment: string;
+    parentId?: number;
+  };
 
   const trimmedName = name.trim();
   const trimmedEmail = email.trim().toLowerCase();
@@ -82,14 +96,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Inkuru ntiyabonetse' }, { status: 404 });
     }
 
+    if (typeof parentId !== 'undefined') {
+      const parentComment = await prisma.comment.findFirst({
+        where: {
+          id: parentId,
+          articleId: article.id,
+          parentId: null,
+        },
+        select: { id: true },
+      });
+
+      if (!parentComment) {
+        return NextResponse.json({ error: 'Igitekerezo musubizaho ntikibashije kuboneka' }, { status: 404 });
+      }
+    }
+
     const newComment = await prisma.comment.create({
       data: {
         articleId: article.id,
+        parentId: typeof parentId === 'number' ? parentId : null,
         name: trimmedName,
         email: trimmedEmail,
         content: trimmedComment,
       },
-      select: { id: true, name: true, content: true, createdAt: true },
+      select: { id: true, name: true, content: true, createdAt: true, parentId: true },
     });
 
     return NextResponse.json({ comment: newComment }, { status: 201 });

@@ -28,6 +28,21 @@ interface ArticleClientProps {
   slug: string;
 }
 
+interface CommentReply {
+  id: number;
+  name: string;
+  content: string;
+  createdAt: string;
+}
+
+interface ArticleComment {
+  id: number;
+  name: string;
+  content: string;
+  createdAt: string;
+  replies: CommentReply[];
+}
+
 const formatDateInKinyarwanda = (dateString: string) => {
   const date = new Date(dateString);
   const months = [
@@ -46,10 +61,15 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({ name: '', email: '', comment: '' });
-  const [comments, setComments] = useState<Array<{ id: number; name: string; content: string; createdAt: string }>>([]);
+  const [comments, setComments] = useState<ArticleComment[]>([]);
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [commentSuccess, setCommentSuccess] = useState(false);
   const [commentError, setCommentError] = useState('');
+  const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
+  const [replyFormData, setReplyFormData] = useState({ name: '', email: '', comment: '' });
+  const [replySubmitting, setReplySubmitting] = useState(false);
+  const [replyError, setReplyError] = useState('');
+  const [replySuccessId, setReplySuccessId] = useState<number | null>(null);
   const [recentArticles, setRecentArticles] = useState<Article[]>([]);
   const [recentLoading, setRecentLoading] = useState(true);
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
@@ -165,16 +185,17 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
   };
 
+  const fetchComments = async () => {
+    try {
+      const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}`);
+      const data = await res.json();
+      setComments(data.comments || []);
+    } catch {
+      // silently ignore comment fetch errors
+    }
+  };
+
   useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}`);
-        const data = await res.json();
-        setComments(data.comments || []);
-      } catch {
-        // silently ignore comment fetch errors
-      }
-    };
     fetchComments();
   }, [slug]);
 
@@ -197,7 +218,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
       if (!res.ok) {
         setCommentError(data.error || 'Habaye ikosa, ongera ugerageze.');
       } else {
-        setComments(prev => [...prev, data.comment]);
+        await fetchComments();
         setFormData({ name: '', email: '', comment: '' });
         setCommentSuccess(true);
         setTimeout(() => setCommentSuccess(false), 4000);
@@ -212,6 +233,53 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleReplyInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setReplyFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleReplySubmit = async (e: React.FormEvent, parentId: number) => {
+    e.preventDefault();
+    setReplyError('');
+    setReplySubmitting(true);
+
+    try {
+      const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: replyFormData.name,
+          email: replyFormData.email,
+          comment: replyFormData.comment,
+          parentId,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setReplyError(data.error || 'Habaye ikosa, ongera ugerageze.');
+      } else {
+        await fetchComments();
+        setReplyFormData({ name: '', email: '', comment: '' });
+        setReplySuccessId(parentId);
+        setActiveReplyId(null);
+        setTimeout(() => setReplySuccessId(null), 4000);
+      }
+    } catch {
+      setReplyError('Habaye ikosa, ongera ugerageze.');
+    } finally {
+      setReplySubmitting(false);
+    }
+  };
+
+  const openReplyForm = (commentId: number) => {
+    setReplyError('');
+    setReplySuccessId(null);
+    setActiveReplyId(commentId);
+    setReplyFormData({ name: '', email: '', comment: '' });
   };
 
   const handleCopyLink = async () => {
@@ -526,6 +594,88 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                       {new Date(comment.createdAt).toLocaleDateString('rw-RW', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </p>
                     <p className="text-neutral-700 dark:text-neutral-300">{comment.content}</p>
+
+                    <div className="mt-3 flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => openReplyForm(comment.id)}
+                        className="text-sm font-medium text-red-700 dark:text-red-400 hover:underline"
+                      >
+                        Musubize
+                      </button>
+                      {replySuccessId === comment.id && (
+                        <span className="text-xs text-green-600 dark:text-green-400">Igisubizo cyoherejwe.</span>
+                      )}
+                    </div>
+
+                    {activeReplyId === comment.id && (
+                      <form className="mt-3 bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded-lg p-3" onSubmit={(e) => handleReplySubmit(e, comment.id)}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                          <input
+                            name="name"
+                            value={replyFormData.name}
+                            onChange={handleReplyInputChange}
+                            className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 text-neutral-900 dark:text-white text-sm rounded-lg focus:ring-0 focus:outline-none block w-full p-2.5"
+                            placeholder="Andika izina ryawe"
+                            required
+                            pattern="[A-Za-z\s]{3,20}"
+                            type="text"
+                          />
+                          <input
+                            name="email"
+                            value={replyFormData.email}
+                            onChange={handleReplyInputChange}
+                            className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 text-neutral-900 dark:text-white text-sm rounded-lg focus:ring-0 focus:outline-none block w-full p-2.5"
+                            placeholder="Andika Imeli yawe"
+                            required
+                            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
+                            type="email"
+                          />
+                        </div>
+                        <textarea
+                          name="comment"
+                          value={replyFormData.comment}
+                          onChange={handleReplyInputChange}
+                          rows={3}
+                          className="px-3 py-2 w-full text-sm text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-600 rounded-lg focus:ring-0 focus:outline-none resize-none bg-transparent"
+                          placeholder="Andika igisubizo..."
+                          required
+                        />
+                        {replyError && (
+                          <p className="text-xs text-red-600 dark:text-red-400 mt-2">{replyError}</p>
+                        )}
+                        <div className="mt-3 flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setActiveReplyId(null)}
+                            className="rounded-md py-2 px-3 text-sm bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-600 dark:hover:bg-neutral-500 text-neutral-800 dark:text-white"
+                          >
+                            Hagarika
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={replySubmitting}
+                            className="rounded-md py-2 px-3 text-sm bg-red-700 hover:bg-red-800 text-white disabled:bg-neutral-400"
+                          >
+                            {replySubmitting ? 'Kohereza...' : 'Ohereza Igisubizo'}
+                          </button>
+                        </div>
+                      </form>
+                    )}
+
+                    {comment.replies.length > 0 && (
+                      <ul className="mt-4 ml-2 sm:ml-6 border-l-2 border-neutral-200 dark:border-neutral-700 pl-3 space-y-3">
+                        {comment.replies.map((reply) => (
+                          <li key={reply.id} className="py-1">
+                            <p className="font-medium text-sm text-neutral-900 dark:text-white">{reply.name}</p>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-500 mb-1">
+                              {new Date(reply.createdAt).toLocaleDateString('rw-RW', { year: 'numeric', month: 'long', day: 'numeric' })}
+                            </p>
+                            <p className="text-sm text-neutral-700 dark:text-neutral-300">{reply.content}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
                 ))}
               </ul>
