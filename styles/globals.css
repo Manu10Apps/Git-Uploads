@@ -20,6 +20,8 @@
 html {
   scroll-behavior: smooth;
   font-size: 16px;
+  max-width: 100%;
+  overflow-x: hidden;
   
   @apply antialiased;
 }
@@ -28,6 +30,16 @@ body {
   @apply bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-50;
   font-feature-settings: 'kern' 1;
   font-kerning: auto;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  max-width: 100%;
 }
 
 /* Typography */

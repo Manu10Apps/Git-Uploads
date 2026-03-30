@@ -269,15 +269,15 @@ export function TopBar() {
     <div className="bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-950 dark:to-neutral-900 border-b border-neutral-700 dark:border-neutral-800 text-white/90 text-xs">
       <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2">
         {/* Mobile layout - Simplified */}
-        <div className="md:hidden flex items-center justify-between gap-2">
+        <div className="md:hidden grid grid-cols-[auto_1fr_auto] items-center gap-2 min-w-0">
           {/* Simplified Date */}
-          <div className="flex items-center gap-1 flex-shrink-0">
+          <div className="flex items-center gap-1 flex-shrink-0 max-[380px]:hidden">
             <span className="text-neutral-400">📅</span>
             <span className="text-white/80 text-xs">{data.simplifiedDate}</span>
           </div>
 
           {/* Simplified Weather - temp only on very small screens */}
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink min-w-0 border-l border-neutral-600 pl-2">
+          <div className="flex items-center gap-1 sm:gap-2 min-w-0 border-l border-neutral-600 pl-2 max-[380px]:border-l-0 max-[380px]:pl-0">
             <span className="flex-shrink-0">{data.weather.icon}</span>
             <span className="text-white/80 text-xs flex-shrink-0">{data.weather.temp}°C</span>
             <span className="text-neutral-400 text-xs truncate hidden sm:inline">{data.weather.conditionKy}</span>
@@ -286,7 +286,7 @@ export function TopBar() {
           {/* USD Only */}
           <div className="flex items-center gap-1 flex-shrink-0 border-l border-neutral-600 pl-2">
             <span className="text-red-600 font-semibold text-xs">{data.exchanges[0]?.code}:</span>
-            <span className="text-white/80 text-xs">{data.exchanges[0]?.rate}</span>
+            <span className="text-white/80 text-xs tabular-nums">{data.exchanges[0]?.rate}</span>
           </div>
         </div>
 

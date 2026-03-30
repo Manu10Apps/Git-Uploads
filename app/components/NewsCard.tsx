@@ -199,7 +199,7 @@ export function NewsCard({
             
             {/* Share Menu */}
             {showShareMenu && (
-              <div className="absolute bottom-full left-0 sm:left-auto sm:right-0 mb-2 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 p-2 min-w-max z-50">
+              <div className="absolute bottom-full right-0 mb-2 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 p-2 min-w-max max-w-[calc(100vw-1rem)] z-50">
                 {/* Copy Link Button */}
                 <button
                   onClick={(e) => {
