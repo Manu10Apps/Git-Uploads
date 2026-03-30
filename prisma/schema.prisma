@@ -61,14 +61,31 @@ model Comment {
   parentId  Int?
   parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies   Comment[] @relation("CommentReplies")
+  votes     CommentVote[]
   name      String
   email     String
   content   String
+  likes     Int      @default(0)
+  dislikes  Int      @default(0)
   createdAt DateTime @default(now())
 
   @@index([articleId])
   @@index([parentId])
   @@map("comments")
+}
+
+model CommentVote {
+  id        Int      @id @default(autoincrement())
+  commentId Int
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  visitorId String
+  reaction  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([commentId, visitorId])
+  @@index([visitorId])
+  @@map("comment_votes")
 }
 
 model AdminUser {

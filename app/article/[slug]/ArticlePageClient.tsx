@@ -8,7 +8,7 @@ import { getTranslation } from '@/lib/translations';
 import { Header, FactCheckBox, Footer } from '@/app/components';
 import { ArticleImage } from '@/app/components/ArticleImage';
 import { ArticleContent } from '@/app/components/ArticleContent';
-import { Bookmark, Copy, Check } from 'lucide-react';
+import { Bookmark, Copy, Check, ThumbsDown, ThumbsUp, TriangleAlert } from 'lucide-react';
 
 interface Article {
   id: string;
@@ -32,16 +32,24 @@ interface CommentReply {
   id: number;
   name: string;
   content: string;
+  likes: number;
+  dislikes: number;
   createdAt: string;
+  visitorReaction: CommentReaction | null;
 }
 
 interface ArticleComment {
   id: number;
   name: string;
   content: string;
+  likes: number;
+  dislikes: number;
   createdAt: string;
+  visitorReaction: CommentReaction | null;
   replies: CommentReply[];
 }
+
+type CommentReaction = 'like' | 'dislike';
 
 const formatDateInKinyarwanda = (dateString: string) => {
   const date = new Date(dateString);
@@ -70,6 +78,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const [replySubmitting, setReplySubmitting] = useState(false);
   const [replyError, setReplyError] = useState('');
   const [replySuccessId, setReplySuccessId] = useState<number | null>(null);
+  const [reactionLoadingId, setReactionLoadingId] = useState<number | null>(null);
   const [recentArticles, setRecentArticles] = useState<Article[]>([]);
   const [recentLoading, setRecentLoading] = useState(true);
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
@@ -280,6 +289,49 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     setReplySuccessId(null);
     setActiveReplyId(commentId);
     setReplyFormData({ name: '', email: '', comment: '' });
+  };
+
+  const updateCommentReaction = (
+    items: ArticleComment[],
+    commentId: number,
+    likes: number,
+    dislikes: number,
+    visitorReaction: CommentReaction
+  ) => items.map((item) => {
+    if (item.id === commentId) {
+      return { ...item, likes, dislikes, visitorReaction };
+    }
+
+    return {
+      ...item,
+      replies: item.replies.map((reply) =>
+        reply.id === commentId ? { ...reply, likes, dislikes, visitorReaction } : reply
+      ),
+    };
+  });
+
+  const handleCommentReaction = async (commentId: number, reaction: CommentReaction) => {
+    setReactionLoadingId(commentId);
+
+    try {
+      const res = await fetch('/api/comments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ commentId, reaction }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setCommentError(data.error || 'Habaye ikosa, ongera ugerageze.');
+        return;
+      }
+
+      setComments((prev) => updateCommentReaction(prev, commentId, data.comment.likes, data.comment.dislikes, data.comment.visitorReaction));
+    } catch {
+      setCommentError('Habaye ikosa, ongera ugerageze.');
+    } finally {
+      setReactionLoadingId(null);
+    }
   };
 
   const handleCopyLink = async () => {
@@ -515,6 +567,16 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
           <section className="mt-8 sm:mt-10 md:mt-12 bg-neutral-100 dark:bg-neutral-800 p-4 sm:p-6 md:p-8 rounded-lg sm:rounded-md">
             <h2 className="mb-4 sm:mb-6 text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">Ibitekerezo ({comments.length})</h2>
             <div>
+              <div className="mb-4 sm:mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
+                <div className="flex items-start gap-3">
+                  <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0" />
+                  <p className="text-sm leading-6">
+                    <span className="font-semibold">Warning! </span>
+                    Ibitekerezo bitangwa mu bwisanzure n'ubwubahane, imvugo z'urwango no kutagira imyitwarire myiza bihanwa n'amategeko.
+                  </p>
+                </div>
+              </div>
+
               {/* Comment Form */}
               <form className="mb-3 sm:mb-6" onSubmit={handleCommentSubmit}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-4">
@@ -603,6 +665,24 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                       >
                         Musubize
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => handleCommentReaction(comment.id, 'like')}
+                        disabled={reactionLoadingId === comment.id}
+                        className={`inline-flex items-center gap-1 text-sm transition-colors disabled:opacity-50 ${comment.visitorReaction === 'like' ? 'text-green-700 dark:text-green-400' : 'text-neutral-600 hover:text-green-700 dark:text-neutral-300 dark:hover:text-green-400'}`}
+                      >
+                        <ThumbsUp className="h-4 w-4" />
+                        <span>{comment.likes}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleCommentReaction(comment.id, 'dislike')}
+                        disabled={reactionLoadingId === comment.id}
+                        className={`inline-flex items-center gap-1 text-sm transition-colors disabled:opacity-50 ${comment.visitorReaction === 'dislike' ? 'text-red-700 dark:text-red-400' : 'text-neutral-600 hover:text-red-700 dark:text-neutral-300 dark:hover:text-red-400'}`}
+                      >
+                        <ThumbsDown className="h-4 w-4" />
+                        <span>{comment.dislikes}</span>
+                      </button>
                       {replySuccessId === comment.id && (
                         <span className="text-xs text-green-600 dark:text-green-400">Igisubizo cyoherejwe.</span>
                       )}
@@ -672,6 +752,26 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                               {new Date(reply.createdAt).toLocaleDateString('rw-RW', { year: 'numeric', month: 'long', day: 'numeric' })}
                             </p>
                             <p className="text-sm text-neutral-700 dark:text-neutral-300">{reply.content}</p>
+                            <div className="mt-2 flex items-center gap-3">
+                              <button
+                                type="button"
+                                onClick={() => handleCommentReaction(reply.id, 'like')}
+                                disabled={reactionLoadingId === reply.id}
+                                className={`inline-flex items-center gap-1 text-xs transition-colors disabled:opacity-50 ${reply.visitorReaction === 'like' ? 'text-green-700 dark:text-green-400' : 'text-neutral-600 hover:text-green-700 dark:text-neutral-300 dark:hover:text-green-400'}`}
+                              >
+                                <ThumbsUp className="h-3.5 w-3.5" />
+                                <span>{reply.likes}</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleCommentReaction(reply.id, 'dislike')}
+                                disabled={reactionLoadingId === reply.id}
+                                className={`inline-flex items-center gap-1 text-xs transition-colors disabled:opacity-50 ${reply.visitorReaction === 'dislike' ? 'text-red-700 dark:text-red-400' : 'text-neutral-600 hover:text-red-700 dark:text-neutral-300 dark:hover:text-red-400'}`}
+                              >
+                                <ThumbsDown className="h-3.5 w-3.5" />
+                                <span>{reply.dislikes}</span>
+                              </button>
+                            </div>
                           </li>
                         ))}
                       </ul>
