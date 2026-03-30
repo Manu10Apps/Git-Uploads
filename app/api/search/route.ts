@@ -6,6 +6,8 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get('q');
+    const limitParam = Number(searchParams.get('limit') || '20');
+    const limit = Number.isFinite(limitParam) ? Math.max(1, Math.min(30, limitParam)) : 20;
 
     if (!query || query.trim().length < 2) {
       return NextResponse.json(
@@ -31,23 +33,26 @@ export async function GET(request: NextRequest) {
           {
             title: {
               contains: searchTerm,
+              mode: 'insensitive',
             },
           },
           {
             excerpt: {
               contains: searchTerm,
+              mode: 'insensitive',
             },
           },
           {
             content: {
               contains: searchTerm,
+              mode: 'insensitive',
             },
           },
         ],
       },
       include: { category: true },
       orderBy: { publishedAt: 'desc' },
-      take: 20,
+      take: limit,
     });
 
     // Format response
