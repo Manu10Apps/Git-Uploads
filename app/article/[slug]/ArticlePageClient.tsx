@@ -779,22 +779,22 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                     {commentSubmitting ? 'Kohereza...' : 'Ohereza Igitekerezo'}
                   </button>
                 </div>
-
-                <div className="mt-4 sm:mt-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-950/40">
-                  <div className="flex items-start gap-3" style={{ color: '#d01a00' }}>
-                    <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0" />
-                    <p className="text-sm leading-6">
-                      <span className="font-semibold">Umuburo! </span>
-                      Ibitekerezo bitangwa mu bwisanzure n'ubwubahane, imvugo z'urwango no kutagira imyitwarire iboneye bihanwa n'amategeko y'ibihugu.
-                    </p>
-                  </div>
-                </div>
               </form>
 
               {/* Comments List */}
               <ul className="flex flex-col gap-4 ml-2 my-2">
                 {comments.map((comment) => renderCommentNode(comment))}
               </ul>
+
+              <div className="mt-4 sm:mt-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-950/40">
+                <div className="flex items-start gap-3" style={{ color: '#d01a00' }}>
+                  <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0" />
+                  <p className="text-sm leading-6">
+                    <span className="font-semibold">Umuburo! </span>
+                    Ibitekerezo bitangwa mu bwisanzure n'ubwubahane, imvugo z'urwango no kutagira imyitwarire iboneye bihanwa n'amategeko y'ibihugu.
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
