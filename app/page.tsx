@@ -496,6 +496,8 @@ export default function Home() {
                     {Array.from({ length: 4 }, (_, index) => (
                       <div key={`youtube-skeleton-${index}`} className="animate-pulse">
                         <div className="aspect-video rounded-lg bg-neutral-200 dark:bg-neutral-800" />
+                        <div className="mt-3 h-4 rounded bg-neutral-200 dark:bg-neutral-800" />
+                        <div className="mt-2 h-3 w-1/2 rounded bg-neutral-200 dark:bg-neutral-800" />
                       </div>
                     ))}
                   </div>
@@ -527,6 +529,16 @@ export default function Home() {
                             <span className="absolute bottom-2 right-2 rounded bg-black/85 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">
                               {video.duration}
                             </span>
+                          )}
+                        </div>
+                        <div className="p-3">
+                          <h3 className="text-sm font-semibold leading-snug text-neutral-900 dark:text-white line-clamp-2 transition-colors group-hover:text-red-700 dark:group-hover:text-red-400">
+                            {video.title}
+                          </h3>
+                          {video.publishedAt && (
+                            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1">
+                              {video.publishedAt}
+                            </p>
                           )}
                         </div>
                       </a>

@@ -11,8 +11,30 @@ type YouTubeVideo = {
 };
 
 const YOUTUBE_HANDLE = '@intambwemedia';
-const YOUTUBE_CHANNEL_ID = 'UC9E0Uidq6lnP9PQfK1qQqJw';
 const MAX_VIDEOS = 4;
+const CHANNEL_PAGE_CANDIDATES = [
+  `https://www.youtube.com/${YOUTUBE_HANDLE}/videos`,
+  `https://www.youtube.com/${YOUTUBE_HANDLE}/streams`,
+  `https://www.youtube.com/${YOUTUBE_HANDLE}`,
+  'https://www.youtube.com/results?search_query=intambwemedia',
+];
+
+type YouTubeRendererText = {
+  simpleText?: string;
+  runs?: Array<{ text?: string }>;
+};
+
+type YouTubeThumbnail = {
+  url?: string;
+};
+
+type YouTubeVideoRenderer = {
+  videoId?: string;
+  title?: YouTubeRendererText;
+  publishedTimeText?: YouTubeRendererText;
+  lengthText?: YouTubeRendererText;
+  thumbnail?: { thumbnails?: YouTubeThumbnail[] };
+};
 
 function decodeXml(text: string): string {
   return text
@@ -21,6 +43,34 @@ function decodeXml(text: string): string {
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'");
+}
+
+function decodeJsonText(text: string): string {
+  return text
+    .replace(/\\u0026/g, '&')
+    .replace(/\\u003d/g, '=')
+    .replace(/\\u002f/g, '/')
+    .replace(/\\n/g, ' ')
+    .replace(/\\"/g, '"')
+    .replace(/\\'/g, "'")
+    .replace(/\\\\/g, '\\')
+    .trim();
+}
+
+function getRendererText(value?: YouTubeRendererText): string {
+  if (!value) {
+    return '';
+  }
+
+  if (value.simpleText) {
+    return value.simpleText.trim();
+  }
+
+  if (Array.isArray(value.runs)) {
+    return value.runs.map((run) => run.text || '').join('').trim();
+  }
+
+  return '';
 }
 
 function formatDuration(totalSeconds: number): string {
@@ -134,106 +184,261 @@ async function resolveVideoDuration(videoId: string): Promise<string | undefined
   }
 }
 
-function extractChannelId(channelPageHtml: string): string | null {
-  const patterns = [
-    /"channelId":"(UC[\w-]+)"/,
-    /"externalId":"(UC[\w-]+)"/,
-    /"browseId":"(UC[\w-]+)"/,
+function extractInitialData(html: string): unknown | null {
+  const markers = [
+    'var ytInitialData = ',
+    'window["ytInitialData"] = ',
+    'ytInitialData = ',
   ];
 
-  for (const pattern of patterns) {
-    const match = channelPageHtml.match(pattern);
-    if (match?.[1]) return match[1];
+  let markerIndex = -1;
+  let markerLength = 0;
+
+  for (const marker of markers) {
+    const currentIndex = html.indexOf(marker);
+    if (currentIndex !== -1) {
+      markerIndex = currentIndex;
+      markerLength = marker.length;
+      break;
+    }
+  }
+
+  if (markerIndex === -1) {
+    return null;
+  }
+
+  const jsonStart = html.indexOf('{', markerIndex + markerLength);
+  if (jsonStart === -1) {
+    return null;
+  }
+
+  let depth = 0;
+  let inString = false;
+  let isEscaped = false;
+
+  for (let index = jsonStart; index < html.length; index += 1) {
+    const character = html[index];
+
+    if (isEscaped) {
+      isEscaped = false;
+      continue;
+    }
+
+    if (character === '\\') {
+      isEscaped = true;
+      continue;
+    }
+
+    if (character === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (inString) {
+      continue;
+    }
+
+    if (character === '{') {
+      depth += 1;
+      continue;
+    }
+
+    if (character === '}') {
+      depth -= 1;
+
+      if (depth === 0) {
+        const rawJson = html.slice(jsonStart, index + 1);
+
+        try {
+          return JSON.parse(rawJson);
+        } catch {
+          return null;
+        }
+      }
+    }
   }
 
   return null;
 }
 
-async function resolveChannelId(): Promise<string | null> {
-  if (YOUTUBE_CHANNEL_ID) {
-    return YOUTUBE_CHANNEL_ID;
+function collectVideoRenderers(node: unknown, renderers: YouTubeVideoRenderer[] = []): YouTubeVideoRenderer[] {
+  if (!node || typeof node !== 'object') {
+    return renderers;
   }
 
-  try {
-    const channelResponse = await fetch(`https://www.youtube.com/${YOUTUBE_HANDLE}`, {
-      headers: { 'user-agent': 'Mozilla/5.0' },
-      cache: 'no-store',
-    });
-
-    if (channelResponse.ok) {
-      const channelHtml = await channelResponse.text();
-      const channelId = extractChannelId(channelHtml);
-      if (channelId) return channelId;
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      collectVideoRenderers(item, renderers);
     }
-  } catch {
-    // Fallback to search page below.
+
+    return renderers;
   }
 
-  try {
-    const searchResponse = await fetch('https://www.youtube.com/results?search_query=intambwemedia', {
-      headers: { 'user-agent': 'Mozilla/5.0' },
-      cache: 'no-store',
-    });
-    if (!searchResponse.ok) return null;
-    const searchHtml = await searchResponse.text();
-    return extractChannelId(searchHtml);
-  } catch {
-    return null;
+  const record = node as Record<string, unknown>;
+  const videoRenderer = record.videoRenderer as YouTubeVideoRenderer | undefined;
+
+  if (videoRenderer?.videoId) {
+    renderers.push(videoRenderer);
   }
+
+  for (const value of Object.values(record)) {
+    collectVideoRenderers(value, renderers);
+  }
+
+  return renderers;
 }
 
-function parseVideos(feedXml: string): YouTubeVideo[] {
-  const entries = feedXml.match(/<entry>[\s\S]*?<\/entry>/g) || [];
+function parseVideosFromChannelPage(html: string): YouTubeVideo[] {
+  const initialData = extractInitialData(html);
+  if (!initialData) {
+    return [];
+  }
+
+  const renderers = collectVideoRenderers(initialData);
+  const seenIds = new Set<string>();
   const videos: YouTubeVideo[] = [];
 
-  for (const entry of entries) {
-    if (videos.length >= MAX_VIDEOS) break;
+  for (const renderer of renderers) {
+    const id = renderer.videoId?.trim();
+    if (!id || seenIds.has(id)) {
+      continue;
+    }
 
-    const idMatch = entry.match(/<yt:videoId>([^<]+)<\/yt:videoId>/);
-    if (!idMatch?.[1]) continue;
+    seenIds.add(id);
 
-    const titleMatch = entry.match(/<title>([\s\S]*?)<\/title>/);
-    const publishedMatch = entry.match(/<published>([^<]+)<\/published>/);
-    const durationMatch = entry.match(/<yt:duration\s+seconds="(\d+)"\s*\/>/);
-
-    const id = idMatch[1].trim();
-    const title = decodeXml((titleMatch?.[1] || 'YouTube Video').trim());
+    const thumbnailCandidates = renderer.thumbnail?.thumbnails || [];
+    const thumbnail = thumbnailCandidates[thumbnailCandidates.length - 1]?.url || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+    const title = decodeXml(getRendererText(renderer.title) || 'YouTube Video');
+    const publishedAt = getRendererText(renderer.publishedTimeText) || undefined;
+    const duration = getRendererText(renderer.lengthText) || undefined;
 
     videos.push({
       id,
       title,
       url: `https://www.youtube.com/watch?v=${id}`,
-      thumbnail: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+      thumbnail,
       thumbnailFallback: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
-      duration: durationMatch?.[1] ? formatDuration(Number(durationMatch[1])) : undefined,
-      publishedAt: publishedMatch?.[1],
+      duration,
+      publishedAt,
     });
+
+    if (videos.length >= MAX_VIDEOS) {
+      break;
+    }
   }
 
   return videos;
 }
 
-export async function GET() {
-  try {
-    const channelId = await resolveChannelId();
+function extractValueFromSnippet(snippet: string, patterns: RegExp[]): string | undefined {
+  for (const pattern of patterns) {
+    const match = snippet.match(pattern);
+    if (match?.[1]) {
+      return decodeXml(decodeJsonText(match[1]));
+    }
+  }
 
-    if (!channelId) {
-      return NextResponse.json({ success: false, data: [], error: 'Channel ID not found' }, { status: 502 });
+  return undefined;
+}
+
+function parseVideosFromHtmlFallback(html: string): YouTubeVideo[] {
+  const idMatches = Array.from(html.matchAll(/"videoId":"([\w-]{11})"/g));
+  const seenIds = new Set<string>();
+  const videos: YouTubeVideo[] = [];
+
+  for (const match of idMatches) {
+    const id = match[1]?.trim();
+    const index = match.index ?? -1;
+
+    if (!id || index === -1 || seenIds.has(id)) {
+      continue;
     }
 
-    const feedResponse = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`, {
-      headers: {
-        'user-agent': 'Mozilla/5.0',
-      },
-      cache: 'no-store',
+    seenIds.add(id);
+
+    const snippetStart = Math.max(0, index - 300);
+    const snippetEnd = Math.min(html.length, index + 3500);
+    const snippet = html.slice(snippetStart, snippetEnd);
+
+    const title = extractValueFromSnippet(snippet, [
+      /"title":\{"runs":\[\{"text":"([\s\S]*?)"\}\]/,
+      /"title":\{"simpleText":"([\s\S]*?)"\}/,
+      /"headline":\{"simpleText":"([\s\S]*?)"\}/,
+    ]) || 'YouTube Video';
+
+    const publishedAt = extractValueFromSnippet(snippet, [
+      /"publishedTimeText":\{"simpleText":"([\s\S]*?)"\}/,
+      /"publishedTimeText":\{"runs":\[\{"text":"([\s\S]*?)"\}\]/,
+    ]);
+
+    const duration = extractValueFromSnippet(snippet, [
+      /"lengthText":\{"simpleText":"([\s\S]*?)"\}/,
+      /"lengthText":\{[\s\S]*?"label":"([\s\S]*?)"\}/,
+    ]);
+
+    const rawThumbnail = extractValueFromSnippet(snippet, [
+      new RegExp(`(https://i\\.ytimg\\.com/vi/${id}/hqdefault\\.jpg[^"\\s]*)`),
+      new RegExp(`(https://img\\.youtube\\.com/vi/${id}/hqdefault\\.jpg[^"\\s]*)`),
+    ]);
+
+    videos.push({
+      id,
+      title,
+      url: `https://www.youtube.com/watch?v=${id}`,
+      thumbnail: rawThumbnail || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+      thumbnailFallback: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+      duration,
+      publishedAt,
     });
 
-    if (!feedResponse.ok) {
-      return NextResponse.json({ success: false, data: [], error: 'Failed to fetch videos feed' }, { status: 502 });
+    if (videos.length >= MAX_VIDEOS) {
+      break;
+    }
+  }
+
+  return videos;
+}
+
+async function fetchLatestVideos(): Promise<YouTubeVideo[]> {
+  for (const url of CHANNEL_PAGE_CANDIDATES) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'user-agent': 'Mozilla/5.0',
+        },
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const html = await response.text();
+      const structuredVideos = parseVideosFromChannelPage(html);
+      if (structuredVideos.length > 0) {
+        return structuredVideos;
+      }
+
+      const fallbackVideos = parseVideosFromHtmlFallback(html);
+      if (fallbackVideos.length > 0) {
+        return fallbackVideos;
+      }
+    } catch {
+      // Try the next public page candidate.
+    }
+  }
+
+  return [];
+}
+
+export async function GET() {
+  try {
+    const videos = await fetchLatestVideos();
+
+    if (videos.length === 0) {
+      return NextResponse.json({ success: false, data: [], error: 'Failed to parse latest videos' }, { status: 502 });
     }
 
-    const feedXml = await feedResponse.text();
-    const videos = parseVideos(feedXml);
     const videosWithDuration = await Promise.all(
       videos.map(async (video) => {
         if (video.duration) {
