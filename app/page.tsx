@@ -10,7 +10,7 @@ import { ArticleImage } from '@/app/components/ArticleImage';
 export default function Home() {
   const { language } = useAppStore();
   const t = getTranslation(language);
-  const [youtubeVideos, setYouTubeVideos] = useState<Array<{ id: string; title: string; url: string; thumbnail: string; thumbnailFallback?: string; duration?: string }>>([]);
+  const [youtubeVideos, setYouTubeVideos] = useState<Array<{ id: string; title: string; url: string; thumbnail: string; thumbnailFallback?: string; duration?: string; publishedAt?: string }>>([]);
   const [youtubeLoading, setYouTubeLoading] = useState(true);
   const [articles, setArticles] = useState<any[]>([]);
   const [mostViewed, setMostViewed] = useState<any[]>([]);
