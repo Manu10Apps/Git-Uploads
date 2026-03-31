@@ -711,16 +711,6 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
           <section className="mt-8 sm:mt-10 md:mt-12 bg-neutral-100 dark:bg-neutral-800 p-4 sm:p-6 md:p-8 rounded-lg sm:rounded-md">
             <h2 className="mb-4 sm:mb-6 text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">Ibitekerezo ({totalComments})</h2>
             <div>
-              <div className="mb-4 sm:mb-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-100">
-                <div className="flex items-start gap-3">
-                  <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0" />
-                  <p className="text-sm leading-6">
-                    <span className="font-semibold">Umuburo! </span>
-                    Ibitekerezo bitangwa mu bwisanzure n'ubwubahane, imvugo z'urwango no kutagira imyitwarire iboneye bihanwa n'amategeko y'ibihugu.
-                  </p>
-                </div>
-              </div>
-
               {/* Comment Form */}
               <form className="mb-3 sm:mb-6" onSubmit={handleCommentSubmit}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-4">
@@ -788,6 +778,16 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                   >
                     {commentSubmitting ? 'Kohereza...' : 'Ohereza Igitekerezo'}
                   </button>
+                </div>
+
+                <div className="mt-4 sm:mt-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-950/40">
+                  <div className="flex items-start gap-3" style={{ color: '#d01a00' }}>
+                    <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0" />
+                    <p className="text-sm leading-6">
+                      <span className="font-semibold">Umuburo! </span>
+                      Ibitekerezo bitangwa mu bwisanzure n'ubwubahane, imvugo z'urwango no kutagira imyitwarire iboneye bihanwa n'amategeko y'ibihugu.
+                    </p>
+                  </div>
                 </div>
               </form>
 
