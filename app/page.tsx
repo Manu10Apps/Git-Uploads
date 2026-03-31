@@ -10,6 +10,8 @@ import { ArticleImage } from '@/app/components/ArticleImage';
 export default function Home() {
   const { language } = useAppStore();
   const t = getTranslation(language);
+  const [youtubeVideos, setYouTubeVideos] = useState<Array<{ id: string; title: string; url: string; thumbnail: string; thumbnailFallback?: string; duration?: string }>>([]);
+  const [youtubeLoading, setYouTubeLoading] = useState(true);
   const [articles, setArticles] = useState<any[]>([]);
   const [mostViewed, setMostViewed] = useState<any[]>([]);
   const [adverts, setAdverts] = useState<any[]>([]);
@@ -204,8 +206,27 @@ export default function Home() {
       }
     };
 
+    const fetchYouTubeVideos = async () => {
+      try {
+        setYouTubeLoading(true);
+        const response = await fetch('/api/youtube/latest');
+        const data = await response.json();
+        if (data?.success && Array.isArray(data.data)) {
+          setYouTubeVideos(data.data.slice(0, 4));
+        } else {
+          setYouTubeVideos([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch YouTube videos:', error);
+        setYouTubeVideos([]);
+      } finally {
+        setYouTubeLoading(false);
+      }
+    };
+
     fetchArticles();
     fetchAdverts();
+    fetchYouTubeVideos();
   }, []);
 
   useEffect(() => {
@@ -463,6 +484,57 @@ export default function Home() {
                 label="Most viewed section pagination"
               />
             </div>
+
+            {(youtubeLoading || youtubeVideos.length > 0) && (
+              <div className="mt-8 border-t border-neutral-200 dark:border-neutral-800 pt-6">
+                <div className="text-xs font-extrabold tracking-widest mb-4" style={{ color: '#ff2000' }}>
+                  AMASHUSHO AHERUKA
+                </div>
+
+                {youtubeLoading ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {Array.from({ length: 4 }, (_, index) => (
+                      <div key={`youtube-skeleton-${index}`} className="animate-pulse">
+                        <div className="aspect-video rounded-lg bg-neutral-200 dark:bg-neutral-800" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {youtubeVideos.map((video) => (
+                      <a
+                        key={video.id}
+                        href={video.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group block rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-800 hover:shadow-lg transition-all duration-300 bg-white dark:bg-neutral-800"
+                        aria-label={video.title}
+                      >
+                        <div className="relative aspect-video bg-neutral-100 dark:bg-neutral-700 overflow-hidden">
+                          <img
+                            src={video.thumbnail}
+                            alt={video.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
+                            onError={(event) => {
+                              const img = event.currentTarget;
+                              if (video.thumbnailFallback && img.src !== video.thumbnailFallback) {
+                                img.src = video.thumbnailFallback;
+                              }
+                            }}
+                          />
+                          {video.duration && (
+                            <span className="absolute bottom-2 right-2 rounded bg-black/85 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">
+                              {video.duration}
+                            </span>
+                          )}
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </section>
 
