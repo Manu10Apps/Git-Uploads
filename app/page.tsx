@@ -377,7 +377,7 @@ export default function Home() {
                     className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-200 dark:hover:border-red-900/50 transition-all duration-300 cursor-pointer hover:shadow-lg"
                   >
                     <Link href={`/article/${article.slug}`}>
-                        <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-24">
+                        <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-36 sm:h-40">
                           <ArticleImage
                             src={article.image}
                             alt={article.title}
@@ -492,7 +492,7 @@ export default function Home() {
                 </div>
 
                 {youtubeLoading ? (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
                     {Array.from({ length: 4 }, (_, index) => (
                       <div key={`youtube-skeleton-${index}`} className="animate-pulse">
                         <div className="aspect-video rounded-lg bg-neutral-200 dark:bg-neutral-800" />
@@ -502,7 +502,7 @@ export default function Home() {
                     ))}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 min-[400px]:grid-cols-2 md:grid-cols-4 gap-4">
                     {youtubeVideos.map((video) => (
                       <a
                         key={video.id}
