@@ -169,9 +169,21 @@ export function convertYouTubeTimeToKinyarwanda(timeText: string | undefined): s
   const numberMatch = text.match(/(\d+)/);
   if (!numberMatch) return timeText;
 
-  const number = numberMatch[1];
+  const number = parseInt(numberMatch[1]);
 
   // Convert French time text
+  if (text.includes('year') || text.includes('an')) {
+    return number === 1 ? 'Hashize umwaka umwe' : `Hashize imyaka ${number}`;
+  }
+
+  if (text.includes('mois') || text.includes('month')) {
+    return number === 1 ? 'Hashize ukwezi kumwe' : `Hashize amezi ${number}`;
+  }
+
+  if (text.includes('semaine') || text.includes('week')) {
+    return number === 1 ? 'Hashize icyumweru kimwe' : `Hashize ibyumweru ${number}`;
+  }
+
   if (text.includes('jour') || text.includes('day')) {
     return `Hashize iminsi ${number}`;
   }
