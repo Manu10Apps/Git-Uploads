@@ -536,13 +536,33 @@ export default function Home() {
                             {video.title}
                           </h3>
                           {video.publishedAt && (
-                            <p className={`mt-1 text-xs line-clamp-1 ${
-                              video.publishedAt.startsWith('[LIVE]')
-                                ? 'text-red-600 dark:text-red-500 font-semibold'
-                                : 'text-neutral-500 dark:text-neutral-400'
-                            }`}>
-                              {video.publishedAt.replace('[LIVE]', '')}
-                            </p>
+                            video.publishedAt.startsWith('[LIVE]') ? (
+                              <div className="mt-2">
+                                <span
+                                  className="inline-flex items-center gap-1 px-6 py-3 text-white font-bold rounded-sm transition-colors text-sm"
+                                  style={{ backgroundColor: 'rgb(226, 0, 26)' }}
+                                >
+                                  <svg
+                                    className="h-4 w-4"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                  >
+                                    <circle cx="12" cy="12" r="3" fill="currentColor" />
+                                    <path d="M5 8C2.5 10.5 2.5 13.5 5 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                    <path d="M19 8C21.5 10.5 21.5 13.5 19 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                    <path d="M8 6C4.5 9.5 4.5 14.5 8 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                    <path d="M16 6C19.5 9.5 19.5 14.5 16 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                  </svg>
+                                  LIVE
+                                </span>
+                              </div>
+                            ) : (
+                              <p className="mt-1 text-xs line-clamp-1 text-neutral-500 dark:text-neutral-400">
+                                {video.publishedAt}
+                              </p>
+                            )
                           )}
                         </div>
                       </a>
