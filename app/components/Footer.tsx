@@ -57,7 +57,7 @@ export function Footer() {
               width={48}
               height={48}
               sizes="48px"
-              className="h-12 w-12 rounded-lg mx-auto lg:mx-0"
+              className="h-12 w-12 rounded-lg mx-auto"
             />
             <p className="text-sm text-neutral-400 font-light leading-relaxed">
               Inkuru zicukumbuye ku bibazo bikomeye muri Afurika y’Iburasirazuba, zikozwe mu buryo bwigenga kandi bwizewe.
