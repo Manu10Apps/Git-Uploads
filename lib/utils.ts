@@ -160,17 +160,19 @@ export function convertYouTubeTimeToKinyarwanda(timeText: string | undefined): s
 
   const text = timeText.toLowerCase().trim();
 
-  // Treat live streams and premieres as "now" for the UI.
+  // Live streams and premieres should display as a red "Live" label.
   if (
-    text.includes('direct')
-    || text.includes('live')
-    || text.includes('en direct')
-    || text.includes('premiering')
-    || text.includes('premiere')
-    || text.includes('premiere en cours')
-    || text.includes('en premiere')
+    text.includes('direct') ||
+    text.includes('live') ||
+    text.includes('en direct') ||
+    text.includes('premier')
   ) {
-    return '[LIVE]Nonaha';
+    return '[LIVE]Live';
+  }
+
+  // Under one minute should show as "Nonaha".
+  if (text.includes('just now') || text.includes('instant') || text.includes('second')) {
+    return 'Nonaha';
   }
 
   // Extract number from French or English text
@@ -200,7 +202,7 @@ export function convertYouTubeTimeToKinyarwanda(timeText: string | undefined): s
     return number === 1 ? 'Hashize isaha' : `Hashize amasaha ${number}`;
   }
 
-  if (text.includes('minute') || text.includes('second')) {
+  if (text.includes('minute')) {
     return number === 1 ? 'Hashize umunota' : `Hashize iminota ${number}`;
   }
 
