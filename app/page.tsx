@@ -537,13 +537,13 @@ export default function Home() {
                           </h3>
                           {video.publishedAt && (
                             video.publishedAt.startsWith('[LIVE]') ? (
-                              <div className="mt-2">
+                              <div className="mt-1.5">
                                 <span
-                                  className="inline-flex items-center gap-1 px-6 py-3 text-white font-bold rounded-sm transition-colors text-sm"
+                                  className="inline-flex items-center gap-1 px-3 py-1.5 text-white font-bold rounded-md transition-colors text-xs"
                                   style={{ backgroundColor: 'rgb(226, 0, 26)' }}
                                 >
                                   <svg
-                                    className="h-4 w-4"
+                                    className="h-3.5 w-3.5"
                                     viewBox="0 0 24 24"
                                     fill="none"
                                     xmlns="http://www.w3.org/2000/svg"
