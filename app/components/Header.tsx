@@ -73,11 +73,25 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
+        <div className="relative flex items-center justify-between h-16 sm:h-20">
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden p-2 sm:p-2.5 hover:bg-white/10 dark:hover:bg-neutral-800/50 rounded-lg transition-colors"
+            aria-label="Toggle navigation menu"
+            aria-expanded={isMenuOpen}
+          >
+            {isMenuOpen ? (
+              <X className="w-5 sm:w-6 h-5 sm:h-6" />
+            ) : (
+              <Menu className="w-5 sm:w-6 h-5 sm:h-6" />
+            )}
+          </button>
+
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-1 sm:gap-2 font-semibold text-base sm:text-lg tracking-wider text-neutral-900 dark:text-white flex-shrink-0"
+            className="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0 flex items-center gap-1 sm:gap-2 font-semibold text-base sm:text-lg tracking-wider text-neutral-900 dark:text-white flex-shrink-0"
           >
             <Image
               src="/logo.png"
@@ -142,7 +156,7 @@ export function Header() {
           </nav>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-1 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-3 ml-auto">
             {/* Theme Toggle */}
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -212,19 +226,6 @@ export function Header() {
               </Link>
             </div>
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 sm:p-2.5 hover:bg-white/10 dark:hover:bg-neutral-800/50 rounded-lg transition-colors"
-              aria-label="Toggle navigation menu"
-              aria-expanded={isMenuOpen}
-            >
-              {isMenuOpen ? (
-                <X className="w-5 sm:w-6 h-5 sm:h-6" />
-              ) : (
-                <Menu className="w-5 sm:w-6 h-5 sm:h-6" />
-              )}
-            </button>
           </div>
         </div>
 
