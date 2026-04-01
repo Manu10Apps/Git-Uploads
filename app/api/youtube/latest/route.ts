@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { convertYouTubeTimeToKinyarwanda } from '@/lib/utils';
 
 type YouTubeVideo = {
   id: string;
@@ -309,7 +310,7 @@ function parseVideosFromChannelPage(html: string): YouTubeVideo[] {
     const thumbnailCandidates = renderer.thumbnail?.thumbnails || [];
     const thumbnail = thumbnailCandidates[thumbnailCandidates.length - 1]?.url || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
     const title = decodeXml(getRendererText(renderer.title) || 'YouTube Video');
-    const publishedAt = getRendererText(renderer.publishedTimeText) || undefined;
+    const publishedAt = convertYouTubeTimeToKinyarwanda(getRendererText(renderer.publishedTimeText) || undefined);
     const duration = getRendererText(renderer.lengthText) || undefined;
 
     videos.push({
