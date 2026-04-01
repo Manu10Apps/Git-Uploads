@@ -48,7 +48,7 @@ export function Footer() {
   return (
     <footer className="bg-neutral-900 dark:bg-black border-t border-neutral-800 dark:border-neutral-800 text-white">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-12 mb-8 sm:mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-12 mb-8 sm:mb-12 text-center lg:text-left">
           {/* Brand */}
           <div className="space-y-4">
             <Image
@@ -57,7 +57,7 @@ export function Footer() {
               width={48}
               height={48}
               sizes="48px"
-              className="h-12 w-12 rounded-lg"
+              className="h-12 w-12 rounded-lg mx-auto"
             />
             <p className="text-sm text-neutral-400 font-light leading-relaxed">
               Inkuru zicukumbuye ku bibazo bikomeye muri Afurika y’Iburasirazuba, zikozwe mu buryo bwigenga kandi bwizewe.
@@ -67,7 +67,7 @@ export function Footer() {
           {/* Ibice - Categories except Ahabanza */}
           <div className="space-y-4">
             <h4 className="font-semibold tracking-widest text-xs">Ibice</h4>
-            <ul className="space-y-3 text-sm">
+            <ul className="space-y-3 text-sm flex flex-col items-center lg:items-start">
               {categories
                 .filter((category) => category.name !== 'Ahabanza')
                 .slice(0, 6)
@@ -87,7 +87,7 @@ export function Footer() {
           {/* Legal */}
           <div className="space-y-4">
             <h4 className="font-bold">{t.footer.legal}</h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2 text-sm flex flex-col items-center lg:items-start">
               <li>
                 <Link
                   href="/privacy"
@@ -118,7 +118,7 @@ export function Footer() {
           {/* Language Selector */}
           <div className="space-y-4">
             <h4 className="font-bold">{t.footer.language}</h4>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap justify-center lg:justify-start gap-2">
               {languages.map((lang) => (
                 <button
                   key={lang.code}
