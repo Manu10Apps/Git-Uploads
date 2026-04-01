@@ -154,3 +154,35 @@ export function normalizeArticleImageUrl(imageUrl?: string | null): string | nul
 
   return `/${normalizedPath}`;
 }
+
+export function convertYouTubeTimeToKinyarwanda(timeText: string | undefined): string {
+  if (!timeText) return '';
+
+  const text = timeText.toLowerCase().trim();
+
+  // Check for "Streaming en direct" or "LIVE" or similar
+  if (text.includes('direct') || text.includes('live') || text.includes('en direct')) {
+    return '[LIVE]Nonaha';
+  }
+
+  // Extract number from French or English text
+  const numberMatch = text.match(/(\d+)/);
+  if (!numberMatch) return timeText;
+
+  const number = numberMatch[1];
+
+  // Convert French time text
+  if (text.includes('jour') || text.includes('day')) {
+    return `Hashize iminsi ${number}`;
+  }
+
+  if (text.includes('heure') || text.includes('hour')) {
+    return `Hashize amasaha ${number}`;
+  }
+
+  if (text.includes('minute') || text.includes('second')) {
+    return `Hashize iminota ${number}`;
+  }
+
+  return timeText;
+}

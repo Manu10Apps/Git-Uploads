@@ -536,8 +536,12 @@ export default function Home() {
                             {video.title}
                           </h3>
                           {video.publishedAt && (
-                            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1">
-                              {video.publishedAt}
+                            <p className={`mt-1 text-xs line-clamp-1 ${
+                              video.publishedAt.startsWith('[LIVE]')
+                                ? 'text-red-600 dark:text-red-500 font-semibold'
+                                : 'text-neutral-500 dark:text-neutral-400'
+                            }`}>
+                              {video.publishedAt.replace('[LIVE]', '')}
                             </p>
                           )}
                         </div>
