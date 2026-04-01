@@ -160,8 +160,16 @@ export function convertYouTubeTimeToKinyarwanda(timeText: string | undefined): s
 
   const text = timeText.toLowerCase().trim();
 
-  // Check for "Streaming en direct" or "LIVE" or similar
-  if (text.includes('direct') || text.includes('live') || text.includes('en direct')) {
+  // Treat live streams and premieres as "now" for the UI.
+  if (
+    text.includes('direct')
+    || text.includes('live')
+    || text.includes('en direct')
+    || text.includes('premiering')
+    || text.includes('premiere')
+    || text.includes('premiere en cours')
+    || text.includes('en premiere')
+  ) {
     return '[LIVE]Nonaha';
   }
 
@@ -169,7 +177,7 @@ export function convertYouTubeTimeToKinyarwanda(timeText: string | undefined): s
   const numberMatch = text.match(/(\d+)/);
   if (!numberMatch) return timeText;
 
-  const number = parseInt(numberMatch[1]);
+  const number = parseInt(numberMatch[1], 10);
 
   // Convert French time text
   if (text.includes('year') || text.includes('an')) {
@@ -189,11 +197,11 @@ export function convertYouTubeTimeToKinyarwanda(timeText: string | undefined): s
   }
 
   if (text.includes('heure') || text.includes('hour')) {
-    return `Hashize amasaha ${number}`;
+    return number === 1 ? 'Hashize isaha' : `Hashize amasaha ${number}`;
   }
 
   if (text.includes('minute') || text.includes('second')) {
-    return `Hashize iminota ${number}`;
+    return number === 1 ? 'Hashize umunota' : `Hashize iminota ${number}`;
   }
 
   return timeText;
