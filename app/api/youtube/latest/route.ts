@@ -37,6 +37,32 @@ type YouTubeVideoRenderer = {
   thumbnail?: { thumbnails?: YouTubeThumbnail[] };
 };
 
+function isLiveOrPremiereSignal(value: string | undefined): boolean {
+  if (!value) {
+    return false;
+  }
+
+  const text = value.toLowerCase();
+  return (
+    text.includes('live')
+    || text.includes('en direct')
+    || text.includes('direct')
+    || text.includes('premier')
+    || text.includes('premiere')
+    || text.includes('streamed live')
+    || text.includes('watching now')
+  );
+}
+
+function resolveDisplayPublishedAt(rawPublishedAt: string | undefined, contextText?: string): string | undefined {
+  if (isLiveOrPremiereSignal(rawPublishedAt) || isLiveOrPremiereSignal(contextText)) {
+    return '[LIVE]Live';
+  }
+
+  const converted = convertYouTubeTimeToKinyarwanda(rawPublishedAt);
+  return converted || undefined;
+}
+
 function decodeXml(text: string): string {
   return text
     .replace(/&amp;/g, '&')
@@ -310,7 +336,9 @@ function parseVideosFromChannelPage(html: string): YouTubeVideo[] {
     const thumbnailCandidates = renderer.thumbnail?.thumbnails || [];
     const thumbnail = thumbnailCandidates[thumbnailCandidates.length - 1]?.url || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
     const title = decodeXml(getRendererText(renderer.title) || 'YouTube Video');
-    const publishedAt = convertYouTubeTimeToKinyarwanda(getRendererText(renderer.publishedTimeText) || undefined);
+    const rawPublishedAt = getRendererText(renderer.publishedTimeText) || undefined;
+    const rendererContext = JSON.stringify(renderer);
+    const publishedAt = resolveDisplayPublishedAt(rawPublishedAt, rendererContext);
     const duration = getRendererText(renderer.lengthText) || undefined;
 
     videos.push({
@@ -367,10 +395,12 @@ function parseVideosFromHtmlFallback(html: string): YouTubeVideo[] {
       /"headline":\{"simpleText":"([\s\S]*?)"\}/,
     ]) || 'YouTube Video';
 
-    const publishedAt = extractValueFromSnippet(snippet, [
+    const rawPublishedAt = extractValueFromSnippet(snippet, [
       /"publishedTimeText":\{"simpleText":"([\s\S]*?)"\}/,
       /"publishedTimeText":\{"runs":\[\{"text":"([\s\S]*?)"\}\]/,
     ]);
+
+    const publishedAt = resolveDisplayPublishedAt(rawPublishedAt, snippet);
 
     const duration = extractValueFromSnippet(snippet, [
       /"lengthText":\{"simpleText":"([\s\S]*?)"\}/,
