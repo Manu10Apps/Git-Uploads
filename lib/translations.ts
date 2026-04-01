@@ -125,7 +125,7 @@ export const ky = {
     sections: 'Ibice',
     legal: 'Amategeko',
     language: 'Ururimi',
-    copyright: '© 2026 Intambwe Media - Uburenganzira bwose burabitswe | Intambwe Media Ntibazwa Ibyavuye Ku Zindi Mbuga',
+    copyright: '© 2026 Intambwe Media | Uburenganzira bwose burabitswe\nIntambwe Media ntibazwa ibyavuye ku zindi Mbuga',
     privacyPolicy: 'Politiki ngenderwaho',
     termsConditions: 'Amategeko n\'amabwiriza',
     ethicsPolicy: 'Amahame ngenderwaho y\'Ubwanditsi',
