@@ -57,7 +57,7 @@ export function Footer() {
               width={48}
               height={48}
               sizes="48px"
-              className="h-12 w-12 rounded-lg mx-auto"
+              className="h-12 w-12 rounded-lg mx-auto lg:mx-0"
             />
             <p className="text-sm text-neutral-400 font-light leading-relaxed">
               Inkuru zicukumbuye ku bibazo bikomeye muri Afurika y’Iburasirazuba, zikozwe mu buryo bwigenga kandi bwizewe.
@@ -66,7 +66,7 @@ export function Footer() {
 
           {/* Ibice - Categories except Ahabanza */}
           <div className="space-y-4">
-            <h4 className="font-semibold tracking-widest text-xs">Ibice</h4>
+            <h4 className="font-bold">Ibice</h4>
             <ul className="space-y-3 text-sm flex flex-col items-center lg:items-start">
               {categories
                 .filter((category) => category.name !== 'Ahabanza')
