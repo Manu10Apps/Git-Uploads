@@ -247,7 +247,7 @@ export function Footer() {
               </svg>
             </a>
           </div>
-          <p>{t.footer.copyright}</p>
+          <p className="text-center whitespace-pre-line">{t.footer.copyright}</p>
         </div>
       </div>
     </footer>
