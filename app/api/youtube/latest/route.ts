@@ -44,18 +44,37 @@ function isLiveOrPremiereSignal(value: string | undefined): boolean {
 
   const text = value.toLowerCase();
   return (
-    text.includes('live')
-    || text.includes('en direct')
-    || text.includes('direct')
-    || text.includes('premier')
-    || text.includes('premiere')
-    || text.includes('streamed live')
+    text.includes('streamed live')
     || text.includes('watching now')
+    || text.includes('live now')
+    || text.includes('en direct')
+    || text.includes('premiered')
+    || text.includes('premiere')
+    || text === 'live'
+    || text === 'direct'
+  );
+}
+
+function hasExplicitLiveOrPremiereBadge(contextText: string | undefined): boolean {
+  if (!contextText) {
+    return false;
+  }
+
+  return (
+    /"badgeStyle":"BADGE_STYLE_TYPE_LIVE_NOW"/.test(contextText)
+    || /"style":"LIVE"/.test(contextText)
+    || /"iconType":"LIVE"/.test(contextText)
+    || /"label":"LIVE"/.test(contextText)
+    || /"thumbnailOverlayTimeStatusRenderer"\s*:\s*\{[^}]*"style":"LIVE"/.test(contextText)
+    || /"upcomingEventData"\s*:\s*\{/.test(contextText)
+    || /"scheduledStartTime"\s*:/.test(contextText)
+    || /"isUpcoming"\s*:\s*true/.test(contextText)
+    || /"isLiveNow"\s*:\s*true/.test(contextText)
   );
 }
 
 function resolveDisplayPublishedAt(rawPublishedAt: string | undefined, contextText?: string): string | undefined {
-  if (isLiveOrPremiereSignal(rawPublishedAt) || isLiveOrPremiereSignal(contextText)) {
+  if (isLiveOrPremiereSignal(rawPublishedAt) || hasExplicitLiveOrPremiereBadge(contextText)) {
     return '[LIVE]Live';
   }
 
