@@ -539,7 +539,7 @@ export default function Home() {
                             video.publishedAt.startsWith('[LIVE]') ? (
                               <div className="mt-1.5">
                                 <span
-                                  className="inline-flex items-center gap-1 px-3 py-1.5 text-white font-bold rounded-md transition-colors text-xs"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 text-white font-bold rounded-md transition-colors text-[11px] sm:text-xs border border-red-700/60 dark:border-red-200/50 shadow-[0_0_12px_rgba(226,0,26,0.28)] animate-[pulse_1.8s_ease-in-out_infinite]"
                                   style={{ backgroundColor: 'rgb(226, 0, 26)' }}
                                 >
                                   <svg
