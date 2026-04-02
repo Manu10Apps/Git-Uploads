@@ -57,9 +57,11 @@ export async function GET(req: NextRequest) {
       pagination: { total, limit, offset },
     });
   } catch (error) {
-    console.error('Error fetching epaper editions:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error fetching epaper editions:', errorMessage);
+    console.error('Full error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch editions' },
+      { success: false, error: 'Failed to fetch editions', details: errorMessage },
       { status: 500 }
     );
   }
