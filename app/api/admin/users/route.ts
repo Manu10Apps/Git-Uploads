@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { hashPassword } from '@/lib/auth';
-import { generateSecureToken, sendAdminVerificationEmail } from '@/lib/admin-account';
 import type { PrismaClient } from '@prisma/client';
 
 const VALID_ROLES = new Set(['admin', 'sub-admin', 'editor']);
@@ -235,9 +234,6 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await hashPassword(password);
 
-    const verificationToken = generateSecureToken();
-    const verificationExpires = new Date(Date.now() + 1000 * 60 * 60 * 24);
-
     const existingUser = await prisma.adminUser.findUnique({
       where: { email },
       select: { id: true },
@@ -256,9 +252,9 @@ export async function POST(request: NextRequest) {
           email,
           password: hashedPassword,
           role,
-          emailVerified: false,
-          emailVerificationToken: verificationToken,
-          emailVerificationExpires: verificationExpires,
+          emailVerified: true,
+          emailVerificationToken: null,
+          emailVerificationExpires: null,
         },
         select: {
           id: true,
@@ -271,14 +267,12 @@ export async function POST(request: NextRequest) {
       });
     });
 
-    await sendAdminVerificationEmail(createdUser.email, createdUser.name, verificationToken);
-
     return NextResponse.json(
       {
         success: true,
         message: existingUser
-          ? 'Existing user replaced successfully. Verification link sent to email.'
-          : 'User created successfully. Verification link sent to email.',
+          ? 'Existing user replaced successfully.'
+          : 'User created successfully.',
         user: createdUser,
       },
       { status: 201 }
@@ -317,6 +311,8 @@ export async function PATCH(request: NextRequest) {
     const name = body?.name !== undefined ? String(body.name).trim() : undefined;
     const role = body?.role !== undefined ? String(body.role).trim().toLowerCase() : undefined;
     const password = body?.password !== undefined ? String(body.password) : undefined;
+    const emailVerified =
+      body?.emailVerified !== undefined ? Boolean(body.emailVerified) : undefined;
 
     if (!Number.isFinite(userId)) {
       return NextResponse.json(
@@ -373,12 +369,22 @@ export async function PATCH(request: NextRequest) {
       name?: string;
       role?: string;
       password?: string;
+      emailVerified?: boolean;
+      emailVerificationToken?: string | null;
+      emailVerificationExpires?: Date | null;
     } = {};
 
     if (name !== undefined && name.length > 0) updateData.name = name;
     if (role !== undefined) updateData.role = role;
     if (password !== undefined && password.length > 0) {
       updateData.password = await hashPassword(password);
+    }
+    if (emailVerified !== undefined) {
+      updateData.emailVerified = emailVerified;
+      if (emailVerified) {
+        updateData.emailVerificationToken = null;
+        updateData.emailVerificationExpires = null;
+      }
     }
 
     const updatedUser = await prisma.adminUser.update({
