@@ -41,14 +41,27 @@ export async function POST(request: NextRequest) {
     // or is unavailable (e.g. SQLite on first deploy).
     const envEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
     const envPasswordRaw = process.env.ADMIN_PASSWORD || '';
-    const envPasswordNormalized = envPasswordRaw.replace(/\r?\n/g, '').trim();
+    const envPasswordHash = process.env.ADMIN_PASSWORD_HASH || '';
+    const configuredEnvPassword = envPasswordHash || envPasswordRaw;
+    const envPasswordNormalized = configuredEnvPassword.replace(/\r?\n/g, '').trim();
     const submittedPasswordNormalized = password.replace(/\r?\n/g, '').trim();
 
-    const envPasswordMatches =
-      password === envPasswordRaw ||
-      (submittedPasswordNormalized.length > 0 && submittedPasswordNormalized === envPasswordNormalized);
+    let envPasswordMatches = false;
+    const looksLikeBcryptHash = /^\$2[aby]?\$\d{2}\$/.test(envPasswordNormalized);
 
-    if (envEmail && envPasswordRaw && email === envEmail && envPasswordMatches) {
+    if (looksLikeBcryptHash) {
+      try {
+        envPasswordMatches = await verifyPassword(password, envPasswordNormalized);
+      } catch {
+        envPasswordMatches = false;
+      }
+    } else {
+      envPasswordMatches =
+        password === configuredEnvPassword ||
+        (submittedPasswordNormalized.length > 0 && submittedPasswordNormalized === envPasswordNormalized);
+    }
+
+    if (envEmail && configuredEnvPassword && email === envEmail && envPasswordMatches) {
       let envAdminId = 1;
 
       // Opportunistically align to a real admin user id and heal DB hash.
