@@ -181,8 +181,8 @@ export function convertYouTubeTimeToKinyarwanda(timeText: string | undefined): s
 
   const number = parseInt(numberMatch[1], 10);
 
-  // Convert French time text
-  if (text.includes('year') || text.includes('an')) {
+  // Convert French time text (handle "il y a X j/h/m" format)
+  if (text.includes('year') || text.includes('an') || text.match(/\d+\s*a(?:\s|$)/)) {
     return number === 1 ? 'Hashize umwaka umwe' : `Hashize imyaka ${number}`;
   }
 
@@ -190,19 +190,19 @@ export function convertYouTubeTimeToKinyarwanda(timeText: string | undefined): s
     return number === 1 ? 'Hashize ukwezi kumwe' : `Hashize amezi ${number}`;
   }
 
-  if (text.includes('semaine') || text.includes('week')) {
+  if (text.includes('semaine') || text.includes('week') || text.match(/\d+\s*sem(?:\s|$)/)) {
     return number === 1 ? 'Hashize icyumweru kimwe' : `Hashize ibyumweru ${number}`;
   }
 
-  if (text.includes('jour') || text.includes('day')) {
+  if (text.includes('jour') || text.includes('day') || text.match(/\d+\s*j(?:\s|$)/)) {
     return `Hashize iminsi ${number}`;
   }
 
-  if (text.includes('heure') || text.includes('hour')) {
+  if (text.includes('heure') || text.includes('hour') || text.match(/\d+\s*h(?:\s|$)/)) {
     return number === 1 ? 'Hashize isaha' : `Hashize amasaha ${number}`;
   }
 
-  if (text.includes('minute')) {
+  if (text.includes('minute') || text.includes('m') || text.match(/\d+\s*m(?:in)?(?:\s|$)/)) {
     return number === 1 ? 'Hashize umunota' : `Hashize iminota ${number}`;
   }
 
