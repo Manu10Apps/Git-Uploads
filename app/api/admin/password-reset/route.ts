@@ -21,6 +21,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Email is required' }, { status: 400 });
     }
 
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+
+    // Return a clear operational error instead of pretending an email was sent.
+    if (!smtpHost || !smtpUser || !smtpPass) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            'Password reset email is currently unavailable because email service is not configured. Contact support.',
+        },
+        { status: 503 }
+      );
+    }
+
     try {
       const user = await prisma.adminUser.findUnique({
         where: { email },
