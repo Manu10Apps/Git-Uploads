@@ -5,6 +5,14 @@ import { prisma } from '@/lib/prisma';
 import { normalizeArticleImageUrl } from '@/lib/utils';
 import { resolveArticleImage } from '@/lib/article-images';
 import { NAV_CATEGORY_SLUGS } from '@/lib/nav-categories';
+import {
+  ensureAuthorSocialTables,
+  getAuthorSocialProfile,
+  isProfileLockedForActor,
+  linksToPairFields,
+  parseSocialLinksFromPairInput,
+  upsertAuthorSocialProfile,
+} from '@/lib/author-social';
 
 /** Lookup the requesting admin user's role and name from DB, if x-admin-email header present */
 async function getRequesterInfo(request: NextRequest): Promise<{ role: string; name: string } | null> {
@@ -180,7 +188,16 @@ export async function PATCH(
     parsedBody = await request.json();
     const body = parsedBody;
 
+    const requester = await getRequesterInfo(request);
+    if (!requester) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     await ensureArticleAuthorSocialColumns();
+    await ensureAuthorSocialTables();
 
     // Normalize image path for DB storage only (no existsSync – that belongs only in GET responses).
     // If body.image is absent/empty, imageToStore is null → existing DB value will be preserved.
@@ -202,7 +219,6 @@ export async function PATCH(
     }
 
     // Role-based restriction: editors cannot modify other authors' articles.
-    const requester = await getRequesterInfo(request);
     if (requester?.role === 'editor' && article.author !== requester.name) {
       return NextResponse.json(
         { success: false, error: 'Editors can only edit their own articles.' },
@@ -233,39 +249,50 @@ export async function PATCH(
           ? (article.publishedAt || new Date())
           : null;
 
-    const normalizedAuthorSocialPlatform =
-      typeof body.authorSocialPlatform === 'string' && body.authorSocialPlatform.trim()
-        ? body.authorSocialPlatform.trim()
-        : null;
+    const parsedSocial = parseSocialLinksFromPairInput({
+      authorSocialPlatform: body.authorSocialPlatform,
+      authorSocialUrl: body.authorSocialUrl,
+      authorSocialPlatform2: body.authorSocialPlatform2,
+      authorSocialUrl2: body.authorSocialUrl2,
+    });
 
-    const normalizedAuthorSocialUrl =
-      typeof body.authorSocialUrl === 'string' && body.authorSocialUrl.trim()
-        ? body.authorSocialUrl.trim()
-        : null;
-
-    const normalizedAuthorSocialPlatform2 =
-      typeof body.authorSocialPlatform2 === 'string' && body.authorSocialPlatform2.trim()
-        ? body.authorSocialPlatform2.trim()
-        : null;
-
-    const normalizedAuthorSocialUrl2 =
-      typeof body.authorSocialUrl2 === 'string' && body.authorSocialUrl2.trim()
-        ? body.authorSocialUrl2.trim()
-        : null;
-
-    if (normalizedAuthorSocialUrl && !/^https?:\/\//i.test(normalizedAuthorSocialUrl)) {
+    if (!parsedSocial.ok) {
       return NextResponse.json(
-        { success: false, error: 'Author social URL must start with http:// or https://' },
+        { success: false, error: parsedSocial.error },
         { status: 400 }
       );
     }
 
-    if (normalizedAuthorSocialUrl2 && !/^https?:\/\//i.test(normalizedAuthorSocialUrl2)) {
+    const nextAuthorName = (body.author || article.author || '').trim();
+    const hasIncomingSocialFields =
+      body.authorSocialPlatform !== undefined ||
+      body.authorSocialUrl !== undefined ||
+      body.authorSocialPlatform2 !== undefined ||
+      body.authorSocialUrl2 !== undefined;
+
+    const existingProfile = nextAuthorName ? await getAuthorSocialProfile(nextAuthorName) : null;
+
+    if (
+      hasIncomingSocialFields &&
+      existingProfile &&
+      isProfileLockedForActor(existingProfile, requester.role as 'admin' | 'sub-admin' | 'editor')
+    ) {
       return NextResponse.json(
-        { success: false, error: 'Second author social URL must start with http:// or https://' },
-        { status: 400 }
+        { success: false, error: 'Author social profiles are locked. Request admin authorization.' },
+        { status: 403 }
       );
     }
+
+    let socialLinksToUse = existingProfile?.socialLinks || {};
+    if (hasIncomingSocialFields) {
+      const savedProfile = await upsertAuthorSocialProfile({
+        authorName: nextAuthorName,
+        links: parsedSocial.links,
+        lockAfterSave: true,
+      });
+      socialLinksToUse = savedProfile.socialLinks;
+    }
+    const socialPairFields = linksToPairFields(socialLinksToUse);
 
     // Update the article
     const updatedArticle = await prisma.article.update({
@@ -280,13 +307,13 @@ export async function PATCH(
         categoryId: body.categoryId || article.categoryId,
         author: body.author || article.author,
         authorSocialPlatform:
-          body.authorSocialPlatform !== undefined ? normalizedAuthorSocialPlatform : article.authorSocialPlatform,
+          hasIncomingSocialFields ? socialPairFields.authorSocialPlatform : article.authorSocialPlatform,
         authorSocialUrl:
-          body.authorSocialUrl !== undefined ? normalizedAuthorSocialUrl : article.authorSocialUrl,
+          hasIncomingSocialFields ? socialPairFields.authorSocialUrl : article.authorSocialUrl,
         authorSocialPlatform2:
-          body.authorSocialPlatform2 !== undefined ? normalizedAuthorSocialPlatform2 : article.authorSocialPlatform2,
+          hasIncomingSocialFields ? socialPairFields.authorSocialPlatform2 : article.authorSocialPlatform2,
         authorSocialUrl2:
-          body.authorSocialUrl2 !== undefined ? normalizedAuthorSocialUrl2 : article.authorSocialUrl2,
+          hasIncomingSocialFields ? socialPairFields.authorSocialUrl2 : article.authorSocialUrl2,
         featured: body.featured !== undefined ? body.featured : article.featured,
         readTime: body.readTime || article.readTime,
         tags: tagsToStore,

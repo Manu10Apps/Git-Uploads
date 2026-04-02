@@ -5,6 +5,15 @@ import { prisma } from '@/lib/prisma';
 import { normalizeArticleImageUrl } from '@/lib/utils';
 import { resolveArticleImage } from '@/lib/article-images';
 import { NAV_CATEGORY_SLUGS } from '@/lib/nav-categories';
+import {
+  ensureAuthorSocialTables,
+  getAdminActorFromRequest,
+  getAuthorSocialProfile,
+  isProfileLockedForActor,
+  linksToPairFields,
+  parseSocialLinksFromPairInput,
+  upsertAuthorSocialProfile,
+} from '@/lib/author-social';
 
 type FallbackArticle = {
   id: number;
@@ -99,6 +108,10 @@ async function ensureArticleAuthorSocialColumns() {
     ADD COLUMN IF NOT EXISTS "authorSocialPlatform2" TEXT,
     ADD COLUMN IF NOT EXISTS "authorSocialUrl2" TEXT
   `);
+}
+
+async function ensureAuthorSocialProfileTables() {
+  await ensureAuthorSocialTables();
 }
 
 function toClientArticle(article: FallbackArticle) {
@@ -407,6 +420,14 @@ export async function POST(request: NextRequest) {
   let parsedBody: any = null;
 
   try {
+    const actor = await getAdminActorFromRequest(request);
+    if (!actor) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     parsedBody = await request.json();
     const body = parsedBody;
     const {
@@ -471,41 +492,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const normalizedAuthorSocialPlatform =
-      typeof authorSocialPlatform === 'string' && authorSocialPlatform.trim()
-        ? authorSocialPlatform.trim()
-        : null;
-
-    const normalizedAuthorSocialUrl =
-      typeof authorSocialUrl === 'string' && authorSocialUrl.trim()
-        ? authorSocialUrl.trim()
-        : null;
-
-    const normalizedAuthorSocialPlatform2 =
-      typeof authorSocialPlatform2 === 'string' && authorSocialPlatform2.trim()
-        ? authorSocialPlatform2.trim()
-        : null;
-
-    const normalizedAuthorSocialUrl2 =
-      typeof authorSocialUrl2 === 'string' && authorSocialUrl2.trim()
-        ? authorSocialUrl2.trim()
-        : null;
-
-    if (normalizedAuthorSocialUrl && !/^https?:\/\//i.test(normalizedAuthorSocialUrl)) {
+    const parsedSocial = parseSocialLinksFromPairInput({
+      authorSocialPlatform,
+      authorSocialUrl,
+      authorSocialPlatform2,
+      authorSocialUrl2,
+    });
+    if (!parsedSocial.ok) {
       return NextResponse.json(
-        { success: false, error: 'Author social URL must start with http:// or https://' },
-        { status: 400 }
-      );
-    }
-
-    if (normalizedAuthorSocialUrl2 && !/^https?:\/\//i.test(normalizedAuthorSocialUrl2)) {
-      return NextResponse.json(
-        { success: false, error: 'Second author social URL must start with http:// or https://' },
+        { success: false, error: parsedSocial.error },
         { status: 400 }
       );
     }
 
     await ensureArticleAuthorSocialColumns();
+    await ensureAuthorSocialProfileTables();
+
+    const existingProfile = await getAuthorSocialProfile(author.trim());
+    const hasIncomingSocial = Object.keys(parsedSocial.links).length > 0;
+    if (existingProfile && hasIncomingSocial && isProfileLockedForActor(existingProfile, actor.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Author social profiles are locked. Request admin authorization.' },
+        { status: 403 }
+      );
+    }
+
+    let socialLinksToUse = existingProfile?.socialLinks || {};
+    if (hasIncomingSocial) {
+      const savedProfile = await upsertAuthorSocialProfile({
+        authorName: author.trim(),
+        links: parsedSocial.links,
+        lockAfterSave: true,
+      });
+      socialLinksToUse = savedProfile.socialLinks;
+    }
+    const socialPairFields = linksToPairFields(socialLinksToUse);
 
     // Resolve category by ID first; fallback to slug for compatibility.
     const categoryIdRaw = String(category_id).trim();
@@ -541,10 +562,10 @@ export async function POST(request: NextRequest) {
         content: content.trim(),
         categoryId: category.id,
         author: author.trim(),
-        authorSocialPlatform: normalizedAuthorSocialPlatform,
-        authorSocialUrl: normalizedAuthorSocialUrl,
-        authorSocialPlatform2: normalizedAuthorSocialPlatform2,
-        authorSocialUrl2: normalizedAuthorSocialUrl2,
+        authorSocialPlatform: socialPairFields.authorSocialPlatform,
+        authorSocialUrl: socialPairFields.authorSocialUrl,
+        authorSocialPlatform2: socialPairFields.authorSocialPlatform2,
+        authorSocialUrl2: socialPairFields.authorSocialUrl2,
         image: imageToStore,
         tags: tags && Array.isArray(tags) ? JSON.stringify(tags) : null,
         gallery: gallery && Array.isArray(gallery) ? JSON.stringify(gallery) : null,
@@ -601,10 +622,24 @@ export async function POST(request: NextRequest) {
         const excerpt = String(body?.excerpt || '').trim();
         const content = String(body?.content || '').trim();
         const author = String(body?.author || '').trim();
-        const authorSocialPlatform = String(body?.authorSocialPlatform || '').trim();
-        const authorSocialUrl = String(body?.authorSocialUrl || '').trim();
-        const authorSocialPlatform2 = String(body?.authorSocialPlatform2 || '').trim();
-        const authorSocialUrl2 = String(body?.authorSocialUrl2 || '').trim();
+        const parsedSocial = parseSocialLinksFromPairInput({
+          authorSocialPlatform: body?.authorSocialPlatform,
+          authorSocialUrl: body?.authorSocialUrl,
+          authorSocialPlatform2: body?.authorSocialPlatform2,
+          authorSocialUrl2: body?.authorSocialUrl2,
+        });
+
+        if (!parsedSocial.ok) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: parsedSocial.error,
+            },
+            { status: 400 }
+          );
+        }
+
+        const pair = linksToPairFields(parsedSocial.links);
         const status = String(body?.status || 'draft');
         const featured = Boolean(body?.featured);
         const readTime = Number(body?.readTime) || 5;
@@ -671,10 +706,10 @@ export async function POST(request: NextRequest) {
           image: body?.image ? (normalizeArticleImageUrl(String(body.image)) ?? null) : null,
           category: categorySlug,
           author,
-          authorSocialPlatform: authorSocialPlatform || null,
-          authorSocialUrl: authorSocialUrl || null,
-          authorSocialPlatform2: authorSocialPlatform2 || null,
-          authorSocialUrl2: authorSocialUrl2 || null,
+          authorSocialPlatform: pair.authorSocialPlatform,
+          authorSocialUrl: pair.authorSocialUrl,
+          authorSocialPlatform2: pair.authorSocialPlatform2,
+          authorSocialUrl2: pair.authorSocialUrl2,
           status,
           publishedAt,
           scheduledFor,
