@@ -82,6 +82,12 @@ export default function LoginPage() {
 
       if (response.ok && data.success) {
         localStorage.setItem('adminAuth', 'true');
+        if (data.token) {
+          localStorage.setItem('adminToken', data.token);
+        }
+        if (data.user?.id) {
+          localStorage.setItem('adminId', String(data.user.id));
+        }
         localStorage.setItem('adminEmail', data.user?.email || email);
         localStorage.setItem('adminRole', data.user?.role || 'editor');
         localStorage.setItem('adminName', data.user?.name || 'Admin');

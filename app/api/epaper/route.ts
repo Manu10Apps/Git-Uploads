@@ -1,0 +1,190 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { writeFile, mkdir } from 'fs/promises';
+import path from 'path';
+import { existsSync } from 'fs';
+import { verifyToken } from '@/lib/auth';
+
+const MAX_PDF_SIZE_BYTES = 25 * 1024 * 1024;
+
+function getAdminIdFromRequest(req: NextRequest): number | null {
+  const authHeader = req.headers.get('authorization');
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) return null;
+  const payload = verifyToken(token);
+  return payload?.adminId ?? null;
+}
+
+/**
+ * GET /api/epaper
+ * List all epaper editions with optional filtering
+ */
+export async function GET(req: NextRequest) {
+  try {
+    const searchParams = req.nextUrl.searchParams;
+    const archived = searchParams.get('archived') === 'true';
+    const current = searchParams.get('current') === 'true';
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const offset = parseInt(searchParams.get('offset') || '0');
+
+    const where: any = {};
+    if (archived !== undefined) where.isArchived = archived;
+    if (current !== undefined) where.isCurrent = current;
+
+    const [editions, total] = await Promise.all([
+      prisma.epaperEdition.findMany({
+        where,
+        orderBy: { issueDate: 'desc' },
+        skip: offset,
+        take: limit,
+        select: {
+          id: true,
+          title: true,
+          issueDate: true,
+          coverImage: true,
+          pageCount: true,
+          isCurrent: true,
+          createdAt: true,
+          admin: { select: { id: true, name: true, email: true } },
+        },
+      }),
+      prisma.epaperEdition.count({ where }),
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      data: editions,
+      pagination: { total, limit, offset },
+    });
+  } catch (error) {
+    console.error('Error fetching epaper editions:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch editions' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * POST /api/epaper
+ * Upload a new epaper edition
+ */
+export async function POST(req: NextRequest) {
+  try {
+    const adminId = getAdminIdFromRequest(req);
+    if (!adminId) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const formData = await req.formData();
+    const file = formData.get('file') as File;
+    const title = formData.get('title') as string;
+    const issueDate = formData.get('issueDate') as string;
+    const coverImage = formData.get('coverImage') as string;
+
+    if (!file || !title || !issueDate) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required fields: file, title, issueDate' },
+        { status: 400 }
+      );
+    }
+
+    // Validate file is PDF
+    if (!file.type.includes('pdf')) {
+      return NextResponse.json(
+        { success: false, error: 'Only PDF files are allowed' },
+        { status: 400 }
+      );
+    }
+
+    if (file.size > MAX_PDF_SIZE_BYTES) {
+      return NextResponse.json(
+        { success: false, error: 'PDF exceeds 25MB limit. Please upload a smaller file.' },
+        { status: 413 }
+      );
+    }
+
+    // Ensure token belongs to an existing admin user.
+    const admin = await prisma.adminUser.findUnique({
+      where: { id: adminId },
+      select: { id: true },
+    });
+
+    if (!admin) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized admin session' },
+        { status: 401 }
+      );
+    }
+
+    // Check if issue date already exists
+    const existingEdition = await prisma.epaperEdition.findFirst({
+      where: { issueDate: new Date(issueDate) },
+    });
+
+    if (existingEdition) {
+      return NextResponse.json(
+        { success: false, error: 'An edition for this date already exists' },
+        { status: 409 }
+      );
+    }
+
+    // Save PDF file to public/uploads/epaper
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'epaper');
+    if (!existsSync(uploadsDir)) {
+      await mkdir(uploadsDir, { recursive: true });
+    }
+
+    const fileName = `${new Date(issueDate).getTime()}-${title.replace(/\s+/g, '-').toLowerCase()}.pdf`;
+    const filePath = path.join(uploadsDir, fileName);
+    const buffer = await file.arrayBuffer();
+    await writeFile(filePath, Buffer.from(buffer));
+
+    const fileUrl = `/uploads/epaper/${fileName}`;
+    const fileSize = buffer.byteLength;
+
+    // Create database record
+    const edition = await prisma.epaperEdition.create({
+      data: {
+        title,
+        issueDate: new Date(issueDate),
+        coverImage: coverImage || null,
+        pdfUrl: fileUrl,
+        fileSize,
+        pageCount: 0, // Could be calculated from PDF metadata
+        createdBy: adminId,
+      },
+      include: {
+        admin: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    // If this is the first edition, mark it as current
+    if (!coverImage) {
+      const existingCurrent = await prisma.epaperEdition.findFirst({
+        where: { isCurrent: true },
+      });
+      if (!existingCurrent) {
+        await prisma.epaperEdition.update({
+          where: { id: edition.id },
+          data: { isCurrent: true },
+        });
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: edition,
+      message: 'Edition uploaded successfully',
+    });
+  } catch (error) {
+    console.error('Error uploading epaper:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to upload edition' },
+      { status: 500 }
+    );
+  }
+}

@@ -2,6 +2,7 @@ export const en = {
   // Navigation
   nav: {
     home: 'Home',
+    epaper: 'E-Paper',
     news: 'News',
     politics: 'Politics',
     health: 'Health',
@@ -28,6 +29,8 @@ export const en = {
   home: {
     title: 'Intambwe Media - East African News',
     breakingNews: 'Breaking News',
+    latestEpaper: 'Latest E-Paper',
+    epaperArchive: 'E-Paper Archive',
     topStories: 'Top Stories',
     trending: 'Trending Topics',
     newsletters: 'Popular Newsletters',
@@ -87,6 +90,7 @@ export const ky = {
   // Navigation
   nav: {
     home: 'Ahabanza',
+    epaper: 'E-Gazeti',
     news: 'Amakuru',
     politics: 'Politiki',
     health: 'Ubuzima',
@@ -113,6 +117,8 @@ export const ky = {
   home: {
     title: 'Intambwe Media - Inkuru z\'Ibwirwanda n\'Ibirubuyubuyu',
     breakingNews: 'Soma Usobanukirwe',
+    latestEpaper: 'E-Gazeti Yanyuma',
+    epaperArchive: 'Ibigapisiro by\'E-Gazeti',
     topStories: 'Inkuru Nkuru Cyane',
     trending: 'Ingingo Zisura',
     newsletters: 'Ibanga Ryigazeti Risura',
@@ -171,6 +177,7 @@ export const ky = {
 export const sw = {
   nav: {
     home: 'Nyumba',
+    epaper: 'E-Jarida',
     news: 'Habari',
     breaking: 'Habari za Haraka',
     politics: 'Siasa',
@@ -196,6 +203,8 @@ export const sw = {
   home: {
     title: 'Intambwe Media - Habari za Afrika Mashariki',
     breakingNews: 'Habari za Haraka',
+    latestEpaper: 'E-Jarida Jipya',
+    epaperArchive: 'Hifadhi ya E-Jarida',
     topStories: 'Habari Kuu',
     trending: 'Mada Inayozuka',
     newsletters: 'Jarida la Jioni Linalosimuliwa',
