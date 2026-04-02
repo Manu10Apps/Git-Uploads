@@ -86,13 +86,13 @@ export function Header() {
               width={48}
               height={48}
               priority
-              sizes="48px"
-              className="h-12 w-12 rounded-lg ml-2 sm:ml-3 md:ml-3 lg:ml-0"
+              sizes="(max-width: 639px) 36px, 48px"
+              className="h-9 w-9 rounded-lg sm:h-12 sm:w-12"
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-0.5 lg:gap-1">
+          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1">
             {visibleItems.map((item) => {
               const parts = item.key.split('.');
               const label = (t as any)[parts[0]]?.[parts[1]] || item.key;
@@ -170,7 +170,7 @@ export function Header() {
                 className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 text-sm font-medium text-neutral-900 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
               >
                 <Globe className="w-4 h-4" aria-hidden="true" />
-                <span className="uppercase text-xs tracking-wide hidden min-[390px]:inline">{activeLanguageLabel}</span>
+                <span className="uppercase text-xs tracking-wide hidden min-[420px]:inline">{activeLanguageLabel}</span>
               </button>
 
               {isLanguageOpen && (
@@ -207,7 +207,7 @@ export function Header() {
             </button>
 
             {/* Subscribe Button */}
-            <div className="hidden md:flex flex-col items-center">
+            <div className="hidden xl:flex flex-col items-center">
               <Link
                 href="/#social-media-links"
                 className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90"
@@ -220,7 +220,7 @@ export function Header() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 sm:p-2.5 hover:bg-white/10 dark:hover:bg-neutral-800/50 rounded-lg transition-colors"
+              className="lg:hidden p-2 sm:p-2.5 hover:bg-white/10 dark:hover:bg-neutral-800/50 rounded-lg transition-colors"
               aria-label="Toggle navigation menu"
               aria-expanded={isMenuOpen}
             >
@@ -235,7 +235,7 @@ export function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <nav className="md:hidden pb-3 sm:pb-4 space-y-1 sm:space-y-2 border-t border-neutral-200 dark:border-neutral-800 mt-2 max-h-[70vh] overflow-y-auto overscroll-contain">
+          <nav className="lg:hidden pb-3 sm:pb-4 space-y-1 sm:space-y-2 border-t border-neutral-200 dark:border-neutral-800 mt-2 max-h-[70vh] overflow-y-auto overscroll-contain">
             <div className="px-3 sm:px-4 pt-3">
               <Link
                 href="/#social-media-links"

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import Script from 'next/script';
 import '@/styles/globals.css';
 import { MaintenanceScreen } from '@/app/components/MaintenanceScreen';
 import { ThemeProvider } from '@/app/components/ThemeProvider';
@@ -109,7 +110,11 @@ export default async function RootLayout({
             }),
           }}
         />
-        {<script defer src="https://analytics.intambwemedia.com/script.js" data-website-id="9bd85831-989a-43aa-9ae5-65a111782549"></script>}
+        <Script
+          src="https://analytics.intambwemedia.com/script.js"
+          data-website-id="9bd85831-989a-43aa-9ae5-65a111782549"
+          strategy="lazyOnload"
+        />
       </head>
       <body>
         <AnalyticsProvider />

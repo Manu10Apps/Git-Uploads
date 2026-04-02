@@ -10,8 +10,52 @@ declare global {
   var prismaRuntimeHostLogged: boolean | undefined;
 }
 
+function safeDecodeConnectionPart(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function normalizePostgresConnectionString(databaseUrl: string) {
+  if (!databaseUrl.startsWith('postgres://') && !databaseUrl.startsWith('postgresql://')) {
+    return databaseUrl;
+  }
+
+  const schemeMatch = databaseUrl.match(/^(postgres(?:ql)?:\/\/)(.*)$/);
+  if (!schemeMatch) {
+    return databaseUrl;
+  }
+
+  const [, scheme, remainder] = schemeMatch;
+  const slashIndex = remainder.indexOf('/');
+  const authority = slashIndex === -1 ? remainder : remainder.slice(0, slashIndex);
+  const rest = slashIndex === -1 ? '' : remainder.slice(slashIndex);
+  const atIndex = authority.lastIndexOf('@');
+
+  if (atIndex === -1) {
+    return databaseUrl;
+  }
+
+  const rawUserInfo = authority.slice(0, atIndex);
+  const hostInfo = authority.slice(atIndex + 1);
+  const colonIndex = rawUserInfo.indexOf(':');
+
+  if (colonIndex === -1) {
+    return databaseUrl;
+  }
+
+  const rawUsername = rawUserInfo.slice(0, colonIndex);
+  const rawPassword = rawUserInfo.slice(colonIndex + 1);
+  const normalizedUserInfo = `${encodeURIComponent(safeDecodeConnectionPart(rawUsername))}:${encodeURIComponent(safeDecodeConnectionPart(rawPassword))}`;
+
+  return `${scheme}${normalizedUserInfo}@${hostInfo}${rest}`;
+}
+
 function getRuntimeDatabaseUrl() {
-  return (process.env.DATABASE_URL_RUNTIME || process.env.DATABASE_URL || 'file:./prisma/dev.db').trim();
+  const databaseUrl = (process.env.DATABASE_URL_RUNTIME || process.env.DATABASE_URL || 'file:./prisma/dev.db').trim();
+  return normalizePostgresConnectionString(databaseUrl);
 }
 
 function getDatabaseHost(databaseUrl: string) {

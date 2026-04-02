@@ -144,6 +144,19 @@ async function ensureArticleAuthorSocialColumns() {
   `);
 }
 
+let ensureArticleAuthorSocialColumnsPromise: Promise<void> | null = null;
+
+function ensureArticleAuthorSocialColumnsOnce() {
+  if (!ensureArticleAuthorSocialColumnsPromise) {
+    ensureArticleAuthorSocialColumnsPromise = ensureArticleAuthorSocialColumns().catch((error) => {
+      ensureArticleAuthorSocialColumnsPromise = null;
+      throw error;
+    });
+  }
+
+  return ensureArticleAuthorSocialColumnsPromise;
+}
+
 function toClientArticle(article: FallbackArticle) {
   return {
     id: article.id,
@@ -571,7 +584,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await ensureArticleAuthorSocialColumns();
+    await ensureArticleAuthorSocialColumnsOnce();
 
     const { id: rawId } = await params;
     const id = parseInt(rawId);
