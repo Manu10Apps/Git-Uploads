@@ -21,7 +21,7 @@ export default async function EpaperPage() {
     <div className="min-h-screen bg-white dark:bg-neutral-900">
       {/* Header Section with Branding */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-900 dark:to-blue-950 text-white py-12 px-4 md:px-6">
-        <div className="max-w-7xl mx-auto flex items-center gap-6">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-4 lg:gap-6 text-center lg:text-left">
           {/* Intambwe Media Logo */}
           <Image
             src="/logo.png"
@@ -30,10 +30,10 @@ export default async function EpaperPage() {
             height={80}
             className="rounded-lg"
           />
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold">Intambwe Media</h1>
-            <p className="text-xl text-blue-100 mt-2">Weekly Digital Edition</p>
-            <p className="text-sm text-blue-200 mt-1">Your window to East African news every week</p>
+          <div className="flex flex-col justify-center items-center lg:items-start" style={{ minHeight: 80 }}>
+            <h1 className="text-2xl md:text-3xl font-light leading-tight" style={{ fontFamily: "'Sinbad', serif" }}>Intambwe Media</h1>
+            <p className="text-sm text-blue-100 mt-0.5">Weekly Digital Edition</p>
+            <p className="text-xs text-blue-200 mt-0.5">Fungura idirishya ry&apos;amakuru ya Afrika y&apos;Iburasirazuba n&apos;ahandi</p>
           </div>
         </div>
       </div>
@@ -188,23 +188,23 @@ export default async function EpaperPage() {
         )}
 
         {/* Information Section */}
-        <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg p-8">
+        <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg p-8 text-center lg:text-left">
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">
-            About Our E-Paper
+            Ibyerekeye E-Gazeti yacu
           </h2>
           <p className="text-neutral-700 dark:text-neutral-300 mb-4">
-            The Intambwe Media E-Paper brings you the week's most important stories in one beautifully designed digital edition.
-            Published every week, our curated selection covers the major developments across East Africa and beyond.
+            E-Gazeti ya Intambwe Media ikuzanira inkuru z'ingenzi zabaye mu cyumweru cyose zikusanyirijwe hamwe mu nyandiko
+            y'ikoranabuhanga iteguye neza kandi yoroshye gusoma. Isohoka buri cyumweru, ikaba igaragaza inkuru zatoranyijwe neza
+            ku makuru akomeye yo mu Karere ka Afurika y'Iburasirazuba no hirya no hino ku Isi.
           </p>
           <p className="text-neutral-700 dark:text-neutral-300">
-            Features:
+            Ibindi birimo:
           </p>
-          <ul className="list-disc list-inside text-neutral-700 dark:text-neutral-300 space-y-2 mt-2">
-            <li>Interactive digital flipbook reader</li>
-            <li>Mobile-responsive design</li>
-            <li>Download for offline reading</li>
-            <li>Searchable archive of past editions</li>
-            <li>Easy sharing on social media</li>
+          <ul className="list-disc list-inside text-neutral-700 dark:text-neutral-300 space-y-2 mt-2 max-w-3xl mx-auto lg:mx-0">
+            <li>Gusoma ukoresheje uburyo bwo kurambura impapuro nk'igitabo</li>
+            <li>Kuyimanura (download) kugira ngo uyisome udakoresheje internet</li>
+            <li>Ububiko bw'inyandiko zasohotse mbere bushobora gushakishwa byoroshye</li>
+            <li>Gusangiza abandi ku mbuga nkoranyambaga mu buryo bwihuse kandi bworoshye</li>
           </ul>
         </div>
       </div>
