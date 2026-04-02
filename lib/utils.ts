@@ -186,16 +186,16 @@ export function convertYouTubeTimeToKinyarwanda(timeText: string | undefined): s
     return number === 1 ? 'Hashize umwaka umwe' : `Hashize imyaka ${number}`;
   }
 
-  if (text.includes('mois') || text.includes('month')) {
+  if (text.includes('mois') || text.includes('month') || text.match(/\d+\s*(?:mois|mo)(?:\s|$)/)) {
     return number === 1 ? 'Hashize ukwezi kumwe' : `Hashize amezi ${number}`;
   }
 
-  if (text.includes('semaine') || text.includes('week') || text.match(/\d+\s*sem(?:\s|$)/)) {
+  if (text.includes('semaine') || text.includes('week') || text.match(/\d+\s*(?:sem|w)(?:\s|$)/)) {
     return number === 1 ? 'Hashize icyumweru kimwe' : `Hashize ibyumweru ${number}`;
   }
 
-  if (text.includes('jour') || text.includes('day') || text.match(/\d+\s*j(?:\s|$)/)) {
-    return `Hashize iminsi ${number}`;
+  if (text.includes('jour') || text.includes('day') || text.match(/\d+\s*[jd](?:\s|$)/)) {
+    return number === 1 ? 'Hashize umunsi umwe' : `Hashize iminsi ${number}`;
   }
 
   if (text.includes('heure') || text.includes('hour') || text.match(/\d+\s*h(?:\s|$)/)) {
