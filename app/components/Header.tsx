@@ -56,7 +56,7 @@ export function Header() {
   }, []);
 
   const homeItem = NAV_CATEGORY_ITEMS.find((item) => item.href === '/');
-  const directCategorySlugs = ['amakuru', 'politiki', 'ubuzima', 'uburezi', 'ubukungu'] as const;
+  const directCategorySlugs = ['epaper', 'amakuru', 'politiki', 'ubuzima', 'uburezi'] as const;
   const directCategoryItems = directCategorySlugs
     .map((slug) => NAV_CATEGORY_ITEMS.find((item) => item.slug === slug))
     .filter((item): item is (typeof NAV_CATEGORY_ITEMS)[number] => Boolean(item));

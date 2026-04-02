@@ -105,6 +105,7 @@ model AdminUser {
   passwordResetExpires     DateTime?
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
+  epaperEditions           EpaperEdition[]
 
   @@map("admin_users")
 }
@@ -199,4 +200,28 @@ model SocialChangeRequest {
   @@index([authorId])
   @@index([status])
   @@map("social_change_requests")
+}
+
+model EpaperEdition {
+  id           Int       @id @default(autoincrement())
+  title        String
+  issueDate    DateTime  @db.Date     // Date when the edition was published
+  coverImage   String?                // URL to cover image (for preview)
+  pdfUrl       String                 // URL to the PDF file
+  fileSize     Int?                   // File size in bytes
+  pageCount    Int       @default(0)  // Number of pages
+  isCurrent    Boolean   @default(false) // Mark as current/latest issue
+  isArchived   Boolean   @default(false) // Soft delete indicator
+  createdBy    Int
+  admin        AdminUser @relation(fields: [createdBy], references: [id], onDelete: Restrict)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  archivedAt   DateTime? // Timestamp when archived
+
+  @@unique([issueDate])
+  @@index([isCurrent])
+  @@index([isArchived])
+  @@index([createdAt])
+  @@index([issueDate])
+  @@map("epaper_editions")
 }

@@ -7,19 +7,18 @@ export async function GET() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://intambwemedia.com';
   
   try {
-    // Fetch articles for the sitemap with timeout using raw query for better performance
+    // Fetch articles for the sitemap with timeout using Prisma model query.
     let articles: Array<{ slug: string; publishedAt: Date | null }> = [];
-    
+
     try {
       const result = await Promise.race<Array<{ slug: string; publishedAt: Date | null }>>([
-        prisma.$queryRaw`
-          SELECT slug, publishedAt 
-          FROM "Article" 
-          WHERE status = 'published'
-          ORDER BY publishedAt DESC 
-          LIMIT 5000
-        ` as Promise<Array<{ slug: string; publishedAt: Date | null }>>,
-        new Promise<Array<{ slug: string; publishedAt: Date | null }>>((_, reject) => 
+        prisma.article.findMany({
+          where: { status: 'published' },
+          select: { slug: true, publishedAt: true },
+          orderBy: { publishedAt: 'desc' },
+          take: 5000,
+        }),
+        new Promise<Array<{ slug: string; publishedAt: Date | null }>>((_, reject) =>
           setTimeout(() => reject(new Error('Sitemap query timeout')), 20000)
         ),
       ]);

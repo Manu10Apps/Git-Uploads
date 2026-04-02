@@ -6,6 +6,7 @@ export interface NavCategoryItem {
 
 export const NAV_CATEGORY_ITEMS: NavCategoryItem[] = [
   { key: 'nav.home', href: '/' },
+  { key: 'nav.epaper', href: '/epaper', slug: 'epaper' },
   { key: 'nav.news', href: '/category/amakuru', slug: 'amakuru' },
   { key: 'nav.politics', href: '/category/politiki', slug: 'politiki' },
   { key: 'nav.health', href: '/category/ubuzima', slug: 'ubuzima' },

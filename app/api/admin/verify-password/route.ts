@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyPassword } from '@/lib/auth';
+import { generateToken, verifyPassword } from '@/lib/auth';
 
 export async function GET() {
   return NextResponse.json(
@@ -49,29 +49,33 @@ export async function POST(request: NextRequest) {
       (submittedPasswordNormalized.length > 0 && submittedPasswordNormalized === envPasswordNormalized);
 
     if (envEmail && envPasswordRaw && email === envEmail && envPasswordMatches) {
-      // Opportunistically heal the DB hash in the background so future bcrypt
-      // checks pass, but do NOT block the login response on this.
-      (async () => {
-        try {
-          const { prisma } = await import('@/lib/prisma');
-          const { hashPassword } = await import('@/lib/auth');
-          const user = await prisma.adminUser.findUnique({ where: { email } });
-          if (user) {
-            const newHash = await hashPassword(password);
-            await prisma.adminUser.update({
-              where: { email },
-              data: { password: newHash },
-            });
-          }
-        } catch {
-          // best-effort only – ignore errors
+      let envAdminId = 1;
+
+      // Opportunistically align to a real admin user id and heal DB hash.
+      try {
+        const { prisma } = await import('@/lib/prisma');
+        const { hashPassword } = await import('@/lib/auth');
+        const user = await prisma.adminUser.findUnique({ where: { email } });
+        if (user) {
+          envAdminId = user.id;
+          const newHash = await hashPassword(password);
+          await prisma.adminUser.update({
+            where: { email },
+            data: { password: newHash },
+          });
         }
-      })();
+      } catch {
+        // Best effort only. Env login should still succeed.
+      }
+
+      const token = generateToken(envAdminId);
 
       return NextResponse.json(
         {
           success: true,
+          token,
           user: {
+            id: envAdminId,
             email: envEmail,
             role: 'admin',
             name: 'Admin',
@@ -159,9 +163,12 @@ export async function POST(request: NextRequest) {
           );
         }
 
+        const token = generateToken(user.id);
+
         return NextResponse.json(
           {
             success: true,
+            token,
             user: {
               id: user.id,
               email: user.email,
