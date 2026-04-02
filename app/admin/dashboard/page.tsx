@@ -253,7 +253,7 @@ export default function DashboardPage() {
               </div>
               <div className="inline-flex items-center gap-2 text-xs sm:text-sm text-neutral-600 dark:text-neutral-300 rounded-lg border border-neutral-200 dark:border-neutral-700 px-3 py-2">
                 <ShieldCheck className="w-4 h-4" />
-                Allowed roles: admin, sub-admin, editor
+                admin, sub-admin, editor
               </div>
             </div>
 
@@ -281,14 +281,6 @@ export default function DashboardPage() {
                 <XCircle className="w-4 h-4" />
                 {cacheErrorMessage}
               </p>
-            )}
-
-            {cacheExecutionSummary.length > 0 && (
-              <ul className="mt-4 rounded-lg border border-neutral-200 dark:border-neutral-700 p-3 bg-neutral-50 dark:bg-neutral-800/50 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 space-y-1">
-                {cacheExecutionSummary.map((line, index) => (
-                  <li key={`cache-summary-${index}`}>{line}</li>
-                ))}
-              </ul>
             )}
           </section>
 
