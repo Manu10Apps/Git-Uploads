@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Sinbad';
+  src: url('/fonts/sinbad.ttf.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Global Styles */
 :root {
   --color-primary-50: rgb(254 242 242);
