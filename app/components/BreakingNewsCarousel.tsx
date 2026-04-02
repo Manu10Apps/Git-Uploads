@@ -3,27 +3,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-
-interface Article {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  image: string;
-  category: string;
-  author: string;
-  publishedAt: string;
-  readTime: number;
-  tags: string[];
-  featured?: boolean;
-}
+import type { HomepageArticle } from '@/lib/homepage-data';
 
 interface BreakingNewsCarouselProps {
-  articles?: Article[];
+  articles?: HomepageArticle[];
 }
 
 export default function BreakingNewsCarousel({ articles = [] }: BreakingNewsCarouselProps) {
-  const [newsItems, setNewsItems] = useState<Article[]>(articles);
+  const [newsItems, setNewsItems] = useState<HomepageArticle[]>(articles);
   const [loading, setLoading] = useState(true);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);

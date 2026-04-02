@@ -110,6 +110,19 @@ async function ensureArticleAuthorSocialColumns() {
   `);
 }
 
+let ensureArticleAuthorSocialColumnsPromise: Promise<void> | null = null;
+
+function ensureArticleAuthorSocialColumnsOnce() {
+  if (!ensureArticleAuthorSocialColumnsPromise) {
+    ensureArticleAuthorSocialColumnsPromise = ensureArticleAuthorSocialColumns().catch((error) => {
+      ensureArticleAuthorSocialColumnsPromise = null;
+      throw error;
+    });
+  }
+
+  return ensureArticleAuthorSocialColumnsPromise;
+}
+
 async function ensureAuthorSocialProfileTables() {
   await ensureAuthorSocialTables();
 }
@@ -169,7 +182,7 @@ export async function GET(request: NextRequest) {
   const page = parseInt(searchParams.get('page') || '1');
 
   try {
-    await ensureArticleAuthorSocialColumns();
+    await ensureArticleAuthorSocialColumnsOnce();
 
     const now = new Date();
 

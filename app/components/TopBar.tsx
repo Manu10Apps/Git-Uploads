@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Cloud, MapPin, TrendingUp } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 interface TopBarData {
   dateTime: string;
@@ -23,11 +23,59 @@ interface TopBarData {
   }>;
 }
 
+const DEFAULT_LOCATION = {
+  lat: -1.9536,
+  lon: 29.8739,
+  city: 'Kigali',
+  timezone: 'Africa/Kigali',
+};
+
+const FALLBACK_TOPBAR_DATA: TopBarData = {
+  dateTime: '',
+  simplifiedDate: '',
+  weather: {
+    temp: 24,
+    condition: 'Partly Cloudy',
+    conditionKy: 'Hari ikibunda gike',
+    icon: '🌤️',
+  },
+  location: {
+    city: 'Kigali',
+    country: 'Rwanda',
+  },
+  exchanges: [
+    { code: 'USD', rate: 1287, change: 0.15 },
+    { code: 'EUR', rate: 1395, change: -0.08 },
+    { code: 'GBP', rate: 1621, change: 0.22 },
+  ],
+};
+
+function getDateStrings(timezone: string) {
+  const now = new Date();
+  const daysKy = ['Ku Cyumweru', 'Kuwa Mbere', 'Kuwa Kabiri', 'Kuwa Gatatu', 'Kuwa Kane', 'Kuwa Gatanu', 'Kuwa Gatandatu'];
+  const monthsKy = ['Mutarama', 'Gashyantare', 'Werurwe', 'Mata', 'Gicurasi', 'Kamena', 'Nyakanga', 'Kanama', 'Nzeri', 'Ukwakira', 'Ugushyingo', 'Ukuboza'];
+
+  const localizedNow = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+  const dayName = daysKy[localizedNow.getDay()];
+  const day = String(localizedNow.getDate()).padStart(2, '0');
+  const monthName = monthsKy[localizedNow.getMonth()];
+  const year = localizedNow.getFullYear();
+  const hours = String(localizedNow.getHours()).padStart(2, '0');
+  const minutes = String(localizedNow.getMinutes()).padStart(2, '0');
+
+  return {
+    dateTime: `${dayName}, Tariki ya ${day} ${monthName}, ${year} | ${hours}:${minutes}`,
+    simplifiedDate: `${day}/${String(localizedNow.getMonth() + 1).padStart(2, '0')}/${year.toString().slice(-2)}`,
+  };
+}
+
 export function TopBar() {
-  const [data, setData] = useState<TopBarData | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [data, setData] = useState<TopBarData>(() => ({
+    ...FALLBACK_TOPBAR_DATA,
+    ...getDateStrings(DEFAULT_LOCATION.timezone),
+  }));
   const [previousRates, setPreviousRates] = useState<{ [key: string]: number }>({});
-  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number; city: string; timezone: string } | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number; city: string; timezone: string }>(DEFAULT_LOCATION);
 
   // Detect user's location
   const detectLocation = async () => {
@@ -70,12 +118,12 @@ export function TopBar() {
         (error) => {
           // If geolocation denied, use default (Kigali)
           console.log('Geolocation permission denied, using default location');
-          setUserLocation({ lat: -1.9536, lon: 29.8739, city: 'Kigali', timezone: 'Africa/Kigali' });
+          setUserLocation(DEFAULT_LOCATION);
         });
       }
     } catch (error) {
       console.error('Location detection error:', error);
-      setUserLocation({ lat: -1.9536, lon: 29.8739, city: 'Kigali', timezone: 'Africa/Kigali' });
+      setUserLocation(DEFAULT_LOCATION);
     }
   };
 
@@ -92,8 +140,8 @@ export function TopBar() {
   const fetchWeatherData = async (lat?: number, lon?: number) => {
     try {
       // Use detected location or default to Kigali
-      const latitude = lat ?? -1.9536;
-      const longitude = lon ?? 29.8739;
+      const latitude = lat ?? DEFAULT_LOCATION.lat;
+      const longitude = lon ?? DEFAULT_LOCATION.lon;
       
       // Using Open-Meteo API (free, no API key required)
       const response = await fetch(
@@ -202,57 +250,37 @@ export function TopBar() {
   };
 
   useEffect(() => {
-    setMounted(true);
-    detectLocation(); // Detect location on component mount
+    const deferredDetectLocation = () => {
+      window.setTimeout(() => {
+        void detectLocation();
+      }, 1500);
+    };
+
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(deferredDetectLocation, { timeout: 2000 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    deferredDetectLocation();
   }, []);
 
   // Update data whenever location changes
   useEffect(() => {
-    if (userLocation) {
-      updateData();
-      const interval = setInterval(updateData, 60000); // Update every minute
-      return () => clearInterval(interval);
-    }
+    void updateData();
+    const interval = setInterval(() => {
+      void updateData();
+    }, 60000);
+
+    return () => clearInterval(interval);
   }, [userLocation]);
 
   const updateData = async () => {
-    if (!userLocation) return;
+    const { dateTime, simplifiedDate } = getDateStrings(userLocation.timezone);
 
-    // Current date and time in user's timezone
-    const now = new Date();
-    const formatter = new Intl.DateTimeFormat('ky-RW', {
-      timeZone: userLocation.timezone,
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      weekday: 'long'
-    });
-    
-    const parts = formatter.formatToParts(now);
-    const getPartValue = (type: string) => parts.find(p => p.type === type)?.value || '';
-    
-    // Kinyarwanda day and month names
-    const daysKy = ['Ku Cyumweru', 'Kuwa Mbere', 'Kuwa Kabiri', 'Kuwa Gatatu', 'Kuwa Kane', 'Kuwa Gatanu', 'Kuwa Gatandatu'];
-    const monthsKy = ['Mutarama', 'Gashyantare', 'Werurwe', 'Mata', 'Gicurasi', 'Kamena', 'Nyakanga', 'Kanama', 'Nzeri', 'Ukwakira', 'Ugushyingo', 'Ukuboza'];
-    
-    const kigaliNow = new Date(now.toLocaleString('en-US', { timeZone: userLocation.timezone }));
-    const dayName = daysKy[kigaliNow.getDay()];
-    const day = String(kigaliNow.getDate()).padStart(2, '0');
-    const monthName = monthsKy[kigaliNow.getMonth()];
-    const year = kigaliNow.getFullYear();
-    const hours = String(kigaliNow.getHours()).padStart(2, '0');
-    const minutes = String(kigaliNow.getMinutes()).padStart(2, '0');
-    
-    const dateTime = `${dayName}, Tariki ya ${day} ${monthName}, ${year} | ${hours}:${minutes}`;
-    const simplifiedDate = `${day}/${String(kigaliNow.getMonth() + 1).padStart(2, '0')}/${year.toString().slice(-2)}`;
-
-    // Fetch real weather data from API using detected location
-    const weatherData = await fetchWeatherData(userLocation.lat, userLocation.lon);
-
-    // Fetch real exchange rates from API
-    const exchangeData = await fetchExchangeRates();
+    const [weatherData, exchangeData] = await Promise.all([
+      fetchWeatherData(userLocation.lat, userLocation.lon),
+      fetchExchangeRates(),
+    ]);
 
     setData({
       dateTime,
@@ -263,13 +291,11 @@ export function TopBar() {
     });
   };
 
-  if (!mounted || !data) return null;
-
   return (
-    <div className="bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-950 dark:to-neutral-900 border-b border-neutral-700 dark:border-neutral-800 text-white/90 text-xs">
+    <div className="min-h-[40px] bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-950 dark:to-neutral-900 border-b border-neutral-700 dark:border-neutral-800 text-white/90 text-xs">
       <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2">
         {/* Mobile layout - Simplified */}
-        <div className="md:hidden grid grid-cols-[auto_1fr_auto] items-center gap-2 min-w-0">
+        <div className="lg:hidden grid grid-cols-[auto_1fr_auto] items-center gap-2 min-w-0">
           {/* Simplified Date */}
           <div className="flex items-center gap-1 flex-shrink-0 max-[380px]:hidden">
             <span className="text-neutral-400">📅</span>
@@ -291,7 +317,7 @@ export function TopBar() {
         </div>
 
         {/* Desktop layout - Full details */}
-        <div className="hidden md:flex items-center justify-between gap-4 overflow-x-auto">
+        <div className="hidden lg:flex items-center justify-between gap-4 overflow-x-auto">
           {/* Date & Time */}
           <div className="flex items-center gap-2 whitespace-nowrap">
             <span className="text-neutral-400">📅</span>

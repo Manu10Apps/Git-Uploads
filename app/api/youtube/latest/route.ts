@@ -13,12 +13,17 @@ type YouTubeVideo = {
 
 const YOUTUBE_HANDLE = '@intambwemedia';
 const MAX_VIDEOS = 4;
+const YOUTUBE_CACHE_TTL_MS = 10 * 60 * 1000;
+const DURATION_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const CHANNEL_PAGE_CANDIDATES = [
   `https://www.youtube.com/${YOUTUBE_HANDLE}/videos`,
   `https://www.youtube.com/${YOUTUBE_HANDLE}/streams`,
   `https://www.youtube.com/${YOUTUBE_HANDLE}`,
   'https://www.youtube.com/results?search_query=intambwemedia',
 ];
+
+let latestVideosCache: { expiresAt: number; data: YouTubeVideo[] } | null = null;
+const durationCache = new Map<string, { expiresAt: number; duration?: string }>();
 
 type YouTubeRendererText = {
   simpleText?: string;
@@ -196,6 +201,11 @@ function extractDurationSecondsFromVideoInfo(videoInfoBody: string): number | un
 }
 
 async function resolveVideoDuration(videoId: string): Promise<string | undefined> {
+  const cachedDuration = durationCache.get(videoId);
+  if (cachedDuration && cachedDuration.expiresAt > Date.now()) {
+    return cachedDuration.duration;
+  }
+
   try {
     const watchResponse = await fetch(`https://www.youtube.com/watch?v=${videoId}&hl=en`, {
       headers: { 'user-agent': 'Mozilla/5.0' },
@@ -206,7 +216,9 @@ async function resolveVideoDuration(videoId: string): Promise<string | undefined
       const html = await watchResponse.text();
       const watchDurationSeconds = extractDurationSecondsFromWatchHtml(html);
       if (watchDurationSeconds) {
-        return formatDuration(watchDurationSeconds);
+        const duration = formatDuration(watchDurationSeconds);
+        durationCache.set(videoId, { expiresAt: Date.now() + DURATION_CACHE_TTL_MS, duration });
+        return duration;
       }
     }
 
@@ -224,7 +236,9 @@ async function resolveVideoDuration(videoId: string): Promise<string | undefined
 
     const infoBody = await infoResponse.text();
     const infoDurationSeconds = extractDurationSecondsFromVideoInfo(infoBody);
-    return infoDurationSeconds ? formatDuration(infoDurationSeconds) : undefined;
+    const duration = infoDurationSeconds ? formatDuration(infoDurationSeconds) : undefined;
+    durationCache.set(videoId, { expiresAt: Date.now() + DURATION_CACHE_TTL_MS, duration });
+    return duration;
   } catch {
     return undefined;
   }
@@ -483,6 +497,18 @@ async function fetchLatestVideos(): Promise<YouTubeVideo[]> {
 
 export async function GET() {
   try {
+    if (latestVideosCache && latestVideosCache.expiresAt > Date.now()) {
+      return NextResponse.json(
+        { success: true, data: latestVideosCache.data },
+        {
+          status: 200,
+          headers: {
+            'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+          },
+        }
+      );
+    }
+
     const videos = await fetchLatestVideos();
 
     if (videos.length === 0) {
@@ -502,6 +528,11 @@ export async function GET() {
         };
       })
     );
+
+    latestVideosCache = {
+      expiresAt: Date.now() + YOUTUBE_CACHE_TTL_MS,
+      data: videosWithDuration,
+    };
 
     return NextResponse.json(
       { success: true, data: videosWithDuration },
