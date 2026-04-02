@@ -169,3 +169,34 @@ model AnalyticsEvent {
   @@index([country])
   @@map("analytics_events")
 }
+
+model AuthorSocialProfile {
+  id             Int      @id @default(autoincrement())
+  authorName     String   @unique
+  socialLinks    Json     @default("{}")
+  socialLocked   Boolean  @default(true)
+  unlockedUntil  DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  changeRequests SocialChangeRequest[]
+
+  @@map("author_social_profiles")
+}
+
+model SocialChangeRequest {
+  id              Int                 @id @default(autoincrement())
+  authorId        Int
+  author          AuthorSocialProfile @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  requestedBy     String
+  requestedByRole String
+  requestedLinks  Json?
+  status          String              @default("pending") // pending | approved | rejected
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  createdAt       DateTime            @default(now())
+
+  @@index([authorId])
+  @@index([status])
+  @@map("social_change_requests")
+}

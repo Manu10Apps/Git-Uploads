@@ -2,7 +2,7 @@
 
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { AlertCircle, CheckCircle, Upload, X } from 'lucide-react';
+import { AlertCircle, CheckCircle, Upload, X, Lock } from 'lucide-react';
 import AdminHeader from '@/app/admin/components/AdminHeader';
 import ContentEditor from '@/app/admin/components/ContentEditor';
 import { ArticleImage } from '@/app/components/ArticleImage';
@@ -73,6 +73,107 @@ export default function EditArticlePage() {
   const [selectedGalleryFiles, setSelectedGalleryFiles] = useState<File[]>([]);
   const [adminRole, setAdminRole] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
+  const [socialProfile, setSocialProfile] = useState<{ socialLocked: boolean; socialLinks: Record<string, string> } | null>(null);
+  const [socialLoading, setSocialLoading] = useState(false);
+
+  const isSocialLocked = Boolean(socialProfile?.socialLocked);
+  const canManageSocialLock = adminRole === 'admin';
+  const socialInputsDisabled = isSocialLocked && !canManageSocialLock;
+
+  const syncAuthorSocialProfile = async (authorNameRaw?: string) => {
+    const authorName = (authorNameRaw || form.author || '').trim();
+    if (!authorName || !adminEmail) {
+      setSocialProfile(null);
+      return;
+    }
+
+    setSocialLoading(true);
+    try {
+      const response = await fetch(`/api/admin/authors/social?author=${encodeURIComponent(authorName)}`, {
+        headers: {
+          'x-admin-email': adminEmail,
+        },
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data?.success) {
+        setSocialProfile(null);
+        return;
+      }
+
+      const profile = data?.data || null;
+      setSocialProfile(profile);
+
+      if (profile?.socialLinks) {
+        const entries = Object.entries(profile.socialLinks as Record<string, string>);
+        const first = entries[0] || ['', ''];
+        const second = entries[1] || ['', ''];
+        setForm((prev) => ({
+          ...prev,
+          authorSocialPlatform: String(first[0] || ''),
+          authorSocialUrl: String(first[1] || ''),
+          authorSocialPlatform2: String(second[0] || ''),
+          authorSocialUrl2: String(second[1] || ''),
+        }));
+      }
+    } catch {
+      setSocialProfile(null);
+    } finally {
+      setSocialLoading(false);
+    }
+  };
+
+  const requestSocialChange = async () => {
+    if (!form.author.trim()) {
+      setMessage({ type: 'error', text: 'Please enter the author name first' });
+      return;
+    }
+
+    const response = await fetch('/api/admin/authors/social/requests', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-email': adminEmail,
+      },
+      body: JSON.stringify({
+        authorName: form.author.trim(),
+        authorSocialPlatform: form.authorSocialPlatform,
+        authorSocialUrl: form.authorSocialUrl,
+        authorSocialPlatform2: form.authorSocialPlatform2,
+        authorSocialUrl2: form.authorSocialUrl2,
+      }),
+    });
+    const data = await response.json();
+
+    if (!response.ok || !data?.success) {
+      setMessage({ type: 'error', text: data?.error || 'Failed to submit change request' });
+      return;
+    }
+
+    setMessage({ type: 'success', text: 'Change request sent to admin for approval' });
+  };
+
+  const unlockOrRelockSocial = async (action: 'unlock' | 'relock') => {
+    const response = await fetch('/api/admin/authors/social', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-email': adminEmail,
+      },
+      body: JSON.stringify({
+        authorName: form.author.trim(),
+        action,
+        unlockMinutes: 15,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok || !data?.success) {
+      setMessage({ type: 'error', text: data?.error || 'Failed to change lock state' });
+      return;
+    }
+    setMessage({ type: 'success', text: action === 'unlock' ? 'Social fields unlocked for update' : 'Social fields relocked' });
+    await syncAuthorSocialProfile(form.author);
+  };
 
   const [categories, setCategories] = useState<Array<{ id: number; slug: string; name: string }>>([]);
   const visibleCategories = React.useMemo(() => {
@@ -137,6 +238,7 @@ export default function EditArticlePage() {
             status: article.status || 'draft',
           });
           setUploadedImage(null);
+          await syncAuthorSocialProfile(article.author);
         } else {
           setMessage({ type: 'error', text: 'Article not found' });
         }
@@ -371,6 +473,9 @@ export default function EditArticlePage() {
                 name="author"
                 value={form.author}
                 onChange={handleChange}
+                onBlur={() => {
+                  void syncAuthorSocialProfile(form.author);
+                }}
                 placeholder="Enter author name"
                 className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-amber-700 focus:border-transparent outline-none"
                 required
@@ -386,6 +491,7 @@ export default function EditArticlePage() {
                   name="authorSocialPlatform"
                   value={form.authorSocialPlatform}
                   onChange={handleChange}
+                  disabled={socialInputsDisabled}
                   className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-amber-700 focus:border-transparent outline-none"
                 >
                   <option value="">No contact platform</option>
@@ -393,10 +499,6 @@ export default function EditArticlePage() {
                   <option value="facebook" disabled={form.authorSocialPlatform2 === 'facebook'}>Facebook</option>
                   <option value="linkedin" disabled={form.authorSocialPlatform2 === 'linkedin'}>LinkedIn</option>
                   <option value="instagram" disabled={form.authorSocialPlatform2 === 'instagram'}>Instagram</option>
-                  <option value="youtube" disabled={form.authorSocialPlatform2 === 'youtube'}>YouTube</option>
-                  <option value="tiktok" disabled={form.authorSocialPlatform2 === 'tiktok'}>TikTok</option>
-                  <option value="telegram" disabled={form.authorSocialPlatform2 === 'telegram'}>Telegram</option>
-                  <option value="whatsapp" disabled={form.authorSocialPlatform2 === 'whatsapp'}>WhatsApp</option>
                 </select>
               </div>
               <div>
@@ -408,6 +510,7 @@ export default function EditArticlePage() {
                   name="authorSocialUrl"
                   value={form.authorSocialUrl}
                   onChange={handleChange}
+                  disabled={socialInputsDisabled}
                   placeholder="https://..."
                   className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-amber-700 focus:border-transparent outline-none"
                 />
@@ -423,6 +526,7 @@ export default function EditArticlePage() {
                   name="authorSocialPlatform2"
                   value={form.authorSocialPlatform2}
                   onChange={handleChange}
+                  disabled={socialInputsDisabled}
                   className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-amber-700 focus:border-transparent outline-none"
                 >
                   <option value="">No second platform</option>
@@ -430,10 +534,6 @@ export default function EditArticlePage() {
                   <option value="facebook" disabled={form.authorSocialPlatform === 'facebook'}>Facebook</option>
                   <option value="linkedin" disabled={form.authorSocialPlatform === 'linkedin'}>LinkedIn</option>
                   <option value="instagram" disabled={form.authorSocialPlatform === 'instagram'}>Instagram</option>
-                  <option value="youtube" disabled={form.authorSocialPlatform === 'youtube'}>YouTube</option>
-                  <option value="tiktok" disabled={form.authorSocialPlatform === 'tiktok'}>TikTok</option>
-                  <option value="telegram" disabled={form.authorSocialPlatform === 'telegram'}>Telegram</option>
-                  <option value="whatsapp" disabled={form.authorSocialPlatform === 'whatsapp'}>WhatsApp</option>
                 </select>
               </div>
               <div>
@@ -445,9 +545,45 @@ export default function EditArticlePage() {
                   name="authorSocialUrl2"
                   value={form.authorSocialUrl2}
                   onChange={handleChange}
+                  disabled={socialInputsDisabled}
                   placeholder="https://..."
                   className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-amber-700 focus:border-transparent outline-none"
                 />
+              </div>
+            </div>
+
+            <div className="mb-6 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 bg-neutral-50 dark:bg-neutral-900/30">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+                  <Lock className="w-4 h-4" />
+                  <span>
+                    {socialLoading
+                      ? 'Checking social profile lock...'
+                      : isSocialLocked
+                        ? 'Social links are locked'
+                        : 'Social links are editable'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {isSocialLocked && !canManageSocialLock && (
+                    <button
+                      type="button"
+                      onClick={() => void requestSocialChange()}
+                      className="px-3 py-1.5 text-xs font-semibold rounded-md bg-amber-600 hover:bg-amber-700 text-white"
+                    >
+                      Request Social Media Change
+                    </button>
+                  )}
+                  {canManageSocialLock && (
+                    <button
+                      type="button"
+                      onClick={() => void unlockOrRelockSocial(isSocialLocked ? 'unlock' : 'relock')}
+                      className="px-3 py-1.5 text-xs font-semibold rounded-md bg-red-700 hover:bg-red-800 text-white"
+                    >
+                      {isSocialLocked ? 'Unlock 15m' : 'Relock'}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
