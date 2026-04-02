@@ -69,6 +69,7 @@ export function Header() {
     { code: 'en', label: 'English' },
     { code: 'sw', label: 'Kiswahili' },
   ] as const;
+  const shouldOpenInNewTab = (href: string) => href === '/epaper';
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
@@ -99,6 +100,8 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  target={shouldOpenInNewTab(item.href) ? '_blank' : undefined}
+                  rel={shouldOpenInNewTab(item.href) ? 'noopener noreferrer' : undefined}
                   className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-neutral-900 dark:text-white hover:text-red-700 dark:hover:text-red-600 transition-colors whitespace-nowrap"
                 >
                   <span className="nav-link pb-0.5">
@@ -128,6 +131,8 @@ export function Header() {
                         <Link
                           key={item.href}
                           href={item.href}
+                          target={shouldOpenInNewTab(item.href) ? '_blank' : undefined}
+                          rel={shouldOpenInNewTab(item.href) ? 'noopener noreferrer' : undefined}
                           className="block px-4 py-2 text-xs sm:text-sm text-neutral-900 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors first:rounded-t-lg last:rounded-b-lg"
                           onClick={() => setIsMoreOpen(false)}
                         >
@@ -248,6 +253,8 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  target={shouldOpenInNewTab(item.href) ? '_blank' : undefined}
+                  rel={shouldOpenInNewTab(item.href) ? 'noopener noreferrer' : undefined}
                   className="block px-3 sm:px-4 py-3 rounded-lg text-sm sm:text-base text-neutral-900 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors font-medium min-h-[44px]"
                   onClick={() => setIsMenuOpen(false)}
                 >
