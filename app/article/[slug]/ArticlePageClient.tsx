@@ -618,8 +618,8 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
           {articleTopAdverts.length > 0 && (
             <div className="mb-6 sm:mb-8">
               {articleTopAdverts.slice(0, 1).map((advert: any) => (
-                <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block group hover:opacity-90 transition-opacity">
-                  <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-24 flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block w-full group hover:opacity-90 transition-opacity">
+                  <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
                     <img src={advert.imageUrl} alt={advert.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                 </a>
@@ -698,8 +698,8 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
           {articleBottomAdverts.length > 0 && (
             <div className="mb-8 sm:mb-10">
               {articleBottomAdverts.slice(0, 1).map((advert: any) => (
-                <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block group hover:opacity-90 transition-opacity">
-                  <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-16 md:h-20 lg:h-24 flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block w-full group hover:opacity-90 transition-opacity">
+                  <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
                     <img src={advert.imageUrl} alt={advert.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                 </a>
