@@ -137,7 +137,6 @@ function PagerControls({
 export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
   const [latestPage, setLatestPage] = React.useState(0);
   const [mostViewedPage, setMostViewedPage] = React.useState(0);
-  const [showYouTubeRail, setShowYouTubeRail] = React.useState(false);
   const [youtubeVideos, setYouTubeVideos] = React.useState<YouTubeVideo[]>([]);
   const [youtubeLoading, setYouTubeLoading] = React.useState(true);
 
@@ -153,14 +152,6 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
 
   React.useEffect(() => {
     let cancelled = false;
-
-    if (!showYouTubeRail) {
-      setYouTubeLoading(false);
-      setYouTubeVideos([]);
-      return () => {
-        cancelled = true;
-      };
-    }
 
     const fetchYouTubeVideos = async () => {
       try {
@@ -190,7 +181,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
     return () => {
       cancelled = true;
     };
-  }, [showYouTubeRail]);
+  }, []);
 
   return (
     <>
@@ -314,19 +305,9 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               <div className="text-xs font-extrabold tracking-widest" style={{ color: '#ff2000' }}>
                 AMASHUSHO AHERUKA
               </div>
-              {!showYouTubeRail && (
-                <button
-                  type="button"
-                  onClick={() => setShowYouTubeRail(true)}
-                  className="inline-flex items-center rounded-sm px-3 py-2 text-xs font-bold tracking-wide text-white transition-colors"
-                  style={{ backgroundColor: '#ff2000' }}
-                >
-                  FUNGURA AMASHUSHO
-                </button>
-              )}
             </div>
 
-            {!showYouTubeRail ? null : youtubeLoading ? (
+            {youtubeLoading ? (
               <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 {Array.from({ length: 4 }, (_, index) => (
                   <div key={`youtube-skeleton-${index}`} className="animate-pulse">
