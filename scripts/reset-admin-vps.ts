@@ -23,7 +23,8 @@ async function main() {
           password: hashedPassword,
           name: 'IM Admin',
           role: 'admin',
-        },
+        emailVerified: true,
+      },
       });
       console.log('✅ Admin credentials updated:', updated.email);
     } else {
@@ -34,7 +35,8 @@ async function main() {
           password: hashedPassword,
           name: 'IM Admin',
           role: 'admin',
-        },
+        emailVerified: true,
+      },
       });
       console.log('✅ Admin user created:', created.email);
     }
