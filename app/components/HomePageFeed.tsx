@@ -187,6 +187,29 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
     <>
       <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-4 flex flex-col items-start justify-between gap-3 sm:min-h-10 sm:flex-row sm:items-center sm:gap-4">
+            <div>
+              <div className="imv-header-nav mb-2">
+                <div className="imv-header-nav-title">
+                  INKURU ZIHERUKA
+                  <span className="a1" />
+                  <span className="a2" />
+                  <span className="a3" />
+                  <span className="a4" />
+                </div>
+              </div>
+            </div>
+            <PagerControls
+              page={latestPage}
+              totalPages={latestTotalPages}
+              onFirst={() => setLatestPage(0)}
+              onPrevious={() => setLatestPage((prev) => Math.max(0, prev - 1))}
+              onNext={() => setLatestPage((prev) => Math.min(latestTotalPages - 1, prev + 1))}
+              onLast={() => setLatestPage(Math.max(0, latestTotalPages - 1))}
+              label="Latest section pagination"
+            />
+          </div>
+
           {latestPageArticles.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {latestPageArticles.map((article) => (
@@ -227,12 +250,16 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               <p className="text-neutral-600 dark:text-neutral-400">Nta nkuru zirashyirwaho</p>
             </div>
           )}
+        </div>
+      </section>
 
-          <div className="mt-4 flex flex-col items-start justify-between gap-3 sm:min-h-10 sm:flex-row sm:items-center sm:gap-4">
+      <section className="py-8 bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-4 flex flex-col items-start justify-between gap-3 sm:min-h-10 sm:flex-row sm:items-center sm:gap-4">
             <div>
               <div className="imv-header-nav mb-2">
                 <div className="imv-header-nav-title">
-                  INKURU ZIHERUKA
+                  IZIKUNZWE CYANE
                   <span className="a1" />
                   <span className="a2" />
                   <span className="a3" />
@@ -241,20 +268,16 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               </div>
             </div>
             <PagerControls
-              page={latestPage}
-              totalPages={latestTotalPages}
-              onFirst={() => setLatestPage(0)}
-              onPrevious={() => setLatestPage((prev) => Math.max(0, prev - 1))}
-              onNext={() => setLatestPage((prev) => Math.min(latestTotalPages - 1, prev + 1))}
-              onLast={() => setLatestPage(Math.max(0, latestTotalPages - 1))}
-              label="Latest section pagination"
+              page={mostViewedPage}
+              totalPages={mostViewedTotalPages}
+              onFirst={() => setMostViewedPage(0)}
+              onPrevious={() => setMostViewedPage((prev) => Math.max(0, prev - 1))}
+              onNext={() => setMostViewedPage((prev) => Math.min(mostViewedTotalPages - 1, prev + 1))}
+              onLast={() => setMostViewedPage(Math.max(0, mostViewedTotalPages - 1))}
+              label="Most viewed section pagination"
             />
           </div>
-        </div>
-      </section>
 
-      <section className="py-8 bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {mostViewedPageArticles.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {mostViewedPageArticles.map((article) => (
@@ -292,29 +315,6 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               ))}
             </div>
           ) : null}
-
-          <div className="mt-4 flex flex-col items-start justify-between gap-3 sm:min-h-10 sm:flex-row sm:items-center sm:gap-4">
-            <div>
-              <div className="imv-header-nav mb-2">
-                <div className="imv-header-nav-title">
-                  IZIKUNZWE CYANE
-                  <span className="a1" />
-                  <span className="a2" />
-                  <span className="a3" />
-                  <span className="a4" />
-                </div>
-              </div>
-            </div>
-            <PagerControls
-              page={mostViewedPage}
-              totalPages={mostViewedTotalPages}
-              onFirst={() => setMostViewedPage(0)}
-              onPrevious={() => setMostViewedPage((prev) => Math.max(0, prev - 1))}
-              onNext={() => setMostViewedPage((prev) => Math.min(mostViewedTotalPages - 1, prev + 1))}
-              onLast={() => setMostViewedPage(Math.max(0, mostViewedTotalPages - 1))}
-              label="Most viewed section pagination"
-            />
-          </div>
 
           <div className="mt-8 border-t border-neutral-200 dark:border-neutral-800 pt-6">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
