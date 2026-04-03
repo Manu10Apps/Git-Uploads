@@ -15,6 +15,7 @@ async function main() {
         password: hashedPassword,
         name: 'IM Admin',
         role: 'admin',
+        emailVerified: true,  // Phase 1: Mark admin as verified on seed
       },
     });
 

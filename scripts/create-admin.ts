@@ -28,7 +28,8 @@ async function addAdminUser() {
         password: hashedPassword,
         name,
         role: 'admin',
-      },
+      emailVerified: true,
+    },
     });
 
     console.log('✅ Admin user created successfully!');
