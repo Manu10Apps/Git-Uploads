@@ -17,7 +17,7 @@ export function formatKinyarwandaDateTime(dateInput?: string | Date | null): {
 } {
   const fallback = {
     dateLabel: 'N/A',
-    timeLabel: '00h00min',
+    timeLabel: 'Nonaha',
   };
 
   if (!dateInput) {
@@ -47,13 +47,43 @@ export function formatKinyarwandaDateTime(dateInput?: string | Date | null): {
   const day = String(parsedDate.getDate()).padStart(2, '0');
   const monthIndex = parsedDate.getMonth();
   const year = parsedDate.getFullYear();
-  const hours = String(parsedDate.getHours()).padStart(2, '0');
-  const minutes = String(parsedDate.getMinutes()).padStart(2, '0');
+  const diffMs = Date.now() - parsedDate.getTime();
+  const diffMinutes = Math.max(0, Math.floor(diffMs / 60000));
+
+  let timeAgoLabel = 'Nonaha';
+  if (diffMinutes >= 5 && diffMinutes < 60) {
+    timeAgoLabel = `Hashize Iminota ${diffMinutes}`;
+  } else if (diffMinutes >= 60) {
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) {
+      timeAgoLabel = diffHours === 1 ? 'Hashize Isaha 1' : `Hashize Amasaha ${diffHours}`;
+    } else {
+      const diffDays = Math.floor(diffHours / 24);
+      if (diffDays < 30) {
+        timeAgoLabel = diffDays === 1 ? 'Hashize Umunsi 1' : `Hashize Iminsi ${diffDays}`;
+      } else {
+        const diffMonths = Math.floor(diffDays / 30);
+        if (diffMonths < 12) {
+          timeAgoLabel = diffMonths === 1 ? 'Hashize Ukwezi 1' : `Hashize Amezi ${diffMonths}`;
+        } else {
+          const diffYears = Math.floor(diffDays / 365);
+          timeAgoLabel = diffYears === 1 ? 'Hashize Umwaka 1' : `Hashize Imyaka ${diffYears}`;
+        }
+      }
+    }
+  }
 
   return {
     dateLabel: `${day} ${kinyarwandaMonths[monthIndex]} ${year}`,
-    timeLabel: `${hours}h${minutes}min`,
+    timeLabel: timeAgoLabel,
   };
+}
+
+export function formatCategoryLabel(category?: string | null): string {
+  if (!category) return 'General';
+  const trimmed = category.trim();
+  if (!trimmed) return 'General';
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
 }
 
 export function calculateReadTime(content: string): number {
