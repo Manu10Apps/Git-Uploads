@@ -25,6 +25,8 @@ interface ArticleForm {
   tags: string;
   featured: boolean;
   gallery: Array<{ url: string; caption: string }>;
+  galleryColumns: 1 | 2 | 3;
+  galleryPosition: 'middle' | 'end';
 }
 
 interface ArticleMetadata {
@@ -55,6 +57,8 @@ export default function EditArticlePage() {
     tags: '',
     featured: false,
     gallery: [],
+    galleryColumns: 2,
+    galleryPosition: 'middle',
   });
 
   const [metadata, setMetadata] = useState<ArticleMetadata>({
@@ -215,6 +219,12 @@ export default function EditArticlePage() {
         
         if (articleData.success) {
           const article = articleData.data;
+          const normalizedGallery = Array.isArray(article.gallery)
+            ? article.gallery
+            : typeof article.gallery === 'string'
+              ? JSON.parse(article.gallery)
+              : [];
+
           setForm({
             title: article.title,
             excerpt: article.excerpt,
@@ -228,9 +238,12 @@ export default function EditArticlePage() {
             image: article.image,
             tags: Array.isArray(article.tags) ? article.tags.join(', ') : (article.tags || ''),
             featured: article.featured || false,
-            gallery: article.gallery && typeof article.gallery === 'string' 
-              ? JSON.parse(article.gallery) 
-              : (article.gallery || []),
+            gallery: normalizedGallery,
+            galleryColumns:
+              article.galleryColumns === 1 || article.galleryColumns === 2 || article.galleryColumns === 3
+                ? article.galleryColumns
+                : 2,
+            galleryPosition: article.galleryPosition === 'end' ? 'end' : 'middle',
           });
           setMetadata({
             views: 0,
@@ -355,6 +368,8 @@ export default function EditArticlePage() {
           tags: tagArray,
           featured: form.featured,
           gallery: form.gallery,
+          galleryColumns: form.galleryColumns,
+          galleryPosition: form.galleryPosition,
           status,
           publishedAt: publishedAtForUpdate,
         }),
@@ -710,6 +725,46 @@ export default function EditArticlePage() {
                 Add additional images to display as a gallery within the article
               </p>
 
+              <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-900 dark:text-white mb-2">
+                    Gallery Grid Columns
+                  </label>
+                  <select
+                    value={form.galleryColumns}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        galleryColumns: Number(e.target.value) as 1 | 2 | 3,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white"
+                  >
+                    <option value={1}>1 column</option>
+                    <option value={2}>2 columns</option>
+                    <option value={3}>3 columns</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-900 dark:text-white mb-2">
+                    Gallery Position In Article
+                  </label>
+                  <select
+                    value={form.galleryPosition}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        galleryPosition: e.target.value as 'middle' | 'end',
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white"
+                  >
+                    <option value="middle">Middle of article</option>
+                    <option value="end">End of article</option>
+                  </select>
+                </div>
+              </div>
+
               {/* Gallery Items Display */}
               {form.gallery.length > 0 && (
                 <div className="mb-6 space-y-3">
@@ -981,7 +1036,7 @@ export default function EditArticlePage() {
                   disabled={loading}
                   className="px-6 py-3 bg-red-700 hover:bg-red-800 disabled:bg-red-700/50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
                 >
-                  {loading ? 'Publishing...' : 'Publish Article'}
+                  {loading ? 'Updating...' : 'Update Article'}
                 </button>
               )}
             </div>

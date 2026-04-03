@@ -35,9 +35,64 @@ type FallbackArticle = {
   featured: boolean;
   tags: string[];
   gallery: Array<{ url: string; caption: string }>;
+  galleryColumns?: 1 | 2 | 3;
+  galleryPosition?: 'middle' | 'end';
   createdAt: string;
   updatedAt: string;
 };
+
+type GalleryItem = { url: string; caption: string };
+type GalleryPayload = { items: GalleryItem[]; columns: 1 | 2 | 3; position: 'middle' | 'end' };
+
+function toGalleryColumns(value: unknown): 1 | 2 | 3 {
+  const parsed = Number(value);
+  if (parsed === 1 || parsed === 2 || parsed === 3) return parsed;
+  return 2;
+}
+
+function toGalleryPosition(value: unknown): 'middle' | 'end' {
+  return value === 'end' ? 'end' : 'middle';
+}
+
+function normalizeGalleryItems(input: unknown): GalleryItem[] {
+  const source =
+    Array.isArray(input)
+      ? input
+      : input && typeof input === 'object' && Array.isArray((input as { items?: unknown }).items)
+        ? ((input as { items: unknown[] }).items)
+        : [];
+
+  return source
+    .map((item: unknown) => {
+      if (!item || typeof item !== 'object') return null;
+      const url = String((item as { url?: unknown }).url || '').trim();
+      const caption = String((item as { caption?: unknown }).caption || '').trim();
+      if (!url) return null;
+      return { url, caption };
+    })
+    .filter((item: GalleryItem | null): item is GalleryItem => Boolean(item));
+}
+
+function parseStoredGallery(gallery: string | null | undefined): GalleryPayload {
+  if (!gallery) return { items: [], columns: 2, position: 'middle' };
+
+  try {
+    const parsed = JSON.parse(gallery);
+    if (Array.isArray(parsed)) {
+      return { items: normalizeGalleryItems(parsed), columns: 2, position: 'middle' };
+    }
+    if (parsed && typeof parsed === 'object') {
+      const items = normalizeGalleryItems((parsed as { items?: unknown }).items || []);
+      const columns = toGalleryColumns((parsed as { columns?: unknown }).columns);
+      const position = toGalleryPosition((parsed as { position?: unknown }).position);
+      return { items, columns, position };
+    }
+  } catch {
+    // Ignore malformed gallery payloads and return default.
+  }
+
+  return { items: [], columns: 2, position: 'middle' };
+}
 
 type ArticlesFallbackFile = {
   articles: FallbackArticle[];
@@ -147,6 +202,8 @@ function toClientArticle(article: FallbackArticle) {
     tags: Array.isArray(article.tags) ? article.tags : [],
     status: article.status,
     gallery: article.gallery || [],
+    galleryColumns: toGalleryColumns(article.galleryColumns),
+    galleryPosition: toGalleryPosition(article.galleryPosition),
   };
 }
 
@@ -319,7 +376,9 @@ export async function GET(request: NextRequest) {
           featured: article.featured,
           views: article.views || 0,
           tags: article.tags ? JSON.parse(article.tags) : [],
-          gallery: article.gallery ? JSON.parse(article.gallery) : [],
+          gallery: parseStoredGallery(article.gallery).items,
+          galleryColumns: parseStoredGallery(article.gallery).columns,
+          galleryPosition: parseStoredGallery(article.gallery).position,
         }));
 
     return NextResponse.json(
@@ -581,7 +640,14 @@ export async function POST(request: NextRequest) {
         authorSocialUrl2: socialPairFields.authorSocialUrl2,
         image: imageToStore,
         tags: tags && Array.isArray(tags) ? JSON.stringify(tags) : null,
-        gallery: gallery && Array.isArray(gallery) ? JSON.stringify(gallery) : null,
+        gallery:
+          normalizeGalleryItems(gallery).length > 0
+            ? JSON.stringify({
+                items: normalizeGalleryItems(gallery),
+                columns: toGalleryColumns(body.galleryColumns),
+                position: toGalleryPosition(body.galleryPosition),
+              })
+            : null,
         readTime: readTime || 5,
         featured: featured || false,
         status,
@@ -682,23 +748,9 @@ export async function POST(request: NextRequest) {
           ? body.tags.map((tag: unknown) => String(tag).trim()).filter((tag: string) => Boolean(tag))
           : [];
 
-        const gallery = Array.isArray(body?.gallery)
-          ? body.gallery
-              .map((item: unknown) => {
-                if (!item || typeof item !== 'object') {
-                  return null;
-                }
-
-                const url = String((item as { url?: unknown }).url || '').trim();
-                const caption = String((item as { caption?: unknown }).caption || '').trim();
-                if (!url) {
-                  return null;
-                }
-
-                return { url, caption };
-              })
-              .filter((item: { url: string; caption: string } | null): item is { url: string; caption: string } => Boolean(item))
-          : [];
+        const gallery = normalizeGalleryItems(body?.gallery);
+        const galleryColumns = toGalleryColumns(body?.galleryColumns);
+        const galleryPosition = toGalleryPosition(body?.galleryPosition);
 
         const fallbackArticles = await readFallbackArticles();
         const usedSlugs = new Set(fallbackArticles.map((article) => article.slug));
@@ -730,6 +782,8 @@ export async function POST(request: NextRequest) {
           featured,
           tags,
           gallery,
+          galleryColumns,
+          galleryPosition,
           createdAt: nowIso,
           updatedAt: nowIso,
         };

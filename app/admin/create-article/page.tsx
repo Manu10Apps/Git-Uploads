@@ -27,6 +27,8 @@ interface ArticleForm {
   readTime: number;
   featured: boolean;
   gallery: Array<{ url: string; caption: string }>;
+  galleryColumns: 1 | 2 | 3;
+  galleryPosition: 'middle' | 'end';
 }
 
 type ArticleStatus = 'published' | 'draft' | 'archived';
@@ -52,6 +54,8 @@ export default function CreateArticlePage() {
     readTime: 5,
     featured: false,
     gallery: [],
+    galleryColumns: 2,
+    galleryPosition: 'middle',
   });
 
   useEffect(() => {
@@ -308,6 +312,8 @@ export default function CreateArticlePage() {
           readTime: parseInt(form.readTime.toString()) || 5,
           featured: form.featured,
           gallery: form.gallery,
+          galleryColumns: form.galleryColumns,
+          galleryPosition: form.galleryPosition,
           status,
         }),
       });
@@ -339,6 +345,8 @@ export default function CreateArticlePage() {
           readTime: 5,
           featured: false,
           gallery: [],
+          galleryColumns: 2,
+          galleryPosition: 'middle',
         });
         // Redirect to admin dashboard after 2 seconds
         setTimeout(() => {
@@ -669,6 +677,45 @@ export default function CreateArticlePage() {
               <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-4">
                 Add additional images to display as a gallery within the article
               </p>
+
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-neutral-900 dark:text-white mb-2">
+                  Gallery Grid Columns
+                </label>
+                <select
+                  value={form.galleryColumns}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      galleryColumns: Number(e.target.value) as 1 | 2 | 3,
+                    }))
+                  }
+                  className="w-full sm:w-56 px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white"
+                >
+                  <option value={1}>1 column</option>
+                  <option value={2}>2 columns</option>
+                  <option value={3}>3 columns</option>
+                </select>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-neutral-900 dark:text-white mb-2">
+                  Gallery Position In Article
+                </label>
+                <select
+                  value={form.galleryPosition}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      galleryPosition: e.target.value as 'middle' | 'end',
+                    }))
+                  }
+                  className="w-full sm:w-56 px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white"
+                >
+                  <option value="middle">Middle of article</option>
+                  <option value="end">End of article</option>
+                </select>
+              </div>
 
               {/* Gallery Items Display */}
               {form.gallery.length > 0 && (

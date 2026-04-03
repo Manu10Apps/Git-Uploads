@@ -69,9 +69,64 @@ type FallbackArticle = {
   featured: boolean;
   tags: string[];
   gallery: Array<{ url: string; caption: string }>;
+  galleryColumns?: 1 | 2 | 3;
+  galleryPosition?: 'middle' | 'end';
   createdAt: string;
   updatedAt: string;
 };
+
+type GalleryItem = { url: string; caption: string };
+type GalleryPayload = { items: GalleryItem[]; columns: 1 | 2 | 3; position: 'middle' | 'end' };
+
+function toGalleryColumns(value: unknown): 1 | 2 | 3 {
+  const parsed = Number(value);
+  if (parsed === 1 || parsed === 2 || parsed === 3) return parsed;
+  return 2;
+}
+
+function toGalleryPosition(value: unknown): 'middle' | 'end' {
+  return value === 'end' ? 'end' : 'middle';
+}
+
+function normalizeGalleryItems(input: unknown): GalleryItem[] {
+  const source =
+    Array.isArray(input)
+      ? input
+      : input && typeof input === 'object' && Array.isArray((input as { items?: unknown }).items)
+        ? ((input as { items: unknown[] }).items)
+        : [];
+
+  return source
+    .map((item: unknown) => {
+      if (!item || typeof item !== 'object') return null;
+      const url = String((item as { url?: unknown }).url || '').trim();
+      const caption = String((item as { caption?: unknown }).caption || '').trim();
+      if (!url) return null;
+      return { url, caption };
+    })
+    .filter((item: GalleryItem | null): item is GalleryItem => Boolean(item));
+}
+
+function parseStoredGallery(gallery: string | null | undefined): GalleryPayload {
+  if (!gallery) return { items: [], columns: 2, position: 'middle' };
+
+  try {
+    const parsed = JSON.parse(gallery);
+    if (Array.isArray(parsed)) {
+      return { items: normalizeGalleryItems(parsed), columns: 2, position: 'middle' };
+    }
+    if (parsed && typeof parsed === 'object') {
+      const items = normalizeGalleryItems((parsed as { items?: unknown }).items || []);
+      const columns = toGalleryColumns((parsed as { columns?: unknown }).columns);
+      const position = toGalleryPosition((parsed as { position?: unknown }).position);
+      return { items, columns, position };
+    }
+  } catch {
+    // Ignore malformed gallery payload and return default.
+  }
+
+  return { items: [], columns: 2, position: 'middle' };
+}
 
 type ArticlesFallbackFile = {
   articles: FallbackArticle[];
@@ -175,6 +230,9 @@ function toClientArticle(article: FallbackArticle) {
     readTime: article.readTime,
     featured: article.featured,
     tags: Array.isArray(article.tags) ? article.tags : [],
+    gallery: Array.isArray(article.gallery) ? article.gallery : [],
+    galleryColumns: toGalleryColumns(article.galleryColumns),
+    galleryPosition: toGalleryPosition(article.galleryPosition),
     status: article.status,
     updatedAt: article.updatedAt,
   };
@@ -254,6 +312,25 @@ export async function PATCH(
         : JSON.stringify(body.tags)
       : article.tags;
 
+    const currentGallery = parseStoredGallery(article.gallery);
+    const nextGalleryItems = body.gallery !== undefined
+      ? normalizeGalleryItems(body.gallery)
+      : currentGallery.items;
+    const nextGalleryColumns = body.galleryColumns !== undefined
+      ? toGalleryColumns(body.galleryColumns)
+      : currentGallery.columns;
+    const nextGalleryPosition = body.galleryPosition !== undefined
+      ? toGalleryPosition(body.galleryPosition)
+      : currentGallery.position;
+    const galleryToStore =
+      nextGalleryItems.length > 0
+        ? JSON.stringify({
+            items: nextGalleryItems,
+            columns: nextGalleryColumns,
+            position: nextGalleryPosition,
+          })
+        : null;
+
     const nextStatus = body.status || article.status;
     const nextPublishedAt =
       body.publishedAt !== undefined
@@ -330,6 +407,7 @@ export async function PATCH(
         featured: body.featured !== undefined ? body.featured : article.featured,
         readTime: body.readTime || article.readTime,
         tags: tagsToStore,
+        gallery: galleryToStore,
         status: nextStatus,
         publishedAt: nextPublishedAt,
       },
@@ -354,6 +432,9 @@ export async function PATCH(
       readTime: updatedArticle.readTime,
       featured: updatedArticle.featured,
       tags: updatedArticle.tags ? JSON.parse(updatedArticle.tags) : [],
+      gallery: parseStoredGallery(updatedArticle.gallery).items,
+      galleryColumns: parseStoredGallery(updatedArticle.gallery).columns,
+      galleryPosition: parseStoredGallery(updatedArticle.gallery).position,
       status: updatedArticle.status,
       updatedAt: updatedArticle.updatedAt?.toISOString(),
     };
@@ -398,23 +479,15 @@ export async function PATCH(
 
         const body = parsedBody || {};
         const current = fallbackArticles[index];
-        const nextGallery = Array.isArray(body.gallery)
-          ? body.gallery
-              .map((item: unknown) => {
-                if (!item || typeof item !== 'object') {
-                  return null;
-                }
-
-                const url = String((item as { url?: unknown }).url || '').trim();
-                const caption = String((item as { caption?: unknown }).caption || '').trim();
-                if (!url) {
-                  return null;
-                }
-
-                return { url, caption };
-              })
-              .filter((item: { url: string; caption: string } | null): item is { url: string; caption: string } => Boolean(item))
+        const nextGallery = body.gallery !== undefined
+          ? normalizeGalleryItems(body.gallery)
           : current.gallery;
+        const nextGalleryColumns = body.galleryColumns !== undefined
+          ? toGalleryColumns(body.galleryColumns)
+          : toGalleryColumns(current.galleryColumns);
+        const nextGalleryPosition = body.galleryPosition !== undefined
+          ? toGalleryPosition(body.galleryPosition)
+          : toGalleryPosition(current.galleryPosition);
 
         const nextTags = Array.isArray(body.tags)
           ? body.tags.map((tag: unknown) => String(tag).trim()).filter((tag: string) => Boolean(tag))
@@ -452,6 +525,8 @@ export async function PATCH(
           readTime: body.readTime ? Number(body.readTime) || current.readTime : current.readTime,
           tags: nextTags,
           gallery: nextGallery,
+          galleryColumns: nextGalleryColumns,
+          galleryPosition: nextGalleryPosition,
           status: body.status ? String(body.status) : current.status,
           publishedAt:
             body.publishedAt !== undefined
@@ -626,7 +701,9 @@ export async function GET(
       featured: article.featured,
       tags: article.tags ? JSON.parse(article.tags) : [],
       status: article.status,
-      gallery: article.gallery ? JSON.parse(article.gallery) : [],
+      gallery: parseStoredGallery(article.gallery).items,
+      galleryColumns: parseStoredGallery(article.gallery).columns,
+      galleryPosition: parseStoredGallery(article.gallery).position,
     };
 
     return NextResponse.json(

@@ -27,6 +27,8 @@ interface Article {
   publishedAt: string;
   views?: number;
   gallery?: Array<{ url: string; caption: string }>;
+  galleryColumns?: 1 | 2 | 3;
+  galleryPosition?: 'middle' | 'end';
 }
 
 interface ArticleClientProps {
@@ -88,6 +90,43 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const [adverts, setAdverts] = useState<any[]>([]);
   const [shareUrl, setShareUrl] = useState('');
   const commentFormRef = React.useRef<HTMLFormElement | null>(null);
+
+  const galleryGridClass =
+    article?.galleryColumns === 1
+      ? 'grid-cols-1'
+      : article?.galleryColumns === 3
+        ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+        : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2';
+  const showGalleryInMiddle = article?.galleryPosition !== 'end';
+  const showGalleryAtEnd = article?.galleryPosition === 'end';
+
+  const gallerySection = article?.gallery && article.gallery.length > 0 ? (
+    <div className="mb-8 sm:mb-10 md:mb-12">
+      <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white mb-4 sm:mb-6">
+        Andi mafoto y'inkuru
+      </h2>
+      <div className={`grid ${galleryGridClass} gap-4 sm:gap-6`}>
+        {article.gallery.map((item, index) => (
+          <div key={index} className="rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 hover:shadow-lg transition-shadow">
+            <div className="aspect-square w-full">
+              <ArticleImage
+                src={item.url}
+                alt={item.caption || `Gallery image ${index + 1}`}
+                className="object-cover"
+              />
+            </div>
+            {item.caption && (
+              <div className="p-3 sm:p-4 bg-neutral-50 dark:bg-neutral-800">
+                <p className="text-[0.5625rem] sm:text-[0.625rem] text-neutral-700 dark:text-neutral-300 italic">
+                  {item.caption}
+                </p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  ) : null;
   const articleTopAdverts = adverts.filter((ad: any) => ad.position === 'article_top' && ad.isActive);
   const articleBottomAdverts = adverts.filter((ad: any) => ad.position === 'article_bottom' && ad.isActive);
   const sidebarAdverts = adverts.filter((ad: any) => ad.position === 'sidebar' && ad.isActive);
@@ -699,34 +738,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
             <ArticleContent content={article.content} />
           </div>
 
-          {/* Gallery Section */}
-          {article.gallery && article.gallery.length > 0 && (
-            <div className="mb-8 sm:mb-10 md:mb-12">
-              <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white mb-4 sm:mb-6">
-                Andi mafoto y'inkuru
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {article.gallery.map((item, index) => (
-                  <div key={index} className="rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 hover:shadow-lg transition-shadow">
-                    <div className="aspect-square w-full">
-                      <ArticleImage
-                        src={item.url}
-                        alt={item.caption || `Gallery image ${index + 1}`}
-                        className="object-cover"
-                      />
-                    </div>
-                    {item.caption && (
-                      <div className="p-3 sm:p-4 bg-neutral-50 dark:bg-neutral-800">
-                        <p className="text-[0.5625rem] sm:text-[0.625rem] text-neutral-700 dark:text-neutral-300 italic">
-                          {item.caption}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {showGalleryInMiddle && gallerySection}
 
           {/* Contact Author - Chief Editor */}
           <section className="mb-8 sm:mb-10 md:mb-12 rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 p-4 sm:p-6">
@@ -775,6 +787,8 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               ))}
             </div>
           )}
+
+          {showGalleryAtEnd && gallerySection}
 
           {/* Comments Section */}
           <section className="mt-8 sm:mt-10 md:mt-12 bg-neutral-100 dark:bg-neutral-800 p-4 sm:p-6 md:p-8 rounded-lg sm:rounded-md">
