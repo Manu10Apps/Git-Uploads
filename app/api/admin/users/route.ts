@@ -37,9 +37,9 @@ async function ensureAdminVerificationColumns(prisma: PrismaClient) {
     ALTER TABLE "admin_users"
       ADD COLUMN IF NOT EXISTS "emailVerified" BOOLEAN DEFAULT FALSE,
       ADD COLUMN IF NOT EXISTS "emailVerificationToken" TEXT,
-      ADD COLUMN IF NOT EXISTS "emailVerificationExpires" TIMESTAMP(3),
+      ADD COLUMN IF NOT EXISTS "emailVerificationExpiresAt" TIMESTAMP(3),
       ADD COLUMN IF NOT EXISTS "passwordResetToken" TEXT,
-      ADD COLUMN IF NOT EXISTS "passwordResetExpires" TIMESTAMP(3);
+      ADD COLUMN IF NOT EXISTS "passwordResetExpiresAt" TIMESTAMP(3);
   `);
 
   await prisma.$executeRawUnsafe(
@@ -293,7 +293,7 @@ export async function POST(request: NextRequest) {
           role,
           emailVerified: true,
           emailVerificationToken: null,
-          emailVerificationExpires: null,
+          emailVerificationExpiresAt: null,
         },
         select: {
           id: true,
@@ -420,7 +420,7 @@ export async function PATCH(request: NextRequest) {
       password?: string;
       emailVerified?: boolean;
       emailVerificationToken?: string | null;
-      emailVerificationExpires?: Date | null;
+      emailVerificationExpiresAt?: Date | null;
     } = {};
 
     if (name !== undefined && name.length > 0) updateData.name = name;
@@ -432,7 +432,7 @@ export async function PATCH(request: NextRequest) {
       updateData.emailVerified = emailVerified;
       if (emailVerified) {
         updateData.emailVerificationToken = null;
-        updateData.emailVerificationExpires = null;
+        updateData.emailVerificationExpiresAt = null;
       }
     }
 

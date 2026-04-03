@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
           where: { id: user.id },
           data: {
             passwordResetToken: token,
-            passwordResetExpires: expires,
+            passwordResetExpiresAt: expires,
           },
         });
 
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       const user = await prisma.adminUser.findFirst({
         where: {
           passwordResetToken: token,
-          passwordResetExpires: {
+          passwordResetExpiresAt: {
             gt: new Date(),
           },
         },
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
         data: {
           password: hashed,
           passwordResetToken: null,
-          passwordResetExpires: null,
+          passwordResetExpiresAt: null,
         },
       });
 
