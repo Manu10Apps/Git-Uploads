@@ -158,14 +158,18 @@ export default function AdminLayout({
         <nav className="flex-1 p-3 sm:p-4 space-y-1 sm:space-y-2 overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
+            const isDashboard = item.href === '/admin/dashboard';
+            const isItemActive = isActive(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-3 sm:px-4 py-3 rounded-lg transition-colors min-h-[44px] ${
-                  isActive(item.href)
-                    ? 'bg-red-700 text-white'
+                  isItemActive
+                    ? isDashboard
+                      ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
+                      : 'bg-red-700 text-white'
                     : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
