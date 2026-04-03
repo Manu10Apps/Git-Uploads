@@ -82,6 +82,8 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const [mostViewedLoading, setMostViewedLoading] = useState(true);
   const [mostViralArticles, setMostViralArticles] = useState<Article[]>([]);
   const [mostViralLoading, setMostViralLoading] = useState(true);
+  const [eastAfricaArticles, setEastAfricaArticles] = useState<Article[]>([]);
+  const [eastAfricaLoading, setEastAfricaLoading] = useState(true);
   const [adverts, setAdverts] = useState<any[]>([]);
   const [shareUrl, setShareUrl] = useState('');
   const articleTopAdverts = adverts.filter((ad: any) => ad.position === 'article_top' && ad.isActive);
@@ -188,6 +190,29 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     };
 
     fetchMostViralArticles();
+  }, [slug]);
+
+  useEffect(() => {
+    const fetchEastAfricaArticles = async () => {
+      try {
+        setEastAfricaLoading(true);
+        const response = await fetch('/api/articles?category=afurika-yiburasirazuba&limit=12');
+        const result = await response.json();
+        const articles = (result.data || []) as Article[];
+        const rankedByViews = articles
+          .filter((item) => item.slug !== slug)
+          .sort((a, b) => (b.views || 0) - (a.views || 0));
+
+        setEastAfricaArticles(rankedByViews.slice(0, 4));
+      } catch (error) {
+        console.error('Failed to fetch East Africa articles:', error);
+        setEastAfricaArticles([]);
+      } finally {
+        setEastAfricaLoading(false);
+      }
+    };
+
+    fetchEastAfricaArticles();
   }, [slug]);
 
   useEffect(() => {
@@ -1007,6 +1032,51 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                     <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900">
                       <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
                         <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru (0) zidasanzwe</p>
+                      </div>
+                    </article>
+                  )}
+                </div>
+              </section>
+
+              <section className="border-t border-neutral-200 dark:border-neutral-700 pt-12 mt-12">
+                <div className="mb-10">
+                  <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">AFRIKA Y'IBURASIRAZUBA</div>
+                </div>
+                <div className="grid grid-cols-1 gap-8">
+                  {eastAfricaLoading ? (
+                    <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-100 dark:hover:border-red-900/50 transition-colors">
+                      <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
+                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru ziri gushakishwa...</p>
+                      </div>
+                    </article>
+                  ) : eastAfricaArticles.length > 0 ? (
+                    eastAfricaArticles.map((eastAfricaArticle) => (
+                      <article
+                        key={eastAfricaArticle.slug}
+                        onClick={() => router.push(`/article/${eastAfricaArticle.slug}`)}
+                        className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-100 dark:hover:border-red-900/50 transition-colors cursor-pointer hover:shadow-lg"
+                      >
+                        <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-32">
+                          <ArticleImage
+                            src={eastAfricaArticle.image}
+                            alt={eastAfricaArticle.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <div className="p-3">
+                          <h3 className="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-600 transition-colors">
+                            {eastAfricaArticle.title}
+                          </h3>
+                          <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
+                            {formatDateInKinyarwanda(eastAfricaArticle.publishedAt)}
+                          </p>
+                        </div>
+                      </article>
+                    ))
+                  ) : (
+                    <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900">
+                      <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
+                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru (0) zo muri Afurika y'Iburasirazuba</p>
                       </div>
                     </article>
                   )}
