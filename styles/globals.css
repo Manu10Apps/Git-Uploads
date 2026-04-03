@@ -43,6 +43,11 @@ body {
   overflow-x: hidden;
 }
 
+/* Use a system font stack for all elements currently using Tailwind's font-serif utility. */
+.font-serif {
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif !important;
+}
+
 img,
 picture,
 video,
