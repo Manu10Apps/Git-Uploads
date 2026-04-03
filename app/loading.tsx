@@ -16,7 +16,6 @@ export default function Loading() {
             width={48}
             height={48}
             sizes="48px"
-            priority
             className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-[0_0_24px_rgba(220,38,38,0.3)] animate-[pulse_1.6s_ease-in-out_infinite]"
           />
         </div>
