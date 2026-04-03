@@ -50,10 +50,21 @@ export default async function Home() {
                           {featuredArticle.title}
                         </Link>
                       </h3>
-                      <div className="grid grid-cols-3 items-center gap-2 text-xs font-bold text-neutral-600 dark:text-neutral-400">
-                        <span className="truncate pr-2">{formatCategoryLabel(featuredArticle.category)}</span>
-                        <span className="text-center whitespace-nowrap">{featuredDateTime.dateLabel}</span>
-                        <span className="text-right whitespace-nowrap">{featuredDateTime.timeLabel}</span>
+                      <div className="mt-2 flex items-center justify-between gap-4">
+                        <div className="grid flex-1 grid-cols-3 items-center gap-2 text-xs font-bold text-neutral-600 dark:text-neutral-400">
+                          <span className="truncate pr-2">{formatCategoryLabel(featuredArticle.category)}</span>
+                          <span className="text-center whitespace-nowrap">{featuredDateTime.dateLabel}</span>
+                          <span className="text-right whitespace-nowrap">{featuredDateTime.timeLabel}</span>
+                        </div>
+                        <div className="imv-header-nav shrink-0">
+                          <div className="imv-header-nav-title">
+                            INKURU ZIGEZWEHO
+                            <span className="a1" />
+                            <span className="a2" />
+                            <span className="a3" />
+                            <span className="a4" />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </article>
@@ -103,17 +114,6 @@ export default async function Home() {
               </div>
             ) : null}
 
-            <div className="mt-2 flex justify-end">
-              <div className="imv-header-nav">
-              <div className="imv-header-nav-title">
-                INKURU ZIGEZWEHO
-                <span className="a1" />
-                <span className="a2" />
-                <span className="a3" />
-                <span className="a4" />
-              </div>
-              </div>
-            </div>
           </div>
         </section>
 
