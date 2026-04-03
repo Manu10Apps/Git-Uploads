@@ -30,8 +30,8 @@ export default async function Home() {
         <section className="py-6 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {featuredArticle && featuredPageArticles.length > 0 ? (
-              <div className="relative grid grid-cols-1 gap-6 pt-10 md:grid-cols-4">
-                <div className="absolute right-0 top-0 z-10">
+              <div className="relative grid grid-cols-1 gap-6 pb-10 md:grid-cols-4">
+                <div className="absolute bottom-0 right-0 z-10">
                   <div className="imv-header-nav shrink-0">
                     <div className="imv-header-nav-title">
                       INKURU ZIGEZWEHO
