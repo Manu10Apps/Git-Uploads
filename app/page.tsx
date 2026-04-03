@@ -31,10 +31,10 @@ export default async function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {featuredArticle && featuredPageArticles.length > 0 ? (
               <div className="relative grid grid-cols-1 gap-6 pb-10 md:grid-cols-4">
-                <div className="absolute bottom-0 right-0 z-10">
+                <div className="absolute bottom-0 right-0 z-10 rotate-180">
                   <div className="imv-header-nav shrink-0">
                     <div className="imv-header-nav-title">
-                      INKURU ZIGEZWEHO
+                      <span className="-rotate-180 inline-block">INKURU ZIGEZWEHO</span>
                       <span className="a1" />
                       <span className="a2" />
                       <span className="a3" />
