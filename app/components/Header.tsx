@@ -129,7 +129,7 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1" style={{ marginLeft: '120px' }}>
+          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1" style={{ marginLeft: '138px' }}>
             {visibleItems.map((item) => {
               const parts = item.key.split('.');
               const label = (t as any)[parts[0]]?.[parts[1]] || item.key;
