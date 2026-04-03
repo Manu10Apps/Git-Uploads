@@ -100,7 +100,7 @@ async function verifyEmailToken(token: string, request: NextRequest) {
       });
 
       // Phase 3: Log email verification
-      await logAuditEvent('verify_email', 'admin_user', {
+      await logAuditEvent('verify_email', 'admin', {
         userId: adminUser.id,
         details: { email: adminUser.email },
         request,
