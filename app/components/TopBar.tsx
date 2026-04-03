@@ -153,15 +153,15 @@ export function TopBar() {
       
       // Map WMO weather codes to conditions (in Kinyarwanda)
       const weatherConditions: { [key: number]: { condition: string; conditionKy: string; icon: string } } = {
-        0: { condition: 'Clear', conditionKy: 'Ikirere kirakeye', icon: '☀️' },
-        1: { condition: 'Mostly Clear', conditionKy: 'Hari gikeye gake', icon: '🌤️' },
+        0: { condition: 'Clear', conditionKy: 'Hari ikirere gikeye', icon: '☀️' },
+        1: { condition: 'Mostly Clear', conditionKy: 'Hari ikirere gikeye gake', icon: '🌤️' },
         2: { condition: 'Partly Cloudy', conditionKy: 'Hari ibicu bike', icon: '⛅' },
         3: { condition: 'Overcast', conditionKy: 'Hari ibicu byinshi', icon: '☁️' },
         45: { condition: 'Foggy', conditionKy: 'Hari igihu', icon: '🌫️' },
         48: { condition: 'Foggy', conditionKy: 'Hari igihu', icon: '🌫️' },
         51: { condition: 'Light Drizzle', conditionKy: 'Hari ubuhehere buke', icon: '🌧️' },
         53: { condition: 'Drizzle', conditionKy: 'Hari ubuhehere', icon: '🌧️' },
-        55: { condition: 'Heavy Drizzle', conditionKy: 'Akavura k\'urushyana', icon: '🌧️' },
+        55: { condition: 'Heavy Drizzle', conditionKy: 'Hari akavura k\'urushyana', icon: '🌧️' },
         61: { condition: 'Light Rain', conditionKy: 'Hari udutonyanga duke', icon: '🌧️' },
         63: { condition: 'Rain', conditionKy: 'Hari akavura', icon: '🌧️' },
         65: { condition: 'Heavy Rain', conditionKy: 'Hari imvura', icon: '⛈️' },
@@ -174,7 +174,7 @@ export function TopBar() {
         85: { condition: 'Snow Showers', conditionKy: 'Hari akavura k\'urubura', icon: '❄️' },
         86: { condition: 'Heavy Snow Showers', conditionKy: 'Hari imvura y\'urubura', icon: '❄️' },
         95: { condition: 'Thunderstorm', conditionKy: 'Hari imvura ivanze n\'inkuba', icon: '⛈️' },
-        96: { condition: 'Thunderstorm with Hail', conditionKy: 'Imvura ivanze n\'inkuba n\'imirabyo', icon: '⛈️' },
+        96: { condition: 'Thunderstorm with Hail', conditionKy: 'Hari imvura ivanze n\'inkuba n\'imirabyo', icon: '⛈️' },
       };
 
       const weatherInfo = weatherConditions[current.weather_code] || { condition: 'Unknown', conditionKy: 'Ifuzo ritamenyekana', icon: '🌤️' };
