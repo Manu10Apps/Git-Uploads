@@ -93,21 +93,95 @@ model CommentVote {
 }
 
 model AdminUser {
-  id                       Int       @id @default(autoincrement())
-  email                    String    @unique
-  password                 String    // Hash with bcrypt
-  name                     String
-  role                     String    @default("editor") // "admin" | "sub-admin" | "editor"
-  emailVerified            Boolean   @default(false)
-  emailVerificationToken   String?   @unique
-  emailVerificationExpires DateTime?
-  passwordResetToken       String?   @unique
-  passwordResetExpires     DateTime?
-  createdAt                DateTime  @default(now())
-  updatedAt                DateTime  @updatedAt
-  epaperEditions           EpaperEdition[]
+  id                           Int       @id @default(autoincrement())
+  email                        String    @unique
+  password                     String    // Hash with bcrypt
+  name                         String
+  role                         String    @default("editor") // "admin" | "sub-admin" | "editor"
+  emailVerified                Boolean   @default(false)
+  emailVerificationToken       String?   @unique
+  emailVerificationExpiresAt   DateTime?
+  passwordResetToken           String?   @unique
+  passwordResetExpiresAt       DateTime?
+  refreshTokens                RefreshToken[]  // Phase 2: Support refresh tokens
+  createdAt                    DateTime  @default(now())
+  updatedAt                    DateTime  @updatedAt
+  epaperEditions               EpaperEdition[]
 
   @@map("admin_users")
+}
+
+// Phase 2: Refresh token model for JWT refresh flow
+model RefreshToken {
+  id            Int       @id @default(autoincrement())
+  adminUserId   Int
+  adminUser     AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  token         String    @unique
+  expiresAt     DateTime
+  createdAt     DateTime  @default(now())
+  revokedAt     DateTime? // Null = valid; set = revoked
+
+  @@index([adminUserId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+// Phase 3: Regular user/contributor/author model
+model User {
+  id                           Int       @id @default(autoincrement())
+  email                        String    @unique
+  password                     String    // Hash with bcrypt
+  name                         String
+  bio                          String?   // Author bio
+  role                         String    @default("contributor") // "contributor" | "author" | "verified_author"
+  status                       String    @default("pending_verification") // "pending_verification" | "active" | "suspended"
+  emailVerified                Boolean   @default(false)
+  emailVerificationToken       String?   @unique
+  emailVerificationExpiresAt   DateTime?
+  passwordResetToken           String?   @unique
+  passwordResetExpiresAt       DateTime?
+  refreshTokens                UserRefreshToken[] // Phase 2: Support refresh tokens for regular users
+  auditLogs                    AuditLog[]
+  createdAt                    DateTime  @default(now())
+  updatedAt                    DateTime  @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@map("users")
+}
+
+// Phase 2: Refresh token model for regular users
+model UserRefreshToken {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  revokedAt DateTime? // Null = valid; set = revoked
+
+  @@index([userId])
+  @@index([token])
+  @@map("user_refresh_tokens")
+}
+
+// Phase 3: Audit log for tracking user/admin actions
+model AuditLog {
+  id          Int       @id @default(autoincrement())
+  userId      Int?      // Null for system actions
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      String    // "signup" | "login" | "verify_email" | "password_change" | "role_change" | "account_suspend"
+  resourceType String   // "user" | "admin" | "article" | "comment"
+  resourceId  Int?      // ID of affected resource
+  details     String?   // JSON details
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
 }
 
 model ExchangeRate {

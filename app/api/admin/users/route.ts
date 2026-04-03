@@ -1,8 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { hashPassword } from '@/lib/auth';
+import { extractCSRFToken, verifyCSRFToken } from '@/lib/csrf';
 import type { PrismaClient } from '@prisma/client';
 
 const VALID_ROLES = new Set(['admin', 'sub-admin', 'editor']);
+
+// Phase 2: Helper to validate CSRF token from request
+async function validateCSRFFromRequest(request: NextRequest): Promise<{ valid: boolean; error?: string }> {
+  const csrfToken = extractCSRFToken(request.headers);
+  const adminEmail = request.headers.get('x-admin-email')?.trim().toLowerCase();
+
+  if (!csrfToken || !adminEmail) {
+    return { valid: false, error: 'CSRF token or admin identity missing' };
+  }
+
+  // Use admin email as session identifier (stable per user)
+  const valid = verifyCSRFToken(csrfToken, adminEmail);
+  return { valid };
+}
+
+// FIX (Phase 1): Password complexity validation
+function validatePasswordComplexity(password: string): string | null {
+  if (password.length < 8) return 'Password must be at least 8 characters';
+  if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter';
+  if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter';
+  if (!/[0-9]/.test(password)) return 'Password must contain at least one number';
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>?\/]/.test(password)) {
+    return 'Password must contain at least one special character (!@#$%^&* etc)';
+  }
+  return null;
+}
 
 async function ensureAdminVerificationColumns(prisma: PrismaClient) {
   // Best-effort schema healing for deployments that missed the latest migration.
@@ -181,6 +208,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Phase 2: CSRF validation on state-changing request
+    const csrfCheck = await validateCSRFFromRequest(request);
+    if (!csrfCheck.valid && process.env.NODE_ENV === 'production') {
+      // In production, enforce CSRF. In dev, warn but allow.
+      return NextResponse.json(
+        { success: false, message: 'CSRF token invalid' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const name = String(body?.name || '').trim();
     const email = String(body?.email || '').trim().toLowerCase();
@@ -202,9 +239,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (password.length < 8) {
+    // FIX: Add password complexity validation (Phase 1 security)
+    const passwordComplexityError = validatePasswordComplexity(password);
+    if (passwordComplexityError) {
       return NextResponse.json(
-        { success: false, message: 'Password must be at least 8 characters' },
+        { success: false, message: passwordComplexityError },
         { status: 400 }
       );
     }
@@ -297,6 +336,16 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    // Phase 2: CSRF validation on state-changing request
+    const csrfCheck = await validateCSRFFromRequest(request);
+    if (!csrfCheck.valid && process.env.NODE_ENV === 'production') {
+      // In production, enforce CSRF. In dev, warn but allow.
+      return NextResponse.json(
+        { success: false, message: 'CSRF token invalid' },
+        { status: 403 }
+      );
+    }
+
     const prismaResult = await getPrismaSafely();
     if ('errorResponse' in prismaResult) return prismaResult.errorResponse;
     const { prisma } = prismaResult;
