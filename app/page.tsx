@@ -4,7 +4,7 @@ import { ArticleImage } from '@/app/components/ArticleImage';
 import { DeferredHomePageFeed } from '@/app/components/DeferredHomePageFeed';
 import { NewsletterSignup } from '@/app/components/NewsletterSignup';
 import { getHomepageData } from '@/lib/homepage-data';
-import { formatKinyarwandaDateTime } from '@/lib/utils';
+import { formatCategoryLabel, formatKinyarwandaDateTime } from '@/lib/utils';
 
 export default async function Home() {
   const { articles, adverts } = await getHomepageData();
@@ -51,7 +51,7 @@ export default async function Home() {
                         </Link>
                       </h3>
                       <div className="flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400 flex-wrap">
-                        <span>{featuredArticle.category || 'General'}</span>
+                        <span>{formatCategoryLabel(featuredArticle.category)}</span>
                         <span>•</span>
                         <span>{featuredDateTime.dateLabel}</span>
                         <span>•</span>
