@@ -171,7 +171,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             {trimmedQuery.length >= 2 && (
               <div className="mt-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 overflow-hidden">
                 <div className="px-3 py-2 text-xs font-semibold tracking-wide text-neutral-600 dark:text-neutral-300 border-b border-neutral-200 dark:border-neutral-700">
-                  Ibifitanye isano n'ibyo ushaka
+                  Ibyabonetse bifitanye isano
                 </div>
 
                 {isRelatedLoading ? (
@@ -182,7 +182,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   <div className="px-3 py-3 text-sm text-red-600 dark:text-red-400">{relatedError}</div>
                 ) : relatedResults.length === 0 ? (
                   <div className="px-3 py-3 text-sm text-neutral-500 dark:text-neutral-400">
-                    No related searches found
+                    Ibyo ushaka ntibibashije kuboneka
                   </div>
                 ) : (
                   <ul className="max-h-64 overflow-y-auto">
