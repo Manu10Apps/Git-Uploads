@@ -476,6 +476,12 @@ export default function CreateArticlePage() {
                   <option value="facebook" disabled={form.authorSocialPlatform2 === 'facebook'}>Facebook</option>
                   <option value="linkedin" disabled={form.authorSocialPlatform2 === 'linkedin'}>LinkedIn</option>
                   <option value="instagram" disabled={form.authorSocialPlatform2 === 'instagram'}>Instagram</option>
+                  <option value="threads" disabled={form.authorSocialPlatform2 === 'threads'}>Threads</option>
+                  <option value="tiktok" disabled={form.authorSocialPlatform2 === 'tiktok'}>TikTok</option>
+                  <option value="telegram" disabled={form.authorSocialPlatform2 === 'telegram'}>Telegram</option>
+                  <option value="whatsapp" disabled={form.authorSocialPlatform2 === 'whatsapp'}>WhatsApp</option>
+                  <option value="snapchat" disabled={form.authorSocialPlatform2 === 'snapchat'}>Snapchat</option>
+                  <option value="pinterest" disabled={form.authorSocialPlatform2 === 'pinterest'}>Pinterest</option>
                 </select>
               </div>
               <div>
@@ -511,6 +517,12 @@ export default function CreateArticlePage() {
                   <option value="facebook" disabled={form.authorSocialPlatform === 'facebook'}>Facebook</option>
                   <option value="linkedin" disabled={form.authorSocialPlatform === 'linkedin'}>LinkedIn</option>
                   <option value="instagram" disabled={form.authorSocialPlatform === 'instagram'}>Instagram</option>
+                  <option value="threads" disabled={form.authorSocialPlatform === 'threads'}>Threads</option>
+                  <option value="tiktok" disabled={form.authorSocialPlatform === 'tiktok'}>TikTok</option>
+                  <option value="telegram" disabled={form.authorSocialPlatform === 'telegram'}>Telegram</option>
+                  <option value="whatsapp" disabled={form.authorSocialPlatform === 'whatsapp'}>WhatsApp</option>
+                  <option value="snapchat" disabled={form.authorSocialPlatform === 'snapchat'}>Snapchat</option>
+                  <option value="pinterest" disabled={form.authorSocialPlatform === 'pinterest'}>Pinterest</option>
                 </select>
               </div>
               <div>

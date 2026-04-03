@@ -1,7 +1,18 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export const ALLOWED_SOCIAL_PLATFORMS = ['x', 'facebook', 'instagram', 'linkedin'] as const;
+export const ALLOWED_SOCIAL_PLATFORMS = [
+  'x',
+  'facebook',
+  'instagram',
+  'linkedin',
+  'threads',
+  'tiktok',
+  'telegram',
+  'whatsapp',
+  'snapchat',
+  'pinterest',
+] as const;
 export type AllowedSocialPlatform = (typeof ALLOWED_SOCIAL_PLATFORMS)[number];
 
 const SOCIAL_PLATFORM_SET = new Set<string>(ALLOWED_SOCIAL_PLATFORMS);
