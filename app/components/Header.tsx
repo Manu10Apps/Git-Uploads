@@ -85,7 +85,6 @@ export function Header() {
               alt="Intambwe Media"
               width={48}
               height={48}
-              priority
               sizes="(max-width: 639px) 36px, 48px"
               className="h-9 w-9 rounded-lg sm:h-12 sm:w-12"
             />
