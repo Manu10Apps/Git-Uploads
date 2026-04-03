@@ -113,14 +113,16 @@ export default function HomePage() {
                       <p className="hidden md:block text-sm text-neutral-600 dark:text-neutral-400 mb-3 line-clamp-2">
                         {articles[0].excerpt}
                       </p>
-                      <div className="grid grid-cols-3 items-center gap-2 text-xs font-bold text-neutral-600 dark:text-neutral-400">
-                        <span className="truncate pr-2">{formatCategoryLabel(articles[0].category)}</span>
-                        <span className="text-center whitespace-nowrap">
-                          {formatKinyarwandaDateTime(articles[0].publishedAtRaw || articles[0].publishedAt).dateLabel}
-                        </span>
-                        <span className="text-right whitespace-nowrap">
-                          {formatKinyarwandaDateTime(articles[0].publishedAtRaw || articles[0].publishedAt).timeLabel}
-                        </span>
+                      <div className="flex justify-start">
+                        <div className="grid w-fit grid-cols-3 items-center gap-2 text-xs font-bold text-neutral-600 dark:text-neutral-400">
+                          <span className="truncate pr-2">{formatCategoryLabel(articles[0].category)}</span>
+                          <span className="text-center whitespace-nowrap">
+                            {formatKinyarwandaDateTime(articles[0].publishedAtRaw || articles[0].publishedAt).dateLabel}
+                          </span>
+                          <span className="text-right whitespace-nowrap">
+                            {formatKinyarwandaDateTime(articles[0].publishedAtRaw || articles[0].publishedAt).timeLabel}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </article>
