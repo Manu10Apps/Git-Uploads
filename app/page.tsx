@@ -103,13 +103,15 @@ export default async function Home() {
               </div>
             ) : null}
 
-            <div className="imv-header-nav mt-2">
+            <div className="mt-2 flex justify-end">
+              <div className="imv-header-nav">
               <div className="imv-header-nav-title">
                 INKURU ZIGEZWEHO
                 <span className="a1" />
                 <span className="a2" />
                 <span className="a3" />
                 <span className="a4" />
+              </div>
               </div>
             </div>
           </div>
