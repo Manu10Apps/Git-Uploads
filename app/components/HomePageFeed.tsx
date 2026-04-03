@@ -230,7 +230,15 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
 
           <div className="mt-4 flex flex-col items-start justify-between gap-3 sm:min-h-10 sm:flex-row sm:items-center sm:gap-4">
             <div>
-              <div className="text-xs font-extrabold tracking-widest mb-2" style={{ color: '#ff2000' }}>INKURU ZIHERUKA</div>
+              <div className="imv-header-nav mb-2">
+                <div className="imv-header-nav-title">
+                  INKURU ZIHERUKA
+                  <span className="a1" />
+                  <span className="a2" />
+                  <span className="a3" />
+                  <span className="a4" />
+                </div>
+              </div>
             </div>
             <PagerControls
               page={latestPage}
@@ -287,7 +295,15 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
 
           <div className="mt-4 flex flex-col items-start justify-between gap-3 sm:min-h-10 sm:flex-row sm:items-center sm:gap-4">
             <div>
-              <div className="text-xs font-extrabold tracking-widest mb-2" style={{ color: '#ff2000' }}>IZIKUNZWE CYANE</div>
+              <div className="imv-header-nav mb-2">
+                <div className="imv-header-nav-title">
+                  IZIKUNZWE CYANE
+                  <span className="a1" />
+                  <span className="a2" />
+                  <span className="a3" />
+                  <span className="a4" />
+                </div>
+              </div>
             </div>
             <PagerControls
               page={mostViewedPage}
@@ -302,8 +318,14 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
 
           <div className="mt-8 border-t border-neutral-200 dark:border-neutral-800 pt-6">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <div className="text-xs font-extrabold tracking-widest" style={{ color: '#ff2000' }}>
-                AMASHUSHO AHERUKA
+              <div className="imv-header-nav">
+                <div className="imv-header-nav-title">
+                  AMASHUSHO AHERUKA
+                  <span className="a1" />
+                  <span className="a2" />
+                  <span className="a3" />
+                  <span className="a4" />
+                </div>
               </div>
             </div>
 

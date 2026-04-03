@@ -106,8 +106,14 @@ export default async function Home() {
               </div>
             ) : null}
 
-            <div className="mt-2 text-xs font-extrabold tracking-widest" style={{ color: '#ff2000' }}>
-              INKURU ZIGEZWEHO
+            <div className="imv-header-nav mt-2">
+              <div className="imv-header-nav-title">
+                INKURU ZIGEZWEHO
+                <span className="a1" />
+                <span className="a2" />
+                <span className="a3" />
+                <span className="a4" />
+              </div>
             </div>
           </div>
         </section>
