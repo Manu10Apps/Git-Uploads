@@ -717,7 +717,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                     </div>
                     {item.caption && (
                       <div className="p-3 sm:p-4 bg-neutral-50 dark:bg-neutral-800">
-                        <p className="text-sm text-neutral-700 dark:text-neutral-300 italic">
+                        <p className="text-[0.4375rem] sm:text-[0.5rem] text-neutral-700 dark:text-neutral-300 italic">
                           {item.caption}
                         </p>
                       </div>
