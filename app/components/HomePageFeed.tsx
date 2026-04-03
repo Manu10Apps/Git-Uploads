@@ -46,7 +46,7 @@ function PagerControls({
   label: string;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2" aria-label={label}>
+    <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end" aria-label={label}>
       <button
         type="button"
         onClick={onFirst}
@@ -187,7 +187,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
     <>
       <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-4 flex flex-col items-start justify-between gap-3 sm:min-h-10 sm:flex-row sm:items-center sm:gap-4">
+          <div className="mb-4 flex flex-col items-center justify-center gap-3 sm:min-h-10 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div>
               <div className="imv-header-nav mb-2">
                 <div className="imv-header-nav-title">
@@ -255,7 +255,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
 
       <section className="py-8 bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-4 flex flex-col items-start justify-between gap-3 sm:min-h-10 sm:flex-row sm:items-center sm:gap-4">
+          <div className="mb-4 flex flex-col items-center justify-center gap-3 sm:min-h-10 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div>
               <div className="imv-header-nav mb-2">
                 <div className="imv-header-nav-title">
@@ -317,7 +317,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
           ) : null}
 
           <div className="mt-8 border-t border-neutral-200 dark:border-neutral-800 pt-6">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div className="mb-4 flex flex-wrap items-center justify-center gap-3 sm:justify-between">
               <div className="imv-header-nav">
                 <div className="imv-header-nav-title">
                   AMASHUSHO AHERUKA
