@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700;800&display=swap');
 
 @font-face {
   font-family: 'Sinbad';
@@ -308,6 +309,41 @@ button:disabled {
     transparent 100%
   );
   background-size: 1000px 100%;
+}
+
+.imv-header-nav {
+  display: inline-flex;
+  align-items: center;
+}
+
+.imv-header-nav-title {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 0.4rem 0.85rem;
+  background: #e2001a;
+  color: #ffffff;
+  font-family: 'Roboto Condensed', 'Arial Narrow', Arial, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.imv-header-nav-title .a1,
+.imv-header-nav-title .a2,
+.imv-header-nav-title .a3,
+.imv-header-nav-title .a4 {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  transform: rotate(180deg);
 }
 
 /* Accessibility */
