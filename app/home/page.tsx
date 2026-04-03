@@ -32,7 +32,8 @@ export default function HomePage() {
             image: article.image,
             category: article.category,
             author: article.author,
-            publishedAt: article.publishedAt || new Date().toLocaleDateString(),
+            publishedAt: article.publishedAt,
+            publishedAtRaw: article.publishedAtRaw || article.publishedAt,
             readTime: article.readTime || 5,
             tags: [],
             featured: article.featured,
@@ -112,12 +113,15 @@ export default function HomePage() {
                       <p className="hidden md:block text-sm text-neutral-600 dark:text-neutral-400 mb-3 line-clamp-2">
                         {articles[0].excerpt}
                       </p>
-                      <div className="flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400 flex-wrap">
-                        <span>{formatCategoryLabel(articles[0].category)}</span>
-                        <span>•</span>
-                        <span>{formatKinyarwandaDateTime(articles[0].publishedAt).dateLabel}</span>
-                        <span>•</span>
-                        <span>{formatKinyarwandaDateTime(articles[0].publishedAt).timeLabel}</span>
+                      <div className="flex items-center justify-between gap-3 text-xs text-neutral-600 dark:text-neutral-400">
+                        <div className="flex items-center gap-4 flex-wrap min-w-0">
+                          <span>{formatCategoryLabel(articles[0].category)}</span>
+                          <span>•</span>
+                          <span>{formatKinyarwandaDateTime(articles[0].publishedAtRaw || articles[0].publishedAt).dateLabel}</span>
+                        </div>
+                        <span className="ml-auto whitespace-nowrap text-right">
+                          {formatKinyarwandaDateTime(articles[0].publishedAtRaw || articles[0].publishedAt).timeLabel}
+                        </span>
                       </div>
                     </div>
                   </article>

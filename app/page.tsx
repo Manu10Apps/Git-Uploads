@@ -17,7 +17,7 @@ export default async function Home() {
   const mostViewed = [...articles].sort((left, right) => (right.views || 0) - (left.views || 0));
   const homepageTopAdverts = adverts.filter((advert) => advert.position === 'homepage_top' && advert.isActive);
   const homepageBottomAdverts = adverts.filter((advert) => advert.position === 'homepage_bottom' && advert.isActive);
-  const featuredDateTime = formatKinyarwandaDateTime(featuredArticle?.publishedAt || null);
+  const featuredDateTime = formatKinyarwandaDateTime(featuredArticle?.publishedAtRaw || featuredArticle?.publishedAt || null);
 
   return (
     <>
@@ -50,12 +50,13 @@ export default async function Home() {
                           {featuredArticle.title}
                         </Link>
                       </h3>
-                      <div className="flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400 flex-wrap">
-                        <span>{formatCategoryLabel(featuredArticle.category)}</span>
-                        <span>•</span>
-                        <span>{featuredDateTime.dateLabel}</span>
-                        <span>•</span>
-                        <span>{featuredDateTime.timeLabel}</span>
+                      <div className="flex items-center justify-between gap-3 text-xs text-neutral-600 dark:text-neutral-400">
+                        <div className="flex items-center gap-4 flex-wrap min-w-0">
+                          <span>{formatCategoryLabel(featuredArticle.category)}</span>
+                          <span>•</span>
+                          <span>{featuredDateTime.dateLabel}</span>
+                        </div>
+                        <span className="ml-auto whitespace-nowrap text-right">{featuredDateTime.timeLabel}</span>
                       </div>
                     </div>
                   </article>
