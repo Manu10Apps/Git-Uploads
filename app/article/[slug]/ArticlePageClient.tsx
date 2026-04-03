@@ -74,6 +74,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const [replyError, setReplyError] = useState('');
   const [replySuccessId, setReplySuccessId] = useState<number | null>(null);
   const [reactionLoadingId, setReactionLoadingId] = useState<number | null>(null);
+  const [isCommentFormActive, setIsCommentFormActive] = useState(false);
   const [recentArticles, setRecentArticles] = useState<Article[]>([]);
   const [recentLoading, setRecentLoading] = useState(true);
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
@@ -86,6 +87,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const [eastAfricaLoading, setEastAfricaLoading] = useState(true);
   const [adverts, setAdverts] = useState<any[]>([]);
   const [shareUrl, setShareUrl] = useState('');
+  const commentFormRef = React.useRef<HTMLFormElement | null>(null);
   const articleTopAdverts = adverts.filter((ad: any) => ad.position === 'article_top' && ad.isActive);
   const articleBottomAdverts = adverts.filter((ad: any) => ad.position === 'article_bottom' && ad.isActive);
   const sidebarAdverts = adverts.filter((ad: any) => ad.position === 'sidebar' && ad.isActive);
@@ -274,6 +276,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
       } else {
         await fetchComments();
         setFormData({ name: '', email: '', comment: '' });
+        setIsCommentFormActive(false);
         setCommentSuccess(true);
         setTimeout(() => setCommentSuccess(false), 4000);
       }
@@ -287,6 +290,19 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCommentFormFocus = () => {
+    setIsCommentFormActive(true);
+  };
+
+  const handleCommentFormBlur = () => {
+    requestAnimationFrame(() => {
+      const activeElement = document.activeElement;
+      if (!commentFormRef.current?.contains(activeElement)) {
+        setIsCommentFormActive(false);
+      }
+    });
   };
 
   const handleReplyInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -763,7 +779,13 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
             <h2 className="mb-4 sm:mb-6 text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">Ibitekerezo ({totalComments})</h2>
             <div>
               {/* Comment Form */}
-              <form className="mb-3 sm:mb-6" onSubmit={handleCommentSubmit}>
+              <form
+                ref={commentFormRef}
+                className="mb-3 sm:mb-6"
+                onSubmit={handleCommentSubmit}
+                onFocusCapture={handleCommentFormFocus}
+                onBlurCapture={handleCommentFormBlur}
+              >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-4">
                   <div>
                     <label htmlFor="name" className="block mb-2 text-sm font-medium text-neutral-900 dark:text-white sr-only">
@@ -837,15 +859,17 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                 {comments.map((comment) => renderCommentNode(comment))}
               </ul>
 
-              <div className="mt-4 sm:mt-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-950/40">
-                <div className="flex items-start gap-3" style={{ color: '#d01a00' }}>
-                  <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0" />
-                  <p className="text-sm leading-6">
-                    <span className="font-semibold">Umuburo! </span>
-                    Ibitekerezo bitangwa mu bwisanzure n'ubwubahane, imvugo z'urwango no kutagira imyitwarire iboneye bihanwa n'amategeko y'ibihugu.
-                  </p>
+              {isCommentFormActive && (
+                <div className="mt-4 sm:mt-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-950/40">
+                  <div className="flex items-start gap-3" style={{ color: '#d01a00' }}>
+                    <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0" />
+                    <p className="text-sm leading-6">
+                      <span className="font-semibold">Umuburo! </span>
+                      Ibitekerezo bitangwa mu bwisanzure n'ubwubahane, imvugo z'urwango no kutagira imyitwarire iboneye bihanwa n'amategeko y'ibihugu.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </section>
 
