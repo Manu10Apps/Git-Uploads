@@ -4,6 +4,7 @@ import { ArticleImage } from '@/app/components/ArticleImage';
 import { DeferredHomePageFeed } from '@/app/components/DeferredHomePageFeed';
 import { NewsletterSignup } from '@/app/components/NewsletterSignup';
 import { getHomepageData } from '@/lib/homepage-data';
+import { formatKinyarwandaDateTime } from '@/lib/utils';
 
 export default async function Home() {
   const { articles, adverts } = await getHomepageData();
@@ -16,6 +17,7 @@ export default async function Home() {
   const mostViewed = [...articles].sort((left, right) => (right.views || 0) - (left.views || 0));
   const homepageTopAdverts = adverts.filter((advert) => advert.position === 'homepage_top' && advert.isActive);
   const homepageBottomAdverts = adverts.filter((advert) => advert.position === 'homepage_bottom' && advert.isActive);
+  const featuredDateTime = formatKinyarwandaDateTime(featuredArticle?.publishedAt || null);
 
   return (
     <>
@@ -48,10 +50,12 @@ export default async function Home() {
                           {featuredArticle.title}
                         </Link>
                       </h3>
-                      <div className="flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400">
-                        <span>{featuredArticle.author}</span>
+                      <div className="flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400 flex-wrap">
+                        <span>{featuredArticle.category || 'General'}</span>
                         <span>•</span>
-                        <span>{featuredArticle.publishedAt}</span>
+                        <span>{featuredDateTime.dateLabel}</span>
+                        <span>•</span>
+                        <span>{featuredDateTime.timeLabel}</span>
                       </div>
                     </div>
                   </article>

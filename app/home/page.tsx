@@ -6,6 +6,7 @@ import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 import { Header, Footer, GridNewsLayout, BreakingNewsCarousel } from '@/app/components';
 import { ArticleImage } from '@/app/components/ArticleImage';
+import { formatKinyarwandaDateTime } from '@/lib/utils';
 
 export default function HomePage() {
   const { language } = useAppStore();
@@ -111,10 +112,12 @@ export default function HomePage() {
                       <p className="hidden md:block text-sm text-neutral-600 dark:text-neutral-400 mb-3 line-clamp-2">
                         {articles[0].excerpt}
                       </p>
-                      <div className="flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400">
-                        <span>{articles[0].author}</span>
+                      <div className="flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400 flex-wrap">
+                        <span>{articles[0].category || 'General'}</span>
                         <span>•</span>
-                        <span>{articles[0].publishedAt}</span>
+                        <span>{formatKinyarwandaDateTime(articles[0].publishedAt).dateLabel}</span>
+                        <span>•</span>
+                        <span>{formatKinyarwandaDateTime(articles[0].publishedAt).timeLabel}</span>
                       </div>
                     </div>
                   </article>
