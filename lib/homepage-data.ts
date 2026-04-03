@@ -9,6 +9,7 @@ export type HomepageArticle = {
   category: string;
   author: string;
   publishedAt?: string;
+  publishedAtRaw?: string;
   readTime: number;
   featured: boolean;
   views: number;
