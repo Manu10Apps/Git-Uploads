@@ -20,7 +20,7 @@ export function NewsletterSignup() {
   }
 
   return (
-    <section id="newsletter" className="mt-40 py-10 bg-neutral-100 dark:bg-neutral-900/50 border-t border-neutral-200 dark:border-neutral-800">
+    <section id="newsletter" className="mt-[35px] py-10 bg-neutral-100 dark:bg-neutral-900/50 border-t border-neutral-200 dark:border-neutral-800">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="text-red-600 text-xs font-semibold tracking-widest mb-3">GUMANA AMAKURU</div>
         <h2 className="text-xl sm:text-2xl md:text-2xl font-serif font-bold text-neutral-900 dark:text-white mb-3">
