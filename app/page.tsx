@@ -50,13 +50,10 @@ export default async function Home() {
                           {featuredArticle.title}
                         </Link>
                       </h3>
-                      <div className="flex items-center justify-between gap-3 text-xs text-neutral-600 dark:text-neutral-400">
-                        <div className="flex items-center gap-4 flex-wrap min-w-0">
-                          <span>{formatCategoryLabel(featuredArticle.category)}</span>
-                          <span>•</span>
-                          <span>{featuredDateTime.dateLabel}</span>
-                        </div>
-                        <span className="ml-auto whitespace-nowrap text-right">{featuredDateTime.timeLabel}</span>
+                      <div className="grid grid-cols-3 items-center gap-2 text-xs font-bold text-neutral-600 dark:text-neutral-400">
+                        <span className="truncate pr-2">{formatCategoryLabel(featuredArticle.category)}</span>
+                        <span className="text-center whitespace-nowrap">{featuredDateTime.dateLabel}</span>
+                        <span className="text-right whitespace-nowrap">{featuredDateTime.timeLabel}</span>
                       </div>
                     </div>
                   </article>
