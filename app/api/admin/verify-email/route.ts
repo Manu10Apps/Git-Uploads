@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const user = await prisma.adminUser.findFirst({
       where: {
         emailVerificationToken: token,
-        emailVerificationExpires: {
+        emailVerificationExpiresAt: {
           gt: now,
         },
       },
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       data: {
         emailVerified: true,
         emailVerificationToken: null,
-        emailVerificationExpires: null,
+        emailVerificationExpiresAt: null,
       },
     });
 

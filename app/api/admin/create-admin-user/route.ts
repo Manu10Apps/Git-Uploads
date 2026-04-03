@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
           role,
           emailVerified: false,
           emailVerificationToken: verificationToken,
-          emailVerificationExpires: verificationExpires,
+          emailVerificationExpiresAt: verificationExpires,
         },
       });
 
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
         role,
         emailVerified: false,
         emailVerificationToken: verificationToken,
-        emailVerificationExpires: verificationExpires,
+        emailVerificationExpiresAt: verificationExpires,
       },
     });
 
