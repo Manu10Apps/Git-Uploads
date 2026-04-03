@@ -121,7 +121,7 @@ export default function AdminLayout({
       {/* Mobile hamburger button - always visible on small screens */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed top-3 left-3 z-50 p-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-md"
+        className="md:hidden fixed top-3 left-3 z-50 p-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-md"
         aria-label="Toggle admin menu"
       >
         {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -130,7 +130,7 @@ export default function AdminLayout({
       {/* Mobile overlay */}
       {isMobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
@@ -139,8 +139,8 @@ export default function AdminLayout({
       <div
         className={`
           fixed h-screen flex-col z-40 bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 transition-all duration-300
-          ${isMobileMenuOpen ? 'flex w-64 translate-x-0' : 'flex -translate-x-full lg:translate-x-0'}
-          ${isSidebarOpen ? 'lg:w-64' : 'lg:w-20'}
+          ${isMobileMenuOpen ? 'flex w-64 translate-x-0' : 'flex -translate-x-full md:translate-x-0'}
+          ${isSidebarOpen ? 'md:w-64' : 'md:w-20'}
         `}
       >
         <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
@@ -150,7 +150,7 @@ export default function AdminLayout({
               setIsSidebarOpen(!isSidebarOpen);
               if (isMobileMenuOpen) setIsMobileMenuOpen(false);
             }}
-            className="hidden lg:block text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+            className="hidden md:block text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
           >
             {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -175,7 +175,7 @@ export default function AdminLayout({
                 }`}
               >
                 <Icon className="w-5 h-5 flex-shrink-0" />
-                <span className={`font-medium ${isSidebarOpen ? '' : 'lg:hidden'}`}>{item.label}</span>
+                <span className={`font-medium ${isSidebarOpen ? '' : 'md:hidden'}`}>{item.label}</span>
               </Link>
             );
           })}
@@ -196,8 +196,8 @@ export default function AdminLayout({
         </div>
       </div>
 
-      <div className={`${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-20'} ml-0 flex-1 transition-all duration-300`}>
-        <div className="min-h-screen pt-14 lg:pt-0">{children}</div>
+      <div className={`${isSidebarOpen ? 'md:ml-64' : 'md:ml-20'} ml-0 flex-1 transition-all duration-300`}>
+        <div className="min-h-screen pt-14 md:pt-0">{children}</div>
       </div>
     </div>
   );

@@ -78,7 +78,7 @@ export function Header() {
           {/* Mobile Menu Button (left side) */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="sm:hidden p-2 hover:bg-white/10 dark:hover:bg-neutral-800/50 rounded-lg transition-colors"
+            className="lg:hidden p-2 hover:bg-white/10 dark:hover:bg-neutral-800/50 rounded-lg transition-colors"
             aria-label="Toggle navigation menu"
             aria-expanded={isMenuOpen}
           >
@@ -92,7 +92,7 @@ export function Header() {
           {/* Mobile centered brand */}
           <Link
             href="/"
-            className="sm:hidden absolute left-1/2 -translate-x-1/2 flex flex-col items-center justify-center text-center text-neutral-900 dark:text-white"
+            className="lg:hidden absolute left-1/2 -translate-x-1/2 flex flex-col items-center justify-center text-center text-neutral-900 dark:text-white mt-1"
           >
             <Image
               src="/logo.png"
@@ -100,14 +100,14 @@ export function Header() {
               width={48}
               height={48}
               sizes="(max-width: 639px) 36px, 48px"
-              className="h-11 w-11 rounded-lg"
+              className="h-9 w-9 rounded-lg"
             />
             <span className="mt-1.5 text-sm leading-tight" style={{ fontFamily: 'Sinbad, serif' }}>
               Intambwe Media
             </span>
             <span
               className="text-[10px] leading-tight text-neutral-600 dark:text-neutral-300"
-              style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif" }}
+              style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif", marginTop: '-5px' }}
             >
               Your trusted source of Breaking News
             </span>
@@ -116,7 +116,7 @@ export function Header() {
           {/* Desktop/Tablet Logo */}
           <Link
             href="/"
-            className="hidden sm:flex items-center gap-1 sm:gap-2 font-semibold text-base sm:text-lg tracking-wider text-neutral-900 dark:text-white flex-shrink-0"
+            className="hidden lg:flex items-center gap-1 sm:gap-2 font-semibold text-base sm:text-lg tracking-wider text-neutral-900 dark:text-white flex-shrink-0"
           >
             <Image
               src="/logo.png"
@@ -257,7 +257,7 @@ export function Header() {
             {/* Mobile Menu Button moved to left side on small devices */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="hidden sm:inline-flex lg:hidden p-2 sm:p-2.5 hover:bg-white/10 dark:hover:bg-neutral-800/50 rounded-lg transition-colors"
+              className="hidden p-2 sm:p-2.5 hover:bg-white/10 dark:hover:bg-neutral-800/50 rounded-lg transition-colors"
               aria-label="Toggle navigation menu"
               aria-expanded={isMenuOpen}
             >
