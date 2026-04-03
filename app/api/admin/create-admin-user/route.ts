@@ -8,9 +8,14 @@ export async function POST(request: NextRequest) {
     // Get the request body
     const body = await request.json();
     const { email, password, name = 'Admin', role = 'admin' } = body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const primaryAdminEmail = String(
+      process.env.ADMIN_EMAIL || 'ndahayemmanuel@gmail.com'
+    ).trim().toLowerCase();
+    const autoVerifyPrimaryAdmin = normalizedEmail === primaryAdminEmail;
 
     // Validate inputs
-    if (!email || !password) {
+    if (!normalizedEmail || !password) {
       return NextResponse.json(
         { success: false, error: 'Email and password are required' },
         { status: 400 }
@@ -30,32 +35,38 @@ export async function POST(request: NextRequest) {
 
     // Check if user already exists
     const existingUser = await prisma.adminUser.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { email: normalizedEmail },
     });
 
     if (existingUser) {
       // Update existing user
-      const verificationToken = generateSecureToken();
-      const verificationExpires = new Date(Date.now() + 1000 * 60 * 60 * 24);
+      const verificationToken = autoVerifyPrimaryAdmin ? null : generateSecureToken();
+      const verificationExpires = autoVerifyPrimaryAdmin
+        ? null
+        : new Date(Date.now() + 1000 * 60 * 60 * 24);
 
       const updatedUser = await prisma.adminUser.update({
-        where: { email: email.toLowerCase() },
+        where: { email: normalizedEmail },
         data: {
           password: hashedPassword,
           name,
           role,
-          emailVerified: false,
+          emailVerified: autoVerifyPrimaryAdmin,
           emailVerificationToken: verificationToken,
           emailVerificationExpiresAt: verificationExpires,
         },
       });
 
-      await sendAdminVerificationEmail(updatedUser.email, updatedUser.name, verificationToken);
+      if (verificationToken) {
+        await sendAdminVerificationEmail(updatedUser.email, updatedUser.name, verificationToken);
+      }
 
       return NextResponse.json(
         {
           success: true,
-          message: 'Admin user updated successfully. Verification link sent to email.',
+          message: autoVerifyPrimaryAdmin
+            ? 'Primary admin updated and verified successfully.'
+            : 'Admin user updated successfully. Verification link sent to email.',
           user: {
             email: updatedUser.email,
             name: updatedUser.name,
@@ -67,27 +78,33 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new user
-    const verificationToken = generateSecureToken();
-    const verificationExpires = new Date(Date.now() + 1000 * 60 * 60 * 24);
+    const verificationToken = autoVerifyPrimaryAdmin ? null : generateSecureToken();
+    const verificationExpires = autoVerifyPrimaryAdmin
+      ? null
+      : new Date(Date.now() + 1000 * 60 * 60 * 24);
 
     const newUser = await prisma.adminUser.create({
       data: {
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         password: hashedPassword,
         name,
         role,
-        emailVerified: false,
+        emailVerified: autoVerifyPrimaryAdmin,
         emailVerificationToken: verificationToken,
         emailVerificationExpiresAt: verificationExpires,
       },
     });
 
-    await sendAdminVerificationEmail(newUser.email, newUser.name, verificationToken);
+    if (verificationToken) {
+      await sendAdminVerificationEmail(newUser.email, newUser.name, verificationToken);
+    }
 
     return NextResponse.json(
       {
         success: true,
-        message: 'Admin user created successfully. Verification link sent to email.',
+        message: autoVerifyPrimaryAdmin
+          ? 'Primary admin created and verified successfully.'
+          : 'Admin user created successfully. Verification link sent to email.',
         user: {
           email: newUser.email,
           name: newUser.name,
