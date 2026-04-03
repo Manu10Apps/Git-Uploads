@@ -45,10 +45,17 @@ export default function AdminHeader() {
 
   const navItems = [
     { label: 'Dashboard', href: '/admin/dashboard', roles: ['admin', 'sub-admin', 'editor'] },
+    { label: 'Articles', href: '/admin/articles', roles: ['admin', 'sub-admin', 'editor'] },
+    { label: 'Create Article', href: '/admin/create-article', roles: ['admin', 'sub-admin', 'editor'] },
+    { label: 'AI Generator', href: '/admin/ai-generator', roles: ['admin'] },
     { label: 'Maintenance', href: '/admin/maintenance', roles: ['admin'] },
     { label: 'Users', href: '/admin/users', roles: ['admin', 'sub-admin'] },
     { label: 'Adverts', href: '/admin/adverts', roles: ['admin'] },
   ].filter((item) => item.roles.includes(role));
+
+  const headerNavItems = navItems.filter(
+    (item) => !['Articles', 'Create Article', 'AI Generator', 'Maintenance', 'Users', 'Adverts'].includes(item.label)
+  );
 
   const isDarkMode = theme === 'dark';
 
@@ -61,11 +68,9 @@ export default function AdminHeader() {
       <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4 md:gap-8 min-w-0">
-            <h1 className="text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white whitespace-nowrap">Admin Panel</h1>
-            
             {/* Desktop Navigation */}
             <nav className="hidden md:flex gap-6">
-              {navItems.map((item) => (
+              {headerNavItems.map((item) => (
                 <button
                   key={item.href}
                   onClick={() => router.push(item.href)}
