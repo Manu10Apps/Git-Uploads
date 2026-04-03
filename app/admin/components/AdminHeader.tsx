@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { LogOut, User, Sun, Moon } from 'lucide-react';
+import { LogOut, User, Menu, X, Sun, Moon, Wrench } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import DatabaseStatus from './DatabaseStatus';
 
@@ -13,6 +13,7 @@ export default function AdminHeader() {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<'admin' | 'sub-admin' | 'editor'>('editor');
   const [isOpen, setIsOpen] = useState(false);
+  const [isNavOpen, setIsNavOpen] = useState(false);
 
   useEffect(() => {
     const adminEmail = localStorage.getItem('adminEmail');
@@ -42,6 +43,16 @@ export default function AdminHeader() {
       .slice(0, 2) || 'A';
   };
 
+  const navItems = [
+    { label: 'Dashboard', href: '/admin/dashboard', roles: ['admin', 'sub-admin', 'editor'] },
+    { label: 'Articles', href: '/admin/articles', roles: ['admin', 'sub-admin', 'editor'] },
+    { label: 'Create Article', href: '/admin/create-article', roles: ['admin', 'sub-admin', 'editor'] },
+    { label: 'AI Generator', href: '/admin/ai-generator', roles: ['admin'] },
+    { label: 'Maintenance', href: '/admin/maintenance', roles: ['admin'] },
+    { label: 'Users', href: '/admin/users', roles: ['admin', 'sub-admin'] },
+    { label: 'Adverts', href: '/admin/adverts', roles: ['admin'] },
+  ].filter((item) => item.roles.includes(role));
+
   const isDarkMode = theme === 'dark';
 
   const handleThemeToggle = () => {
@@ -54,6 +65,23 @@ export default function AdminHeader() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4 md:gap-8 min-w-0">
             <h1 className="text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white whitespace-nowrap">Admin Panel</h1>
+            
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex gap-6">
+              {navItems.map((item) => (
+                <button
+                  key={item.href}
+                  onClick={() => router.push(item.href)}
+                  className={`text-sm font-medium transition-colors ${
+                    pathname === item.href
+                      ? 'text-red-700 dark:text-red-500'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </nav>
           </div>
 
           <div className="flex items-center gap-4">
@@ -71,6 +99,19 @@ export default function AdminHeader() {
                 <Sun className="w-5 h-5 text-yellow-500" />
               ) : (
                 <Moon className="w-5 h-5 text-neutral-700" />
+              )}
+            </button>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsNavOpen(!isNavOpen)}
+              className="md:hidden p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg"
+              aria-label={isNavOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            >
+              {isNavOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
               )}
             </button>
 
@@ -105,6 +146,42 @@ export default function AdminHeader() {
             </div>
           </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {isNavOpen && (
+          <div className="md:hidden border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
+            <nav className="flex flex-col p-4 gap-2">
+              <button
+                type="button"
+                onClick={handleThemeToggle}
+                className="text-left px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 hover:bg-white dark:hover:bg-neutral-900 rounded-lg transition-colors flex items-center gap-2"
+              >
+                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                {isDarkMode ? 'Use Light Theme' : 'Use Dark Theme'}
+              </button>
+
+              {navItems.map((item) => (
+                <button
+                  key={item.href}
+                  onClick={() => {
+                    router.push(item.href);
+                    setIsNavOpen(false);
+                  }}
+                  className={`text-left px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    pathname === item.href
+                      ? 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-white dark:hover:bg-neutral-900'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    {item.href === '/admin/maintenance' && <Wrench className="w-4 h-4" />}
+                    {item.label}
+                  </span>
+                </button>
+              ))}
+            </nav>
+          </div>
+        )}
       </div>
     </>
   );
