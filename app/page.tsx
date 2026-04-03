@@ -30,7 +30,19 @@ export default async function Home() {
         <section className="py-6 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {featuredArticle && featuredPageArticles.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="relative grid grid-cols-1 gap-6 pt-10 md:grid-cols-4">
+                <div className="absolute right-0 top-0 z-10">
+                  <div className="imv-header-nav shrink-0">
+                    <div className="imv-header-nav-title">
+                      INKURU ZIGEZWEHO
+                      <span className="a1" />
+                      <span className="a2" />
+                      <span className="a3" />
+                      <span className="a4" />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="md:col-span-2">
                   <article className="flex flex-col h-full">
                     <Link href={`/article/${featuredArticle.slug}`}>
@@ -50,20 +62,11 @@ export default async function Home() {
                           {featuredArticle.title}
                         </Link>
                       </h3>
-                      <div className="mt-2 flex items-center justify-between gap-4">
-                        <div className="grid flex-1 grid-cols-3 items-center gap-2 text-xs font-bold text-neutral-600 dark:text-neutral-400">
+                      <div className="mt-2">
+                        <div className="grid grid-cols-3 items-center gap-2 text-xs font-bold text-neutral-600 dark:text-neutral-400">
                           <span className="truncate pr-2">{formatCategoryLabel(featuredArticle.category)}</span>
                           <span className="text-center whitespace-nowrap">{featuredDateTime.dateLabel}</span>
                           <span className="text-right whitespace-nowrap">{featuredDateTime.timeLabel}</span>
-                        </div>
-                        <div className="imv-header-nav shrink-0">
-                          <div className="imv-header-nav-title">
-                            INKURU ZIGEZWEHO
-                            <span className="a1" />
-                            <span className="a2" />
-                            <span className="a3" />
-                            <span className="a4" />
-                          </div>
                         </div>
                       </div>
                     </div>
