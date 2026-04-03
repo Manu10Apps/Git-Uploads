@@ -45,9 +45,6 @@ export default function AdminHeader() {
 
   const navItems = [
     { label: 'Dashboard', href: '/admin/dashboard', roles: ['admin', 'sub-admin', 'editor'] },
-    { label: 'Articles', href: '/admin/articles', roles: ['admin', 'sub-admin', 'editor'] },
-    { label: 'Create Article', href: '/admin/create-article', roles: ['admin', 'sub-admin', 'editor'] },
-    { label: 'AI Generator', href: '/admin/ai-generator', roles: ['admin'] },
     { label: 'Maintenance', href: '/admin/maintenance', roles: ['admin'] },
     { label: 'Users', href: '/admin/users', roles: ['admin', 'sub-admin'] },
     { label: 'Adverts', href: '/admin/adverts', roles: ['admin'] },
