@@ -2,6 +2,20 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'node:crypto';
 
+function getJwtSecret(): string {
+  const configured = (process.env.JWT_SECRET || '').trim();
+  if (configured) return configured;
+
+  // Fallback keeps auth operational on misconfigured deployments.
+  // Deployments should still set JWT_SECRET explicitly.
+  const fallbackSeed =
+    (process.env.ADMIN_PASSWORD || '').trim() ||
+    (process.env.ADMIN_EMAIL || '').trim() ||
+    'intambwe-fallback-jwt-secret-change-in-production';
+
+  return crypto.createHash('sha256').update(fallbackSeed).digest('hex');
+}
+
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10);
 }
@@ -12,7 +26,7 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 
 // Phase 2: Reduced JWT expiry (from 7d to 4h)
 export function generateToken(adminId: number): string {
-  return jwt.sign({ adminId }, process.env.JWT_SECRET!, {
+  return jwt.sign({ adminId }, getJwtSecret(), {
     expiresIn: '4h',  // Changed from '7d' to 4 hours
   });
 }
@@ -24,7 +38,7 @@ export function generateRefreshToken(): string {
 
 export function verifyToken(token: string): { adminId: number } | null {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET!) as { adminId: number };
+    return jwt.verify(token, getJwtSecret()) as { adminId: number };
   } catch (error) {
     return null;
   }
