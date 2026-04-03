@@ -118,33 +118,17 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex">
-      {/* Mobile hamburger button - always visible on small screens */}
-      <button
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="md:hidden fixed top-3 left-3 z-50 p-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-md"
-        aria-label="Toggle admin menu"
-      >
-        {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </button>
 
-      {/* Mobile overlay */}
-      {isMobileMenuOpen && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
 
-      {/* Sidebar - slide-in on mobile, fixed on desktop */}
+      {/* Sidebar - icon-only on phones, full on md+ */}
       <div
         className={`
-          fixed h-screen flex-col z-40 bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 transition-all duration-300
-          ${isMobileMenuOpen ? 'flex w-64 translate-x-0' : 'flex -translate-x-full md:translate-x-0'}
-          ${isSidebarOpen ? 'md:w-64' : 'md:w-20'}
+          fixed h-screen flex flex-col z-40 bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 transition-all duration-300
+          ${isSidebarOpen ? 'w-16 md:w-64' : 'w-16 md:w-20'}
         `}
       >
         <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-          {isSidebarOpen && <h2 className="text-neutral-900 dark:text-white font-bold text-lg">Admin Panel</h2>}
+          {isSidebarOpen && <h2 className="hidden md:block text-neutral-900 dark:text-white font-bold text-lg">Admin Panel</h2>}
           <button
             onClick={() => {
               setIsSidebarOpen(!isSidebarOpen);
@@ -175,29 +159,29 @@ export default function AdminLayout({
                 }`}
               >
                 <Icon className="w-5 h-5 flex-shrink-0" />
-                <span className={`font-medium ${isSidebarOpen ? '' : 'md:hidden'}`}>{item.label}</span>
+                <span className={`font-medium hidden ${isSidebarOpen ? 'md:inline' : ''}`}>{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
         <div className="p-3 sm:p-4 border-t border-neutral-200 dark:border-neutral-800 space-y-3">
-          <div className="text-xs text-neutral-600 dark:text-neutral-400 truncate text-center py-2 px-2 bg-neutral-100 dark:bg-neutral-800 rounded">
+          <div className="hidden md:block text-xs text-neutral-600 dark:text-neutral-400 truncate text-center py-2 px-2 bg-neutral-100 dark:bg-neutral-800 rounded">
             {email}
             {role ? ` (${role})` : ''}
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-4 py-2 rounded-lg bg-red-700/20 text-red-400 hover:bg-red-700/40 transition-colors text-sm font-medium min-h-[44px]"
+            className="w-full flex items-center justify-center gap-2 px-2 md:px-4 py-2 rounded-lg bg-red-700/20 text-red-400 hover:bg-red-700/40 transition-colors text-sm font-medium min-h-[44px]"
           >
-            <LogOut className="w-4 h-4" />
-            <span>Logout</span>
+            <LogOut className="w-4 h-4 flex-shrink-0" />
+            <span className="hidden md:inline">Logout</span>
           </button>
         </div>
       </div>
 
-      <div className={`${isSidebarOpen ? 'md:ml-64' : 'md:ml-20'} ml-0 flex-1 transition-all duration-300`}>
-        <div className="min-h-screen pt-14 md:pt-0">{children}</div>
+      <div className={`${isSidebarOpen ? 'ml-16 md:ml-64' : 'ml-16 md:ml-20'} flex-1 transition-all duration-300`}>
+        <div className="min-h-screen">{children}</div>
       </div>
     </div>
   );
