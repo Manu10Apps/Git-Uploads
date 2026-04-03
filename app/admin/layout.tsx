@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { LogOut, Menu, X, Zap, FileText, BarChart3, Users, Loader2, Wrench, BookOpen } from 'lucide-react';
+import { LogOut, Menu, X, Zap, FileText, BarChart3, Users, Loader2, Wrench, BookOpen, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 
 type AdminRole = 'admin' | 'sub-admin' | 'editor';
@@ -82,6 +82,7 @@ export default function AdminLayout({
   };
 
   const navItems = [
+    { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['admin', 'sub-admin', 'editor'] },
     { label: 'Articles', href: '/admin/articles', icon: FileText, roles: ['admin', 'sub-admin', 'editor'] },
     { label: 'Create Article', href: '/admin/create-article', icon: FileText, roles: ['admin', 'sub-admin', 'editor'] },
     { label: 'E-Paper', href: '/admin/epaper', icon: BookOpen, roles: ['admin', 'sub-admin', 'editor'] },
