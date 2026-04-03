@@ -34,7 +34,7 @@ export default async function Home() {
                 <div className="absolute bottom-0 left-1/2 z-10 -translate-x-1/2 rotate-180 md:left-auto md:right-0 md:translate-x-0">
                   <div className="imv-header-nav shrink-0">
                     <div className="imv-header-nav-title">
-                      <span className="-rotate-180 inline-block">INKURU ZIGEZWEHO</span>
+                      <span className="-rotate-180 inline-block">IZIGEZWEHO</span>
                       <span className="a1" />
                       <span className="a2" />
                       <span className="a3" />
