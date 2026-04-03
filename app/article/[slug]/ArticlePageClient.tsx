@@ -708,7 +708,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {article.gallery.map((item, index) => (
                   <div key={index} className="rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 hover:shadow-lg transition-shadow">
-                    <div className="h-64 sm:h-72 lg:h-80">
+                    <div className="aspect-square w-full">
                       <ArticleImage
                         src={item.url}
                         alt={item.caption || `Gallery image ${index + 1}`}
