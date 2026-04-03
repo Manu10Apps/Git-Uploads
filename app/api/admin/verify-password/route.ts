@@ -200,6 +200,9 @@ export async function POST(request: NextRequest) {
       normalizedPassword.length > 0 &&
       normalizedPassword === bootstrapPassword
     ) {
+      let bootstrapAdminId = 1;
+      let bootstrapAdminName = 'IM Admin';
+
       try {
         const { hashPassword } = await import('@/lib/auth');
         const hashed = await hashPassword(normalizedPassword);
@@ -223,41 +226,45 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        clearFailedAttempts(normalizedEmail, ip);
-
-        const token = generateToken(admin.id);
-        const refreshTokenString = generateRefreshToken();
-        const refreshTokenExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-
-        try {
-          await prisma.refreshToken.create({
-            data: {
-              adminUserId: admin.id,
-              token: refreshTokenString,
-              expiresAt: refreshTokenExpiresAt,
-            },
-          });
-        } catch {
-          // Non-blocking: refresh token storage optional
-        }
-
-        return NextResponse.json(
-          {
-            success: true,
-            token,
-            refreshToken: refreshTokenString,
-            user: {
-              id: admin.id,
-              email: admin.email,
-              role: admin.role,
-              name: admin.name,
-            },
-          },
-          { status: 200 }
-        );
+        bootstrapAdminId = admin.id;
+        bootstrapAdminName = admin.name;
       } catch (bootstrapError) {
-        console.warn('Bootstrap admin login fallback failed:', bootstrapError);
+        // Keep login available even if DB schema is partially migrated.
+        console.warn('Bootstrap admin DB heal failed, continuing with token login:', bootstrapError);
       }
+
+      clearFailedAttempts(normalizedEmail, ip);
+
+      const token = generateToken(bootstrapAdminId);
+      const refreshTokenString = generateRefreshToken();
+      const refreshTokenExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+      try {
+        await prisma.refreshToken.create({
+          data: {
+            adminUserId: bootstrapAdminId,
+            token: refreshTokenString,
+            expiresAt: refreshTokenExpiresAt,
+          },
+        });
+      } catch {
+        // Non-blocking: refresh token storage optional
+      }
+
+      return NextResponse.json(
+        {
+          success: true,
+          token,
+          refreshToken: refreshTokenString,
+          user: {
+            id: bootstrapAdminId,
+            email: bootstrapEmail,
+            role: 'admin',
+            name: bootstrapAdminName,
+          },
+        },
+        { status: 200 }
+      );
     }
 
     // --- DATABASE CHECK ---
