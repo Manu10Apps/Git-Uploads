@@ -1,5 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateToken, verifyPassword } from '@/lib/auth';
+import { generateToken, verifyPassword, generateRefreshToken } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+
+// FIX (Phase 1): Simple in-memory rate limiter to prevent brute-force
+// Track failed login attempts per IP + email; reset after 15 minutes
+const loginAttempts = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_ATTEMPTS = 5;
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+function getClientIP(request: NextRequest): string {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip')?.trim() ||
+    'unknown'
+  );
+}
+
+function checkRateLimit(email: string, ip: string): { allowed: boolean; retryAfterSeconds?: number } {
+  const key = `${email}:${ip}`;
+  const now = Date.now();
+  const attempt = loginAttempts.get(key);
+
+  if (!attempt || now > attempt.resetTime) {
+    // First attempt or window expired
+    return { allowed: true };
+  }
+
+  if (attempt.count >= RATE_LIMIT_ATTEMPTS) {
+    const retryAfterSeconds = Math.ceil((attempt.resetTime - now) / 1000);
+    return { allowed: false, retryAfterSeconds };
+  }
+
+  return { allowed: true };
+}
+
+function recordFailedAttempt(email: string, ip: string): void {
+  const key = `${email}:${ip}`;
+  const now = Date.now();
+  const attempt = loginAttempts.get(key);
+
+  if (!attempt || now > attempt.resetTime) {
+    loginAttempts.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+  } else {
+    attempt.count++;
+  }
+}
+
+function clearFailedAttempts(email: string, ip: string): void {
+  const key = `${email}:${ip}`;
+  loginAttempts.delete(key);
+}
 
 export async function GET() {
   return NextResponse.json(
@@ -25,12 +75,25 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const email = String(body?.email || '').trim().toLowerCase();
     const password = String(body?.password || '');
+    const ip = getClientIP(request);
 
     // Validate inputs
     if (!email || !password) {
       return NextResponse.json(
         { success: false, message: 'Email and password are required' },
         { status: 400 }
+      );
+    }
+
+    // FIX (Phase 1): Check rate limit before attempting auth
+    const rateCheck = checkRateLimit(email, ip);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Too many login attempts. Please try again in ${rateCheck.retryAfterSeconds} seconds.`,
+        },
+        { status: 429, headers: { 'Retry-After': String(rateCheck.retryAfterSeconds) } }
       );
     }
 
@@ -83,10 +146,27 @@ export async function POST(request: NextRequest) {
 
       const token = generateToken(envAdminId);
 
+      // Phase 2: Generate refresh token for env login
+      const refreshTokenString = generateRefreshToken();
+      const refreshTokenExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+      try {
+        await prisma.refreshToken.create({
+          data: {
+            adminUserId: envAdminId,
+            token: refreshTokenString,
+            expiresAt: refreshTokenExpiresAt,
+          },
+        });
+      } catch {
+        // Non-blocking: refresh token optional
+      }
+
       return NextResponse.json(
         {
           success: true,
-          token,
+          token,  // Access token (4h expiry)
+          refreshToken: refreshTokenString,  // Phase 2: Refresh token (30d expiry)
           user: {
             id: envAdminId,
             email: envEmail,
@@ -156,16 +236,19 @@ export async function POST(request: NextRequest) {
         }
 
         if (!passwordMatch) {
+          // FIX (Phase 1): Record failed attempt for rate limiting
+          recordFailedAttempt(email, ip);
           return NextResponse.json(
             { success: false, message: 'Invalid email or password' },
             { status: 200 }
           );
         }
 
-        const requiresVerification =
-          user.emailVerified === false && Boolean(user.emailVerificationToken);
-
-        if (requiresVerification) {
+        // FIX: Mandatory email verification — user.emailVerified must be true
+        // Previously allowed bypass if token was null; now enforces strict verification
+        if (user.emailVerified !== true) {
+          // FIX (Phase 1): Record failed attempt for rate limiting
+          recordFailedAttempt(email, ip);
           return NextResponse.json(
             {
               success: false,
@@ -176,12 +259,33 @@ export async function POST(request: NextRequest) {
           );
         }
 
+        // FIX (Phase 1): Clear rate limit on successful login
+        clearFailedAttempts(email, ip);
+
         const token = generateToken(user.id);
+
+        // Phase 2: Generate and store refresh token
+        const refreshTokenString = generateRefreshToken();
+        const refreshTokenExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+        try {
+          await prisma.refreshToken.create({
+            data: {
+              adminUserId: user.id,
+              token: refreshTokenString,
+              expiresAt: refreshTokenExpiresAt,
+            },
+          });
+        } catch (tokenError) {
+          // Non-blocking: refresh token storage optional
+          console.warn('Failed to store refresh token:', tokenError);
+        }
 
         return NextResponse.json(
           {
             success: true,
-            token,
+            token,  // Access token (4h expiry)
+            refreshToken: refreshTokenString,  // Phase 2: Refresh token (30d expiry)
             user: {
               id: user.id,
               email: user.email,
