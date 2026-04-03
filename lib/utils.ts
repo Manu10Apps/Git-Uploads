@@ -11,6 +11,51 @@ export function formatDate(date: string | Date): string {
   }).format(d);
 }
 
+export function formatKinyarwandaDateTime(dateInput?: string | Date | null): {
+  dateLabel: string;
+  timeLabel: string;
+} {
+  const fallback = {
+    dateLabel: 'N/A',
+    timeLabel: '00h00min',
+  };
+
+  if (!dateInput) {
+    return fallback;
+  }
+
+  const parsedDate = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  if (!(parsedDate instanceof Date) || Number.isNaN(parsedDate.getTime())) {
+    return fallback;
+  }
+
+  const kinyarwandaMonths = [
+    'Mutarama',
+    'Gashyantare',
+    'Werurwe',
+    'Mata',
+    'Gicurasi',
+    'Kamena',
+    'Nyakanga',
+    'Kanama',
+    'Nzeri',
+    'Ukwakira',
+    'Ugushyingo',
+    'Ukuboza',
+  ];
+
+  const day = String(parsedDate.getDate()).padStart(2, '0');
+  const monthIndex = parsedDate.getMonth();
+  const year = parsedDate.getFullYear();
+  const hours = String(parsedDate.getHours()).padStart(2, '0');
+  const minutes = String(parsedDate.getMinutes()).padStart(2, '0');
+
+  return {
+    dateLabel: `${day} ${kinyarwandaMonths[monthIndex]} ${year}`,
+    timeLabel: `${hours}h${minutes}min`,
+  };
+}
+
 export function calculateReadTime(content: string): number {
   const wordsPerMinute = 200;
   const words = content.split(/\s+/).length;
