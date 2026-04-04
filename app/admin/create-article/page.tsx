@@ -745,7 +745,7 @@ export default function CreateArticlePage() {
                           {item.url.substring(0, 60)}...
                         </p>
                         {item.caption && (
-                          <p className="text-sm text-neutral-700 dark:text-neutral-300 mt-2 italic">
+                          <p className="text-sm text-neutral-700 dark:text-neutral-300 mt-2">
                             "{item.caption}"
                           </p>
                         )}
