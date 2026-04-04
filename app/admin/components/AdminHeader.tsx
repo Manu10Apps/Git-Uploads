@@ -50,7 +50,7 @@ export default function AdminHeader() {
   return (
     <>
       <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-end">
+        <div className="max-w-7xl mx-auto pl-14 pr-3 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-end">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             {/* Database Status */}
             {role === 'admin' && (
