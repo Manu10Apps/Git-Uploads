@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Wrench, CheckCircle2, AlertTriangle, Save, RotateCcw } from 'lucide-react';
 import AdminHeader from '@/app/admin/components/AdminHeader';
-import { Footer } from '@/app/components';
 
 const DEFAULT_MESSAGE = 'Turimo gukora ivugurura rito. Turagaruka vuba.';
 
@@ -294,7 +293,6 @@ export default function MaintenancePage() {
           </section>
         </div>
       </main>
-      <Footer />
     </>
   );
 }
