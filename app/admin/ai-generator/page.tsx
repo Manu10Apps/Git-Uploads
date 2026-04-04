@@ -173,24 +173,24 @@ Requirements:
     <>
       <AdminHeader />
       <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
           {/* Header */}
-          <div className="mb-12">
+          <div className="mb-6 sm:mb-12">
             <div className="flex items-center gap-3 mb-2">
-              <Zap className="w-8 h-8 text-yellow-500" />
-              <h1 className="text-4xl font-serif font-bold text-neutral-900 dark:text-white">
+              <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500" />
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-neutral-900 dark:text-white">
                 AI News Generator
               </h1>
             </div>
-            <p className="text-neutral-600 dark:text-neutral-400 text-lg">
+            <p className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-lg">
               Generate quality news articles using AI. Perfect for quick article drafts!
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Form Section */}
-            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-8 shadow-sm">
-              <h2 className="text-2xl font-semibold text-neutral-900 dark:text-white mb-6">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4 sm:p-8 shadow-sm">
+              <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white mb-6">
                 Article Details
               </h2>
 
@@ -309,8 +309,8 @@ Requirements:
             </div>
 
             {/* Output Section */}
-            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-8 shadow-sm">
-              <h2 className="text-2xl font-semibold text-neutral-900 dark:text-white mb-6">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4 sm:p-8 shadow-sm">
+              <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white mb-6">
                 Generated Content
               </h2>
 

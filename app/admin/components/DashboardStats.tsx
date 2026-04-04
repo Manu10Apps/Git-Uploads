@@ -135,23 +135,23 @@ export default function DashboardStats() {
   return (
     <div className="space-y-6">
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         {statCards.map((stat) => (
           <div
             key={stat.label}
-            className={`${stat.bgColor} border border-neutral-200 dark:border-neutral-700 rounded-lg p-6 transition-transform hover:scale-105`}
+            className={`${stat.bgColor} border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 sm:p-6 transition-transform hover:scale-105`}
           >
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+              <div className="min-w-0 mr-2">
+                <p className="text-xs sm:text-sm font-medium text-neutral-600 dark:text-neutral-400 truncate">
                   {stat.label}
                 </p>
-                <p className={`text-3xl font-bold mt-2 ${stat.textColor}`}>
+                <p className={`text-2xl sm:text-3xl font-bold mt-2 ${stat.textColor}`}>
                   {stat.value}
                 </p>
               </div>
-              <div className={`${stat.color} p-3 rounded-full`}>
-                <stat.icon className="w-6 h-6 text-white" />
+              <div className={`${stat.color} p-2 sm:p-3 rounded-full flex-shrink-0`}>
+                <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
           </div>

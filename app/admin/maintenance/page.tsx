@@ -185,7 +185,7 @@ export default function MaintenancePage() {
     <>
       <AdminHeader />
       <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 space-y-8">
           <section className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 sm:p-8 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -193,7 +193,7 @@ export default function MaintenancePage() {
                   <Wrench className="w-4 h-4" />
                   Maintenance Control
                 </div>
-                <h1 className="text-3xl font-serif font-bold text-neutral-900 dark:text-white mb-2">Site Maintenance</h1>
+                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-neutral-900 dark:text-white mb-2">Site Maintenance</h1>
                 <p className="text-neutral-600 dark:text-neutral-400">
                   Enable or disable maintenance mode and update the public notice text.
                 </p>
