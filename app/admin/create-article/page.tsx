@@ -2,7 +2,7 @@
 
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Header, Footer, CategorySelect } from '@/app/components';
+import { CategorySelect } from '@/app/components';
 import { AlertCircle, CheckCircle, Upload, X, Lock } from 'lucide-react';
 import AdminHeader from '@/app/admin/components/AdminHeader';
 import ContentEditor from '@/app/admin/components/ContentEditor';
@@ -988,7 +988,6 @@ export default function CreateArticlePage() {
           </div>
         </div>
       </main>
-      <Footer />
     </>
   );
 }

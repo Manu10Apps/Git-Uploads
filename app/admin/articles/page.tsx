@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Header, Footer } from '@/app/components';
 import { Edit2, Trash2, Plus } from 'lucide-react';
 import AdminHeader from '@/app/admin/components/AdminHeader';
 import { ArticleImage } from '@/app/components/ArticleImage';

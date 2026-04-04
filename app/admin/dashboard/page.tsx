@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { AlertTriangle, CheckCircle2, ImageIcon, RefreshCcw, ShieldCheck, Wrench, XCircle } from 'lucide-react';
 import AdminHeader from '@/app/admin/components/AdminHeader';
 import DashboardStats from '@/app/admin/components/DashboardStats';
-import { Footer } from '@/app/components';
 
 type FixImagesApiResponse = {
   success: boolean;
@@ -323,7 +322,6 @@ export default function DashboardPage() {
           )}
         </div>
       </main>
-      <Footer />
     </>
   );
 }
