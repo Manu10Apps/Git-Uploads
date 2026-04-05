@@ -66,6 +66,7 @@ export default async function Home() {
                         <span className="truncate pr-2">{formatCategoryLabel(featuredArticle.category)}</span>
                         <div className="flex items-center gap-2 ml-auto">
                           <span className="whitespace-nowrap">{featuredDateTime.timeLabel}</span>
+                          <span className="mx-0.5">·</span>
                           <span className="whitespace-nowrap">{featuredDateTime.dateLabel}</span>
                         </div>
                       </div>
