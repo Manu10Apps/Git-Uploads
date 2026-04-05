@@ -281,9 +281,10 @@ model EpaperEdition {
   title        String
   issueDate    DateTime  @db.Date     // Date when the edition was published
   coverImage   String?                // URL to cover image (for preview)
-  pdfUrl       String                 // URL to the PDF file
+  pdfUrl       String?                // URL to the PDF file (null for drafts pending upload)
   fileSize     Int?                   // File size in bytes
   pageCount    Int       @default(0)  // Number of pages
+  status       String    @default("published") // "draft" | "published"
   isCurrent    Boolean   @default(false) // Mark as current/latest issue
   isArchived   Boolean   @default(false) // Soft delete indicator
   createdBy    Int
@@ -295,6 +296,7 @@ model EpaperEdition {
   @@unique([issueDate])
   @@index([isCurrent])
   @@index([isArchived])
+  @@index([status])
   @@index([createdAt])
   @@index([issueDate])
   @@map("epaper_editions")

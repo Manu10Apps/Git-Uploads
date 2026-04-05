@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import Image from 'next/image';
-import { Upload, Download, Trash2, Star, Archive, AlertCircle } from 'lucide-react';
+import { Upload, Download, Trash2, Star, Archive, AlertCircle, FileText, Send, RefreshCw } from 'lucide-react';
 import { formatFileSize, formatIssueDate } from '@/lib/epaper-client';
 
 interface EpaperEdition {
@@ -10,9 +10,10 @@ interface EpaperEdition {
   title: string;
   issueDate: Date;
   coverImage?: string;
-  pdfUrl: string;
+  pdfUrl?: string;
   fileSize?: number;
   pageCount: number;
+  status: string; // 'draft' | 'published'
   isCurrent: boolean;
   isArchived: boolean;
   admin: { name: string };
@@ -23,10 +24,12 @@ export function EpaperManager() {
   const [editions, setEditions] = useState<EpaperEdition[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [publishingId, setPublishingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [filterArchived, setFilterArchived] = useState(false);
+  const [showDrafts, setShowDrafts] = useState(true);
 
   const getAuthHeader = (): HeadersInit => {
     const token = localStorage.getItem('adminToken');
@@ -37,7 +40,8 @@ export function EpaperManager() {
   const fetchEditions = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/epaper?archived=${filterArchived}`);
+      const params = new URLSearchParams({ archived: String(filterArchived) });
+      const response = await fetch(`/api/epaper?${params}`);
       const data = await response.json();
       if (data.success) {
         setEditions(data.data);
@@ -76,7 +80,7 @@ export function EpaperManager() {
       const data = await response.json();
 
       if (data.success) {
-        setSuccessMessage('Edition uploaded successfully!');
+        setSuccessMessage(data.message || 'Edition saved successfully!');
         setShowUploadForm(false);
         e.currentTarget.reset();
         fetchEditions();
@@ -88,6 +92,53 @@ export function EpaperManager() {
       console.error(err);
     } finally {
       setUploading(false);
+    }
+  };
+
+  // Upload PDF for an existing draft and publish it
+  const handlePublishDraft = async (id: number, file: File | null, publish: boolean) => {
+    setPublishingId(id);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      if (file) {
+        // Use multipart upload when providing PDF
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('publish', String(publish));
+        const response = await fetch(`/api/epaper/${id}`, {
+          method: 'PUT',
+          headers: { ...getAuthHeader() },
+          body: formData,
+        });
+        const data = await response.json();
+        if (data.success) {
+          setSuccessMessage(data.message || 'Draft published!');
+          fetchEditions();
+        } else {
+          setError(data.error || 'Failed to publish draft');
+        }
+      } else {
+        // Publish without new file (draft already has a PDF)
+        const response = await fetch(`/api/epaper/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+          body: JSON.stringify({ status: 'published' }),
+        });
+        const data = await response.json();
+        if (data.success) {
+          setSuccessMessage('Draft published successfully!');
+          fetchEditions();
+        } else {
+          setError(data.error || 'Failed to publish');
+        }
+      }
+    } catch (err) {
+      setError('Failed to publish draft');
+      console.error(err);
+    } finally {
+      setPublishingId(null);
     }
   };
 
@@ -165,7 +216,7 @@ export function EpaperManager() {
         <div>
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">E-Paper Manager</h2>
           <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
-            Manage and publish weekly digital editions
+            Manage and publish weekly digital editions. Drafts are auto-created every Monday.
           </p>
         </div>
         <button
@@ -256,9 +307,40 @@ export function EpaperManager() {
             </button>
             <button
               type="submit"
+              name="isDraft"
+              value="true"
               disabled={uploading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
+              className="flex items-center gap-2 px-4 py-2 bg-neutral-600 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-50 transition"
+              onClick={(e) => {
+                const form = e.currentTarget.form;
+                if (form) {
+                  let input = form.querySelector<HTMLInputElement>('input[name="isDraft"]');
+                  if (!input) {
+                    input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'isDraft';
+                    form.appendChild(input);
+                  }
+                  input.value = 'true';
+                }
+              }}
             >
+              <FileText size={16} />
+              {uploading ? 'Saving...' : 'Save as Draft'}
+            </button>
+            <button
+              type="submit"
+              disabled={uploading}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
+              onClick={(e) => {
+                const form = e.currentTarget.form;
+                if (form) {
+                  const input = form.querySelector<HTMLInputElement>('input[name="isDraft"]');
+                  if (input) input.value = 'false';
+                }
+              }}
+            >
+              <Upload size={16} />
               {uploading ? 'Uploading...' : 'Upload Edition'}
             </button>
           </div>
@@ -266,7 +348,7 @@ export function EpaperManager() {
       )}
 
       {/* Filters */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-4">
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -276,6 +358,22 @@ export function EpaperManager() {
           />
           <span className="text-sm text-neutral-700 dark:text-neutral-300">Show Archived</span>
         </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={showDrafts}
+            onChange={(e) => setShowDrafts(e.target.checked)}
+            className="w-4 h-4 rounded"
+          />
+          <span className="text-sm text-neutral-700 dark:text-neutral-300">Show Drafts</span>
+        </label>
+        <button
+          onClick={fetchEditions}
+          className="flex items-center gap-1 px-3 py-1 text-sm bg-neutral-100 dark:bg-neutral-700 rounded hover:bg-neutral-200 dark:hover:bg-neutral-600 transition"
+        >
+          <RefreshCw size={14} />
+          Refresh
+        </button>
       </div>
 
       {/* Editions List */}
@@ -286,10 +384,12 @@ export function EpaperManager() {
         </div>
       ) : editions.length > 0 ? (
         <div className="space-y-4">
-          {editions.map((edition) => (
+          {editions
+            .filter((ed) => showDrafts || ed.status !== 'draft')
+            .map((edition) => (
             <div
               key={edition.id}
-              className="bg-white dark:bg-neutral-800 rounded-lg p-4 flex flex-col sm:flex-row gap-4 hover:shadow-lg transition"
+              className={`bg-white dark:bg-neutral-800 rounded-lg p-4 flex flex-col sm:flex-row gap-4 hover:shadow-lg transition ${edition.status === 'draft' ? 'border-2 border-dashed border-amber-400 dark:border-amber-600' : ''}`}
             >
               {/* Cover Thumbnail */}
               {edition.coverImage ? (
@@ -303,8 +403,11 @@ export function EpaperManager() {
                   />
                 </div>
               ) : (
-                <div className="sm:w-32 h-40 sm:h-32 flex-shrink-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-                  <Upload size={32} className="text-white opacity-50" />
+                <div className={`sm:w-32 h-40 sm:h-32 flex-shrink-0 rounded-lg flex items-center justify-center ${edition.status === 'draft' ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-gradient-to-br from-blue-400 to-blue-600'}`}>
+                  {edition.status === 'draft'
+                    ? <FileText size={32} className="text-amber-500 dark:text-amber-400 opacity-80" />
+                    : <Upload size={32} className="text-white opacity-50" />
+                  }
                 </div>
               )}
 
@@ -317,11 +420,18 @@ export function EpaperManager() {
                       {formatIssueDate(new Date(edition.issueDate))}
                     </p>
                   </div>
-                  {edition.isCurrent && (
-                    <span className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 text-xs font-semibold rounded">
-                      Current Issue
-                    </span>
-                  )}
+                  <div className="flex gap-2 flex-shrink-0">
+                    {edition.status === 'draft' && (
+                      <span className="px-2 py-1 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-xs font-semibold rounded">
+                        Draft
+                      </span>
+                    )}
+                    {edition.isCurrent && edition.status !== 'draft' && (
+                      <span className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 text-xs font-semibold rounded">
+                        Current Issue
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap gap-4 text-xs text-neutral-600 dark:text-neutral-400 mb-4">
@@ -333,21 +443,61 @@ export function EpaperManager() {
                   )}
                   <span>👤 {edition.admin.name}</span>
                   <span>📅 {new Date(edition.createdAt).toLocaleDateString()}</span>
+                  {edition.status === 'draft' && !edition.pdfUrl && (
+                    <span className="text-amber-600 dark:text-amber-400 font-medium">⚠ PDF not uploaded yet</span>
+                  )}
                 </div>
 
                 {/* Actions */}
                 <div className="flex flex-wrap gap-2">
-                  <a
-                    href={edition.pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 px-3 py-1 text-sm bg-neutral-100 dark:bg-neutral-700 rounded hover:bg-neutral-200 dark:hover:bg-neutral-600 transition"
-                  >
-                    <Download size={14} />
-                    Download
-                  </a>
+                  {/* Draft: upload PDF & publish */}
+                  {edition.status === 'draft' && (
+                    <>
+                      <label className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-900/60 transition cursor-pointer">
+                        <Upload size={14} />
+                        {edition.pdfUrl ? 'Replace PDF' : 'Upload PDF'}
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0] ?? null;
+                            if (file) await handlePublishDraft(edition.id, file, false);
+                            e.target.value = '';
+                          }}
+                        />
+                      </label>
+                      <button
+                        onClick={async () => {
+                          if (edition.pdfUrl) {
+                            await handlePublishDraft(edition.id, null, true);
+                          } else {
+                            setError('Upload a PDF before publishing');
+                          }
+                        }}
+                        disabled={publishingId === edition.id}
+                        className="flex items-center gap-1 px-3 py-1 text-sm bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded hover:bg-green-200 dark:hover:bg-green-900/60 disabled:opacity-50 transition"
+                      >
+                        <Send size={14} />
+                        {publishingId === edition.id ? 'Publishing...' : 'Publish'}
+                      </button>
+                    </>
+                  )}
 
-                  {!edition.isCurrent && !filterArchived && (
+                  {/* Download — only for editions with PDF */}
+                  {edition.pdfUrl && (
+                    <a
+                      href={edition.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 px-3 py-1 text-sm bg-neutral-100 dark:bg-neutral-700 rounded hover:bg-neutral-200 dark:hover:bg-neutral-600 transition"
+                    >
+                      <Download size={14} />
+                      Download
+                    </a>
+                  )}
+
+                  {!edition.isCurrent && !filterArchived && edition.status !== 'draft' && (
                     <button
                       onClick={() => handleMarkAsCurrent(edition.id)}
                       className="flex items-center gap-1 px-3 py-1 text-sm bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 rounded hover:bg-yellow-200 dark:hover:bg-yellow-900/60 transition"

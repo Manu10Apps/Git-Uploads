@@ -24,12 +24,14 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const archived = searchParams.get('archived') === 'true';
     const current = searchParams.get('current') === 'true';
+    const status = searchParams.get('status'); // 'draft' | 'published' | null (all)
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
     const where: any = {};
     if (archived !== undefined) where.isArchived = archived;
     if (current !== undefined) where.isCurrent = current;
+    if (status) where.status = status;
 
     const [editions, total] = await Promise.all([
       prisma.epaperEdition.findMany({
@@ -42,7 +44,10 @@ export async function GET(req: NextRequest) {
           title: true,
           issueDate: true,
           coverImage: true,
+          pdfUrl: true,
+          fileSize: true,
           pageCount: true,
+          status: true,
           isCurrent: true,
           createdAt: true,
           admin: { select: { id: true, name: true, email: true } },
@@ -69,7 +74,8 @@ export async function GET(req: NextRequest) {
 
 /**
  * POST /api/epaper
- * Upload a new epaper edition
+ * Upload a new epaper edition, or save a manual draft (no PDF required).
+ * Pass isDraft=true in FormData to create a draft without a PDF file.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -82,30 +88,24 @@ export async function POST(req: NextRequest) {
     }
 
     const formData = await req.formData();
-    const file = formData.get('file') as File;
+    const file = formData.get('file') as File | null;
     const title = formData.get('title') as string;
     const issueDate = formData.get('issueDate') as string;
     const coverImage = formData.get('coverImage') as string;
+    const isDraft = formData.get('isDraft') === 'true';
 
-    if (!file || !title || !issueDate) {
+    if (!title || !issueDate) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields: file, title, issueDate' },
+        { success: false, error: 'Missing required fields: title, issueDate' },
         { status: 400 }
       );
     }
 
-    // Validate file is PDF
-    if (!file.type.includes('pdf')) {
+    // PDF is required unless saving as draft
+    if (!isDraft && !file) {
       return NextResponse.json(
-        { success: false, error: 'Only PDF files are allowed' },
+        { success: false, error: 'PDF file is required to publish an edition' },
         { status: 400 }
-      );
-    }
-
-    if (file.size > MAX_PDF_SIZE_BYTES) {
-      return NextResponse.json(
-        { success: false, error: 'PDF exceeds 25MB limit. Please upload a smaller file.' },
-        { status: 413 }
       );
     }
 
@@ -134,19 +134,41 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Save PDF file to public/uploads/epaper
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'epaper');
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true });
+    let fileUrl: string | null = null;
+    let fileSize: number | null = null;
+
+    if (file) {
+      // Validate file is PDF
+      if (!file.type.includes('pdf')) {
+        return NextResponse.json(
+          { success: false, error: 'Only PDF files are allowed' },
+          { status: 400 }
+        );
+      }
+
+      if (file.size > MAX_PDF_SIZE_BYTES) {
+        return NextResponse.json(
+          { success: false, error: 'PDF exceeds 25MB limit. Please upload a smaller file.' },
+          { status: 413 }
+        );
+      }
+
+      // Save PDF file to public/uploads/epaper
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'epaper');
+      if (!existsSync(uploadsDir)) {
+        await mkdir(uploadsDir, { recursive: true });
+      }
+
+      const fileName = `${new Date(issueDate).getTime()}-${title.replace(/\s+/g, '-').toLowerCase()}.pdf`;
+      const filePath = path.join(uploadsDir, fileName);
+      const buffer = await file.arrayBuffer();
+      await writeFile(filePath, Buffer.from(buffer));
+
+      fileUrl = `/uploads/epaper/${fileName}`;
+      fileSize = buffer.byteLength;
     }
 
-    const fileName = `${new Date(issueDate).getTime()}-${title.replace(/\s+/g, '-').toLowerCase()}.pdf`;
-    const filePath = path.join(uploadsDir, fileName);
-    const buffer = await file.arrayBuffer();
-    await writeFile(filePath, Buffer.from(buffer));
-
-    const fileUrl = `/uploads/epaper/${fileName}`;
-    const fileSize = buffer.byteLength;
+    const status = isDraft ? 'draft' : 'published';
 
     // Create database record
     const edition = await prisma.epaperEdition.create({
@@ -156,7 +178,8 @@ export async function POST(req: NextRequest) {
         coverImage: coverImage || null,
         pdfUrl: fileUrl,
         fileSize,
-        pageCount: 0, // Could be calculated from PDF metadata
+        pageCount: 0,
+        status,
         createdBy: adminId,
       },
       include: {
@@ -164,8 +187,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // If this is the first edition, mark it as current
-    if (!coverImage) {
+    // If publishing and no current issue exists, set this as current
+    if (!isDraft) {
       const existingCurrent = await prisma.epaperEdition.findFirst({
         where: { isCurrent: true },
       });
@@ -180,7 +203,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       data: edition,
-      message: 'Edition uploaded successfully',
+      message: isDraft ? 'Draft saved successfully' : 'Edition uploaded successfully',
     });
   } catch (error) {
     console.error('Error uploading epaper:', error);

@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { unlink } from 'fs/promises';
+import { unlink, writeFile, mkdir } from 'fs/promises';
 import path from 'path';
+import { existsSync } from 'fs';
 import { verifyToken } from '@/lib/auth';
+
+const MAX_PDF_SIZE_BYTES = 25 * 1024 * 1024;
 
 interface RouteContext {
   params: Promise<{
@@ -68,8 +71,95 @@ export async function PUT(req: NextRequest, context: RouteContext) {
 
     const params = await context.params;
     const id = parseInt(params.id);
+
+    const contentType = req.headers.get('content-type') || '';
+
+    // Support multipart/form-data for publishing a draft with PDF upload
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await req.formData();
+      const file = formData.get('file') as File | null;
+      const title = formData.get('title') as string | null;
+      const coverImage = formData.get('coverImage') as string | null;
+      const publish = formData.get('publish') === 'true';
+
+      const existing = await prisma.epaperEdition.findUnique({ where: { id } });
+      if (!existing) {
+        return NextResponse.json({ success: false, error: 'Edition not found' }, { status: 404 });
+      }
+
+      let fileUrl: string | null = existing.pdfUrl;
+      let fileSize: number | null = existing.fileSize ?? null;
+
+      if (file) {
+        if (!file.type.includes('pdf')) {
+          return NextResponse.json(
+            { success: false, error: 'Only PDF files are allowed' },
+            { status: 400 }
+          );
+        }
+        if (file.size > MAX_PDF_SIZE_BYTES) {
+          return NextResponse.json(
+            { success: false, error: 'PDF exceeds 25MB limit' },
+            { status: 413 }
+          );
+        }
+
+        const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'epaper');
+        if (!existsSync(uploadsDir)) {
+          await mkdir(uploadsDir, { recursive: true });
+        }
+
+        const fileName = `${new Date(existing.issueDate).getTime()}-${(title || existing.title).replace(/\s+/g, '-').toLowerCase()}.pdf`;
+        const filePath = path.join(uploadsDir, fileName);
+        const buffer = await file.arrayBuffer();
+        await writeFile(filePath, Buffer.from(buffer));
+        fileUrl = `/uploads/epaper/${fileName}`;
+        fileSize = buffer.byteLength;
+      }
+
+      if (publish && !fileUrl) {
+        return NextResponse.json(
+          { success: false, error: 'Cannot publish: no PDF uploaded for this draft' },
+          { status: 400 }
+        );
+      }
+
+      const edition = await prisma.epaperEdition.update({
+        where: { id },
+        data: {
+          ...(title && { title }),
+          ...(coverImage && { coverImage }),
+          ...(fileUrl && { pdfUrl: fileUrl }),
+          ...(fileSize && { fileSize }),
+          ...(publish && { status: 'published' }),
+        },
+        include: { admin: { select: { id: true, name: true, email: true } } },
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: edition,
+        message: publish ? 'Draft published successfully' : 'Draft updated successfully',
+      });
+    }
+
+    // JSON body — metadata update (mark as current, title, cover, publish status)
     const body = await req.json();
-    const { title, coverImage, isCurrent } = body;
+    const { title, coverImage, isCurrent, status } = body;
+
+    // Publishing a draft via JSON (no PDF change)
+    if (status === 'published') {
+      const existing = await prisma.epaperEdition.findUnique({ where: { id } });
+      if (!existing) {
+        return NextResponse.json({ success: false, error: 'Edition not found' }, { status: 404 });
+      }
+      if (!existing.pdfUrl) {
+        return NextResponse.json(
+          { success: false, error: 'Cannot publish: no PDF uploaded for this draft' },
+          { status: 400 }
+        );
+      }
+    }
 
     // If marking as current, unmark all others
     if (isCurrent === true) {
@@ -85,6 +175,7 @@ export async function PUT(req: NextRequest, context: RouteContext) {
         ...(title && { title }),
         ...(coverImage && { coverImage }),
         ...(isCurrent !== undefined && { isCurrent }),
+        ...(status && { status }),
       },
       include: {
         admin: { select: { id: true, name: true, email: true } },
