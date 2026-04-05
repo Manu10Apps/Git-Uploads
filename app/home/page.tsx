@@ -119,6 +119,7 @@ export default function HomePage() {
                           <span className="whitespace-nowrap">
                             {formatKinyarwandaDateTime(articles[0].publishedAtRaw || articles[0].publishedAt).timeLabel}
                           </span>
+                          <span className="mx-0.5">·</span>
                           <span className="whitespace-nowrap">
                             {formatKinyarwandaDateTime(articles[0].publishedAtRaw || articles[0].publishedAt).dateLabel}
                           </span>
