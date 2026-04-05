@@ -14,6 +14,7 @@ interface EpaperEdition {
   fileSize?: number;
   pageCount: number;
   status: string; // 'draft' | 'published'
+  notes?: string;
   isCurrent: boolean;
   isArchived: boolean;
   admin: { name: string };
@@ -251,7 +252,7 @@ export function EpaperManager() {
             <input
               type="text"
               name="title"
-              placeholder="e.g., Weekly Edition - March 2, 2026"
+              placeholder="e.g., Intambwe Media Peper No 001"
               required
               className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-700 dark:text-white"
             />
@@ -447,6 +448,18 @@ export function EpaperManager() {
                     <span className="text-amber-600 dark:text-amber-400 font-medium">⚠ PDF not uploaded yet</span>
                   )}
                 </div>
+
+                {/* Weekly articles summary for drafts */}
+                {edition.status === 'draft' && edition.notes && (
+                  <details className="mb-4">
+                    <summary className="cursor-pointer text-xs font-medium text-amber-700 dark:text-amber-400 hover:underline">
+                      📰 Last week&apos;s articles ({edition.notes.match(/^\d+/)?.[0] ?? '?'} articles)
+                    </summary>
+                    <pre className="mt-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded text-xs text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap max-h-48 overflow-y-auto font-sans">
+                      {edition.notes}
+                    </pre>
+                  </details>
+                )}
 
                 {/* Actions */}
                 <div className="flex flex-wrap gap-2">
