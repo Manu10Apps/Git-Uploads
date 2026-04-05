@@ -37,7 +37,10 @@ export default async function EpaperEditionPage({ params }: RouteParams) {
     notFound();
   }
 
-  // Get previous and next editions for navigation
+  // Drafts without a PDF are not publicly viewable
+  if (!edition.pdfUrl) {
+    notFound();
+  }
   const [previousEdition, nextEdition] = await Promise.all([
     prisma.epaperEdition.findFirst({
       where: {
@@ -121,7 +124,7 @@ export default async function EpaperEditionPage({ params }: RouteParams) {
       <div className="bg-neutral-950 py-8">
         <div className="max-w-6xl mx-auto px-4 md:px-6">
           <FlipbookReader
-            pdfUrl={edition.pdfUrl}
+            pdfUrl={edition.pdfUrl!}
             title={edition.title}
             issueDate={formatIssueDate(edition.issueDate)}
           />
@@ -168,7 +171,7 @@ export default async function EpaperEditionPage({ params }: RouteParams) {
               <h3 className="font-semibold text-white mb-2">Actions</h3>
               <div className="space-y-2">
                 <a
-                  href={edition.pdfUrl}
+                  href={edition.pdfUrl!}
                   download={`${edition.title}.pdf`}
                   className="block text-sm px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition text-center"
                 >

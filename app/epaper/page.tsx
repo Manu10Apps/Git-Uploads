@@ -104,6 +104,7 @@ export default async function EpaperPage() {
 
                   {/* Action Buttons */}
                   <div className="flex flex-wrap gap-3">
+                    {currentEdition.pdfUrl && (
                     <Link
                       href={currentEdition.pdfUrl}
                       target="_blank"
@@ -112,6 +113,7 @@ export default async function EpaperPage() {
                     >
                       Download PDF
                     </Link>
+                    )}
                     <button
                       onClick={() => {
                         // Scroll to reader
@@ -131,11 +133,13 @@ export default async function EpaperPage() {
               <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-6">
                 Digital Reader
               </h3>
+              {currentEdition.pdfUrl && (
               <FlipbookReader
                 pdfUrl={currentEdition.pdfUrl}
                 title={currentEdition.title}
                 issueDate={formatIssueDate(currentEdition.issueDate)}
               />
+              )}
             </div>
           </div>
         ) : (

@@ -134,6 +134,7 @@ export default async function EpaperArchivePage({ searchParams }: RouteParams) {
                       >
                         Read
                       </Link>
+                      {edition.pdfUrl && (
                       <a
                         href={edition.pdfUrl}
                         download
@@ -142,6 +143,7 @@ export default async function EpaperArchivePage({ searchParams }: RouteParams) {
                       >
                         <Download size={16} />
                       </a>
+                      )}
                     </div>
                   </div>
                 </div>
