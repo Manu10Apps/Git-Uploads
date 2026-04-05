@@ -80,10 +80,10 @@ export function formatKinyarwandaDateTime(dateInput?: string | Date | null): {
 }
 
 export function formatCategoryLabel(category?: string | null): string {
-  if (!category) return 'General';
+  if (!category) return 'GENERAL';
   const trimmed = category.trim();
-  if (!trimmed) return 'General';
-  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+  if (!trimmed) return 'GENERAL';
+  return trimmed.toUpperCase();
 }
 
 export function calculateReadTime(content: string): number {

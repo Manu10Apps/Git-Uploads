@@ -65,8 +65,8 @@ export default async function Home() {
                       <div className="mt-2 flex justify-start">
                         <div className="grid w-fit grid-cols-3 items-center gap-2 text-xs font-bold text-neutral-600 dark:text-neutral-400">
                           <span className="truncate pr-2">{formatCategoryLabel(featuredArticle.category)}</span>
-                          <span className="text-center whitespace-nowrap">{featuredDateTime.dateLabel}</span>
-                          <span className="text-right whitespace-nowrap">{featuredDateTime.timeLabel}</span>
+                          <span className="text-left whitespace-nowrap">{featuredDateTime.timeLabel}</span>
+                          <span className="text-right whitespace-nowrap">{featuredDateTime.dateLabel}</span>
                         </div>
                       </div>
                     </div>
