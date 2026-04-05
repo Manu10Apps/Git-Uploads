@@ -285,6 +285,7 @@ model EpaperEdition {
   fileSize     Int?                   // File size in bytes
   pageCount    Int       @default(0)  // Number of pages
   status       String    @default("published") // "draft" | "published"
+  notes        String?                // Auto-generated article summary for the week
   isCurrent    Boolean   @default(false) // Mark as current/latest issue
   isArchived   Boolean   @default(false) // Soft delete indicator
   createdBy    Int

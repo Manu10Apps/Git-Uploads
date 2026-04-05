@@ -3,8 +3,9 @@ import { prisma } from '@/lib/prisma';
 
 /**
  * GET /api/cron/epaper-auto-draft
- * Automatically creates a draft E-Gazeti edition every Monday.
- * Run at 03:00 UTC every Monday via Vercel cron (schedule: "0 3 * * 1").
+ * Every Monday at 04:00 Kigali time (02:00 UTC):
+ *  - Creates a draft E-Gazeti edition for the current week
+ *  - Fetches all articles published last Monday–Sunday and stores a summary in `notes`
  *
  * Security: protected by CRON_SECRET env variable.
  */
@@ -21,21 +22,27 @@ export async function GET(req: NextRequest) {
 
     const now = new Date();
 
-    // Work out the nearest Monday (this call is triggered ON Monday by the cron)
+    // Determine this Monday's date (issueDate for the new draft)
     const issueDate = new Date(now);
     issueDate.setUTCHours(0, 0, 0, 0);
-    // Ensure we're on a Monday; if not (e.g. manual trigger) advance to next Monday
-    const day = issueDate.getUTCDay(); // 0 = Sun, 1 = Mon
+    const day = issueDate.getUTCDay(); // 0=Sun, 1=Mon
     if (day !== 1) {
+      // If triggered outside Monday (e.g. manual test), advance to next Monday
       const daysUntilMonday = (8 - day) % 7 || 7;
       issueDate.setUTCDate(issueDate.getUTCDate() + daysUntilMonday);
     }
 
-    // Check if a draft/edition for this Monday already exists
-    const existing = await prisma.epaperEdition.findFirst({
-      where: { issueDate },
-    });
+    // Previous week: last Monday 00:00 UTC → last Sunday 23:59:59 UTC
+    const prevMonday = new Date(issueDate);
+    prevMonday.setUTCDate(prevMonday.getUTCDate() - 7);
+    prevMonday.setUTCHours(0, 0, 0, 0);
 
+    const prevSunday = new Date(issueDate);
+    prevSunday.setUTCDate(prevSunday.getUTCDate() - 1);
+    prevSunday.setUTCHours(23, 59, 59, 999);
+
+    // Check if a draft/edition for this Monday already exists
+    const existing = await prisma.epaperEdition.findFirst({ where: { issueDate } });
     if (existing) {
       return NextResponse.json({
         success: true,
@@ -45,10 +52,8 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Resolve the system admin who will own the draft.
-    // Prefer SYSTEM_ADMIN_ID env var, fall back to the first admin role user.
+    // Resolve the admin who will own the draft
     let createdBy: number | null = null;
-
     const systemAdminId = process.env.SYSTEM_ADMIN_ID
       ? parseInt(process.env.SYSTEM_ADMIN_ID, 10)
       : null;
@@ -73,20 +78,54 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Build a human-readable title: "E-Gazeti - Week of April 7, 2026"
-    const weekLabel = issueDate.toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'UTC',
+    // Fetch articles published during the previous week
+    const weekArticles = await prisma.article.findMany({
+      where: {
+        status: 'published',
+        publishedAt: { gte: prevMonday, lte: prevSunday },
+      },
+      orderBy: { publishedAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        author: true,
+        category: { select: { name: true } },
+        publishedAt: true,
+      },
     });
-    const title = `E-Gazeti - Week of ${weekLabel}`;
+
+    // Determine next issue number from total editions count
+    const totalEditions = await prisma.epaperEdition.count();
+    const issueNumber = totalEditions + 1;
+
+    // Build human-readable date range
+    const fmt = (d: Date) =>
+      d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+    const dateRange = `${fmt(prevMonday)} – ${fmt(prevSunday)}`;
+
+    const notes =
+      weekArticles.length > 0
+        ? `${weekArticles.length} article(s) published ${dateRange}:\n\n` +
+          weekArticles
+            .map(
+              (a, i) =>
+                `${i + 1}. [${a.category.name}] ${a.title}\n   By ${a.author} — /article/${a.slug}`
+            )
+            .join('\n\n')
+        : `No articles published ${dateRange}.`;
+
+    // Title format: "Intambwe Media Peper No 001" (zero-padded 3-digit issue number)
+    const paddedNumber = String(issueNumber).padStart(3, '0');
+    const title = `Intambwe Media Peper No ${paddedNumber}`;
 
     const draft = await prisma.epaperEdition.create({
       data: {
         title,
         issueDate,
         status: 'draft',
+        notes,
         isCurrent: false,
         isArchived: false,
         pageCount: 0,
@@ -96,9 +135,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Draft created: "${title}"`,
+      message: `Draft created: "${title}" with ${weekArticles.length} article(s)`,
       editionId: draft.id,
+      issueNumber,
       issueDate: draft.issueDate,
+      articleCount: weekArticles.length,
     });
   } catch (error) {
     console.error('Error in epaper-auto-draft cron:', error);

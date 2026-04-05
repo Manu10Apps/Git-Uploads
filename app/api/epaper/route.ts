@@ -48,6 +48,7 @@ export async function GET(req: NextRequest) {
           fileSize: true,
           pageCount: true,
           status: true,
+          notes: true,
           isCurrent: true,
           createdAt: true,
           admin: { select: { id: true, name: true, email: true } },
