@@ -744,7 +744,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
           <section className="mb-8 sm:mb-10 md:mb-12 rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 p-4 sm:p-6">
             <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white mb-2">Andikira Umwanditsi</h2>
             <p className="text-sm sm:text-base text-neutral-700 dark:text-neutral-300 mb-4">
-              Ushobora kuvugana na Chief Editor ukoresheje imbuga nkoranyambaga ze.
+              Ushobora kuvugana na {article.author} ukoresheje imbuga nkoranyambaga ze.
             </p>
             <div className="flex flex-wrap gap-3">
               <a
