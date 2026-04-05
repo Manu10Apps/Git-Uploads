@@ -62,11 +62,11 @@ export default async function Home() {
                           {featuredArticle.title}
                         </Link>
                       </h3>
-                      <div className="mt-2 flex justify-start">
-                        <div className="grid w-fit grid-cols-3 items-center gap-2 text-xs font-bold text-neutral-600 dark:text-neutral-400">
-                          <span className="truncate pr-2">{formatCategoryLabel(featuredArticle.category)}</span>
-                          <span className="text-left whitespace-nowrap">{featuredDateTime.timeLabel}</span>
-                          <span className="text-right whitespace-nowrap">{featuredDateTime.dateLabel}</span>
+                      <div className="mt-2 flex items-center justify-between w-full text-xs font-bold text-neutral-600 dark:text-neutral-400">
+                        <span className="truncate pr-2">{formatCategoryLabel(featuredArticle.category)}</span>
+                        <div className="flex items-center gap-2 ml-auto">
+                          <span className="whitespace-nowrap">{featuredDateTime.timeLabel}</span>
+                          <span className="whitespace-nowrap">{featuredDateTime.dateLabel}</span>
                         </div>
                       </div>
                     </div>
