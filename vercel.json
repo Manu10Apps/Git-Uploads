@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/epaper-auto-draft",
+      "schedule": "0 3 * * 1"
+    },
+    {
+      "path": "/api/cron/epaper-auto-archive",
+      "schedule": "0 4 * * 1"
+    },
+    {
+      "path": "/api/cron/update-exchange-rates",
+      "schedule": "0 */6 * * *"
+    }
+  ]
+}
