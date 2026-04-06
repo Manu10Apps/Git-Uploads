@@ -152,24 +152,21 @@ export async function GET(req: NextRequest) {
 
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  // ── Idempotency: skip if today's batch was already generated ─────────────
-  const todayStart = new Date();
-  todayStart.setUTCHours(0, 0, 0, 0);
-  const todayEnd = new Date();
-  todayEnd.setUTCHours(23, 59, 59, 999);
+  // ── Idempotency: skip if a batch was already generated in the last 6 hours ─
+  const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
 
-  const existingToday = await prisma.article.count({
+  const recentCount = await prisma.article.count({
     where: {
       author: AI_AUTHOR,
-      createdAt: { gte: todayStart, lte: todayEnd },
+      createdAt: { gte: sixHoursAgo },
     },
   });
 
-  if (existingToday >= 5) {
+  if (recentCount >= 5) {
     return NextResponse.json({
       success: true,
       skipped: true,
-      message: `Daily AI stories already generated today (${existingToday} found).`,
+      message: `AI stories already generated in the last 6 hours (${recentCount} found).`,
     });
   }
 
