@@ -5,16 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Zap, Loader, Copy, Check, AlertCircle } from 'lucide-react';
 import AdminHeader from '@/app/admin/components/AdminHeader';
 
-declare global {
-  interface Window {
-    puter?: {
-      ai?: {
-        chat: (prompt: string, options?: { model?: string }) => Promise<any>;
-      };
-    };
-  }
-}
-
 interface GeneratedArticle {
   title: string;
   content: string;
@@ -39,7 +29,6 @@ export default function AIGeneratorPage() {
 
   const [generated, setGenerated] = useState<GeneratedArticle | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [puterReady, setPuterReady] = useState(false);
 
   useEffect(() => {
     const isAdminAuth = localStorage.getItem('adminAuth');
@@ -51,28 +40,6 @@ export default function AIGeneratorPage() {
       setIsLoading(false);
     } else {
       setIsLoading(false);
-
-      if (window.puter?.ai?.chat) {
-        setPuterReady(true);
-        return;
-      }
-
-      const existingScript = document.querySelector('script[data-puter-sdk="true"]');
-      if (existingScript) {
-        existingScript.addEventListener('load', () => setPuterReady(Boolean(window.puter?.ai?.chat)));
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = 'https://js.puter.com/v2/';
-      script.async = true;
-      script.setAttribute('data-puter-sdk', 'true');
-      script.onload = () => setPuterReady(Boolean(window.puter?.ai?.chat));
-      script.onerror = () => {
-        setPuterReady(false);
-        setMessage({ type: 'error', text: 'Failed to load Puter AI SDK.' });
-      };
-      document.body.appendChild(script);
     }
   }, [router]);
 
@@ -84,51 +51,37 @@ export default function AIGeneratorPage() {
       return;
     }
 
-    if (!window.puter?.ai?.chat) {
-      setMessage({ type: 'error', text: 'Puter AI is not ready. Please wait and try again.' });
-      return;
-    }
-
     setIsGenerating(true);
+    setMessage(null);
     try {
-      const languageName =
-        form.language === 'ky' ? 'Kinyarwanda' : form.language === 'sw' ? 'Swahili' : 'English';
+      const res = await fetch('/api/ai-generator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: form.title.trim(),
+          topic: form.topic.trim(),
+          tone: form.tone,
+          language: form.language,
+        }),
+      });
 
-      const prompt = `You are a professional news writer for AMAKURU24.
-Write in ${languageName} with a ${form.tone} tone.
+      const data = await res.json();
 
-Article Title: ${form.title}
-Topic: ${form.topic}
-
-Requirements:
-- 400-600 words
-- Clear news structure (intro, key points, conclusion)
-- Factual and readable
-- Return plain text markdown content only.`;
-
-      const response = await window.puter.ai.chat(prompt, { model: 'gpt-5-nano' });
-      const content = String(response ?? '').trim();
-
-      if (!content) {
-        setMessage({ type: 'error', text: 'AI returned empty content.' });
+      if (!res.ok) {
+        setMessage({ type: 'error', text: data.error || 'Failed to generate article.' });
         return;
       }
 
-      const excerpt = content.replace(/[#*_`]/g, '').substring(0, 180).trim();
-      const wordCount = content.split(/\s+/).filter(Boolean).length;
-      const readTime = Math.max(1, Math.ceil(wordCount / 200));
-
       setGenerated({
         title: form.title.trim(),
-        content,
-        excerpt: excerpt + (excerpt.length === 180 ? '...' : ''),
-        readTime,
-        language: form.language,
+        content: data.content,
+        excerpt: data.excerpt,
+        readTime: data.readTime,
+        language: data.language,
       });
       setMessage({ type: 'success', text: 'Article generated successfully!' });
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to generate article' });
-      console.error(error);
+    } catch {
+      setMessage({ type: 'error', text: 'Network error. Please try again.' });
     } finally {
       setIsGenerating(false);
     }
@@ -285,18 +238,13 @@ Requirements:
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isGenerating || !puterReady}
+                  disabled={isGenerating}
                   className="w-full px-6 py-3 bg-red-700 hover:bg-red-800 disabled:bg-neutral-400 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   {isGenerating ? (
                     <>
                       <Loader className="w-5 h-5 animate-spin" />
                       Generating...
-                    </>
-                  ) : !puterReady ? (
-                    <>
-                      <Loader className="w-5 h-5 animate-spin" />
-                      Loading AI...
                     </>
                   ) : (
                     <>
