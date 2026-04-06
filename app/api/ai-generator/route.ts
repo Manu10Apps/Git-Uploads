@@ -1,6 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function createCompletionWithRetry(
+  client: OpenAI,
+  params: Parameters<OpenAI['chat']['completions']['create']>[0],
+  maxRetries = 3,
+) {
+  let lastError: any;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await client.chat.completions.create(params);
+    } catch (err: any) {
+      lastError = err;
+      if (err?.status === 429) {
+        // Honour Retry-After header if present, otherwise use exponential backoff
+        const retryAfter = Number(err?.headers?.['retry-after'] ?? 0);
+        const waitMs = retryAfter > 0 ? retryAfter * 1000 : Math.pow(2, attempt + 1) * 1000;
+        if (attempt < maxRetries - 1) {
+          await sleep(waitMs);
+          continue;
+        }
+      }
+      throw err;
+    }
+  }
+  throw lastError;
+}
+
 export async function POST(req: NextRequest) {
   if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json({ error: 'AI service is not configured.' }, { status: 503 });
@@ -46,7 +74,7 @@ Requirements:
 - Return plain text markdown only (no JSON, no headings for "Article:", just the body content)`;
 
   try {
-    const completion = await client.chat.completions.create({
+    const completion = await createCompletionWithRetry(client, {
       model: MODEL,
       messages: [
         { role: 'system', content: systemPrompt },
@@ -74,7 +102,10 @@ Requirements:
       return NextResponse.json({ error: 'Invalid OpenAI API key.' }, { status: 502 });
     }
     if (err?.status === 429) {
-      return NextResponse.json({ error: 'AI rate limit reached. Please try again shortly.' }, { status: 429 });
+      return NextResponse.json(
+        { error: 'OpenAI rate limit reached. Please wait a moment and try again.' },
+        { status: 429 },
+      );
     }
     return NextResponse.json({ error: 'Failed to generate article. Please try again.' }, { status: 502 });
   }
