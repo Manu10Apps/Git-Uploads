@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import type { ChatCompletion } from 'openai/resources/chat/completions';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -82,7 +83,8 @@ Requirements:
       ],
       max_tokens: 1024,
       temperature: 0.7,
-    });
+      stream: false,
+    }) as ChatCompletion;
 
     const content = completion.choices[0]?.message?.content?.trim() ?? '';
 

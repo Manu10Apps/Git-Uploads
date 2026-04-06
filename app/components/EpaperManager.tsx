@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import Image from 'next/image';
-import { Upload, Download, Trash2, Star, Archive, AlertCircle, FileText, Send, RefreshCw, Pencil } from 'lucide-react';
+import { Download, Trash2, Star, Archive, AlertCircle, FileText, Send, RefreshCw, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { formatFileSize, formatIssueDate } from '@/lib/epaper-client';
 
@@ -464,38 +464,16 @@ export function EpaperManager() {
 
                 {/* Actions */}
                 <div className="flex flex-wrap gap-2">
-                  {/* Draft: upload PDF & publish */}
+                  {/* Draft: publish directly */}
                   {edition.status === 'draft' && (
-                    <>
-                      <label className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-900/60 transition cursor-pointer">
-                        <Upload size={14} />
-                        {edition.pdfUrl ? 'Replace PDF' : 'Upload PDF'}
-                        <input
-                          type="file"
-                          accept=".pdf"
-                          className="hidden"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0] ?? null;
-                            if (file) await handlePublishDraft(edition.id, file, false);
-                            e.target.value = '';
-                          }}
-                        />
-                      </label>
-                      <button
-                        onClick={async () => {
-                          if (edition.pdfUrl) {
-                            await handlePublishDraft(edition.id, null, true);
-                          } else {
-                            setError('Upload a PDF before publishing');
-                          }
-                        }}
-                        disabled={publishingId === edition.id}
-                        className="flex items-center gap-1 px-3 py-1 text-sm bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded hover:bg-green-200 dark:hover:bg-green-900/60 disabled:opacity-50 transition"
-                      >
-                        <Send size={14} />
-                        {publishingId === edition.id ? 'Publishing...' : 'Publish'}
-                      </button>
-                    </>
+                    <button
+                      onClick={() => handlePublishDraft(edition.id, null, true)}
+                      disabled={publishingId === edition.id}
+                      className="flex items-center gap-1 px-3 py-1 text-sm bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded hover:bg-green-200 dark:hover:bg-green-900/60 disabled:opacity-50 transition"
+                    >
+                      <Send size={14} />
+                      {publishingId === edition.id ? 'Publishing...' : 'Publish'}
+                    </button>
                   )}
 
                   {/* Download — only for editions with PDF */}

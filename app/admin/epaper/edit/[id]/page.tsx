@@ -237,11 +237,6 @@ export default function EditEpaperPage() {
             <option value="draft">Draft</option>
             <option value="published">Published</option>
           </select>
-          {status === 'published' && !edition.pdfUrl && (
-            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-              ⚠ This draft has no PDF uploaded yet. Upload a PDF before publishing.
-            </p>
-          )}
         </div>
 
         {/* Mark as Current */}
