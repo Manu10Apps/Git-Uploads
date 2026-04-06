@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/cron/daily-ai-stories",
+      "schedule": "0 6 * * *"
+    },
+    {
       "path": "/api/cron/epaper-auto-draft",
       "schedule": "0 2 * * 1"
     },
