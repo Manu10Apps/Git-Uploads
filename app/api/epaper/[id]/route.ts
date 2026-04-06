@@ -145,7 +145,7 @@ export async function PUT(req: NextRequest, context: RouteContext) {
 
     // JSON body — metadata update (mark as current, title, cover, publish status)
     const body = await req.json();
-    const { title, coverImage, isCurrent, status } = body;
+    const { title, coverImage, isCurrent, status, issueDate, pageCount, notes } = body;
 
     // Publishing a draft via JSON (no PDF change)
     if (status === 'published') {
@@ -173,9 +173,12 @@ export async function PUT(req: NextRequest, context: RouteContext) {
       where: { id },
       data: {
         ...(title && { title }),
-        ...(coverImage && { coverImage }),
+        ...(coverImage !== undefined && { coverImage: coverImage || null }),
         ...(isCurrent !== undefined && { isCurrent }),
         ...(status && { status }),
+        ...(issueDate && { issueDate: new Date(issueDate) }),
+        ...(pageCount !== undefined && { pageCount: Number(pageCount) }),
+        ...(notes !== undefined && { notes: notes || null }),
       },
       include: {
         admin: { select: { id: true, name: true, email: true } },
