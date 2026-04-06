@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
-
 export async function POST(req: NextRequest) {
   if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json({ error: 'AI service is not configured.' }, { status: 503 });
   }
+
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
   let body: { title?: string; topic?: string; tone?: string; language?: string };
   try {
