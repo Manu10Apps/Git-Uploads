@@ -15,7 +15,8 @@
     "build-storybook": "storybook build",
     "prisma:seed": "tsx prisma/seed.ts",
     "db:setup:maintenance": "prisma db execute --file prisma/setup-site-settings.sql",
-    "db:check": "node scripts/db-check.js"
+    "db:check": "node scripts/db-check.js",
+    "epaper:generate": "npx tsx scripts/generate-epaper-pdf.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -41,6 +42,7 @@
     "next-intl": "^3.10.0",
     "next-themes": "^0.2.1",
     "nodemailer": "^8.0.4",
+    "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^4.10.38",
     "pg": "^8.20.0",
     "postcss": "^8.4.38",
