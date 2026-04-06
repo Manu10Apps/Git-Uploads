@@ -25,11 +25,9 @@ interface EpaperEdition {
 export function EpaperManager() {
   const [editions, setEditions] = useState<EpaperEdition[]>([]);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [publishingId, setPublishingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [showUploadForm, setShowUploadForm] = useState(false);
   const [filterArchived, setFilterArchived] = useState(false);
   const [showDrafts, setShowDrafts] = useState(true);
 
@@ -62,42 +60,7 @@ export function EpaperManager() {
     fetchEditions();
   }, [fetchEditions]);
 
-  // Upload handler
-  const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setUploading(true);
-    setError(null);
-    setSuccessMessage(null);
-
-    const formData = new FormData(e.currentTarget);
-
-    try {
-      const response = await fetch('/api/epaper', {
-        method: 'POST',
-        headers: {
-          ...getAuthHeader(),
-        },
-        body: formData,
-      });
-      const data = await response.json();
-
-      if (data.success) {
-        setSuccessMessage(data.message || 'Edition saved successfully!');
-        setShowUploadForm(false);
-        e.currentTarget.reset();
-        fetchEditions();
-      } else {
-        setError(data.error || 'Upload failed');
-      }
-    } catch (err) {
-      setError('Upload failed. Please try again.');
-      console.error(err);
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  // Upload PDF for an existing draft and publish it
+  // Publish a draft
   const handlePublishDraft = async (id: number, file: File | null, publish: boolean) => {
     setPublishingId(id);
     setError(null);
@@ -221,13 +184,7 @@ export function EpaperManager() {
             Manage and publish weekly digital editions. Drafts are auto-created every Monday.
           </p>
         </div>
-        <button
-          onClick={() => setShowUploadForm(!showUploadForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-        >
-          <Upload size={18} />
-          Upload Edition
-        </button>
+
       </div>
 
       {/* Messages */}
@@ -241,112 +198,6 @@ export function EpaperManager() {
         <div className="flex gap-3 px-4 py-3 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-lg">
           <p className="text-green-700 dark:text-green-300">{successMessage}</p>
         </div>
-      )}
-
-      {/* Upload Form */}
-      {showUploadForm && (
-        <form onSubmit={handleUpload} className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Edition Title <span className="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              name="title"
-              placeholder="e.g., Intambwe Media Peper No 001"
-              required
-              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-700 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Issue Date <span className="text-red-600">*</span>
-            </label>
-            <input
-              type="date"
-              name="issueDate"
-              required
-              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-700 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              PDF File <span className="text-red-600">*</span>
-            </label>
-            <input
-              type="file"
-              name="file"
-              accept=".pdf"
-              required
-              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-700 dark:text-white"
-            />
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-              Only PDF files allowed. Maximum 50MB recommended.
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Cover Image URL (Optional)
-            </label>
-            <input
-              type="url"
-              name="coverImage"
-              placeholder="https://example.com/image.jpg"
-              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-700 dark:text-white"
-            />
-          </div>
-
-          <div className="flex gap-2 justify-end pt-4">
-            <button
-              type="button"
-              onClick={() => setShowUploadForm(false)}
-              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              name="isDraft"
-              value="true"
-              disabled={uploading}
-              className="flex items-center gap-2 px-4 py-2 bg-neutral-600 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-50 transition"
-              onClick={(e) => {
-                const form = e.currentTarget.form;
-                if (form) {
-                  let input = form.querySelector<HTMLInputElement>('input[name="isDraft"]');
-                  if (!input) {
-                    input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'isDraft';
-                    form.appendChild(input);
-                  }
-                  input.value = 'true';
-                }
-              }}
-            >
-              <FileText size={16} />
-              {uploading ? 'Saving...' : 'Save as Draft'}
-            </button>
-            <button
-              type="submit"
-              disabled={uploading}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
-              onClick={(e) => {
-                const form = e.currentTarget.form;
-                if (form) {
-                  const input = form.querySelector<HTMLInputElement>('input[name="isDraft"]');
-                  if (input) input.value = 'false';
-                }
-              }}
-            >
-              <Upload size={16} />
-              {uploading ? 'Uploading...' : 'Upload Edition'}
-            </button>
-          </div>
-        </form>
       )}
 
       {/* Filters */}
@@ -408,7 +259,7 @@ export function EpaperManager() {
                 <div className={`sm:w-32 h-40 sm:h-32 flex-shrink-0 rounded-lg flex items-center justify-center ${edition.status === 'draft' ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-gradient-to-br from-blue-400 to-blue-600'}`}>
                   {edition.status === 'draft'
                     ? <FileText size={32} className="text-amber-500 dark:text-amber-400 opacity-80" />
-                    : <Upload size={32} className="text-white opacity-50" />
+                    : <FileText size={32} className="text-white opacity-50" />
                   }
                 </div>
               )}
