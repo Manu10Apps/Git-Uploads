@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { generateEpaperPDF, EpaperArticle } from '@/lib/epaper-pdf-generator';
+import path from 'path';
 
 /**
  * GET /api/cron/epaper-auto-draft
- * Every Monday at 04:00 Kigali time (02:00 UTC):
- *  - Creates a draft E-Gazeti edition for the current week
- *  - Fetches all articles published last Monday–Sunday and stores a summary in `notes`
+ * Every Monday at 18:00 GMT:
+ *  - Creates a draft E-Gazeti edition and auto-generates the designed PDF
+ *  - Issue #1: fetches ALL published articles (first-ever edition)
+ *  - Issue #2+: fetches articles from the previous Monday–Sunday only
  *
  * Security: protected by CRON_SECRET env variable.
  */
@@ -78,43 +81,48 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Fetch articles published during the previous week
+    // Determine next issue number from total editions count
+    const totalEditions = await prisma.epaperEdition.count();
+    const issueNumber = totalEditions + 1;
+    const isFirstEdition = issueNumber === 1;
+
+    // Issue #1 → all published articles ever; Issue #2+ → previous Mon–Sun only
+    const articleWhere = isFirstEdition
+      ? { status: 'published' as const }
+      : { status: 'published' as const, publishedAt: { gte: prevMonday, lte: prevSunday } };
+
     const weekArticles = await prisma.article.findMany({
-      where: {
-        status: 'published',
-        publishedAt: { gte: prevMonday, lte: prevSunday },
-      },
-      orderBy: { publishedAt: 'desc' },
+      where: articleWhere,
+      orderBy: [{ featured: 'desc' }, { publishedAt: 'desc' }],
       select: {
         id: true,
         title: true,
         slug: true,
         excerpt: true,
         author: true,
+        featured: true,
         category: { select: { name: true } },
         publishedAt: true,
       },
     });
 
-    // Determine next issue number from total editions count
-    const totalEditions = await prisma.epaperEdition.count();
-    const issueNumber = totalEditions + 1;
-
-    // Build human-readable date range
+    // Build human-readable date range label
     const fmt = (d: Date) =>
       d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
-    const dateRange = `${fmt(prevMonday)} – ${fmt(prevSunday)}`;
+    const dateRange = isFirstEdition
+      ? 'all published articles'
+      : `${fmt(prevMonday)} – ${fmt(prevSunday)}`;
 
     const notes =
       weekArticles.length > 0
-        ? `${weekArticles.length} article(s) published ${dateRange}:\n\n` +
+        ? `${weekArticles.length} article(s) — ${dateRange}:\n\n` +
           weekArticles
             .map(
               (a, i) =>
                 `${i + 1}. [${a.category.name}] ${a.title}\n   By ${a.author} — /article/${a.slug}`
             )
             .join('\n\n')
-        : `No articles published ${dateRange}.`;
+        : `No articles found (${dateRange}).`;
 
     // Title format: "Intambwe Media Peper No 001" (zero-padded 3-digit issue number)
     const paddedNumber = String(issueNumber).padStart(3, '0');
@@ -133,13 +141,56 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    // ── Auto-generate the designed newspaper PDF ───────────────────────────
+    let pdfUrl: string | null = null;
+    let pdfPageCount = 0;
+    let pdfFileSize = 0;
+
+    if (weekArticles.length > 0) {
+      try {
+        const articles: EpaperArticle[] = weekArticles.map(a => ({
+          id:          a.id,
+          title:       a.title,
+          excerpt:     a.excerpt ?? '',
+          author:      a.author,
+          category:    a.category.name,
+          publishedAt: a.publishedAt,
+        }));
+
+        const outDir = path.join(process.cwd(), 'public', 'uploads', 'epaper');
+        const result = await generateEpaperPDF({
+          issueTitle: title,
+          issueDate,
+          articles,
+          outDir,
+        });
+
+        pdfUrl       = result.publicUrl;
+        pdfPageCount = result.pageCount;
+        pdfFileSize  = result.fileSize;
+
+        // Update the draft with the generated PDF details
+        await prisma.epaperEdition.update({
+          where: { id: draft.id },
+          data: {
+            pdfUrl,
+            pageCount: pdfPageCount,
+            fileSize:  pdfFileSize,
+          },
+        });
+      } catch (pdfErr) {
+        console.error('PDF generation failed (draft still created):', pdfErr);
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      message: `Draft created: "${title}" with ${weekArticles.length} article(s)`,
+      message: `Draft created: "${title}" with ${weekArticles.length} article(s)${pdfUrl ? ' + PDF generated' : ''}`,
       editionId: draft.id,
       issueNumber,
       issueDate: draft.issueDate,
       articleCount: weekArticles.length,
+      pdfUrl: pdfUrl ?? undefined,
     });
   } catch (error) {
     console.error('Error in epaper-auto-draft cron:', error);
