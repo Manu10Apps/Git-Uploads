@@ -2,7 +2,8 @@
 
 import React, { useState, useCallback } from 'react';
 import Image from 'next/image';
-import { Upload, Download, Trash2, Star, Archive, AlertCircle, FileText, Send, RefreshCw } from 'lucide-react';
+import { Upload, Download, Trash2, Star, Archive, AlertCircle, FileText, Send, RefreshCw, Pencil } from 'lucide-react';
+import Link from 'next/link';
 import { formatFileSize, formatIssueDate } from '@/lib/epaper-client';
 
 interface EpaperEdition {
@@ -529,6 +530,14 @@ export function EpaperManager() {
                       Archive
                     </button>
                   )}
+
+                  <Link
+                    href={`/admin/epaper/edit/${edition.id}`}
+                    className="flex items-center gap-1 px-3 py-1 text-sm bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded hover:bg-purple-200 dark:hover:bg-purple-900/60 transition"
+                  >
+                    <Pencil size={14} />
+                    Edit
+                  </Link>
 
                   <button
                     onClick={() => handleDelete(edition.id)}
