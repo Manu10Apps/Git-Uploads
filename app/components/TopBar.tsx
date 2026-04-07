@@ -307,9 +307,9 @@ export function TopBar() {
     if ('requestIdleCallback' in window) {
       idleId = window.requestIdleCallback(startUpdates, { timeout: 3000 });
     } else {
-      const tid = window.setTimeout(startUpdates, 1500);
+      const tid = setTimeout(startUpdates, 1500);
       return () => {
-        window.clearTimeout(tid);
+        clearTimeout(tid);
         clearInterval(intervalId);
       };
     }
