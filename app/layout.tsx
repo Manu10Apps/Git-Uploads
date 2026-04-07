@@ -10,18 +10,11 @@ const robotoCondensed = Roboto_Condensed({
   display: 'swap',
   variable: '--font-roboto-condensed',
 });
-import dynamic from 'next/dynamic';
 import { MaintenanceScreen } from '@/app/components/MaintenanceScreen';
 import { ThemeProvider } from '@/app/components/ThemeProvider';
+import { DeferredTopBar } from '@/app/components/DeferredTopBar';
 import { AnalyticsProvider } from '@/app/components/AnalyticsProvider';
 import { getMaintenanceSettings, shouldBypassMaintenance } from '@/lib/maintenance';
-
-// Load TopBar in a separate JS chunk after the main content hydrates.
-// This removes it from the critical hydration path and reduces TBT.
-const TopBar = dynamic(() => import('@/app/components/TopBar').then((m) => ({ default: m.TopBar })), {
-  ssr: false,
-  loading: () => <div className="min-h-[40px] bg-neutral-900" aria-hidden="true" />,
-});
 
 export const metadata: Metadata = {
   title: 'Intambwe Media | Amakuru Agezweho | Igihe Cyose ',
@@ -155,7 +148,7 @@ export default async function RootLayout({
             <MaintenanceScreen message={maintenanceSettings?.message || ''} />
           ) : (
             <>
-              <TopBar />
+              <DeferredTopBar />
               {children}
             </>
           )}
