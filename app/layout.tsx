@@ -1,7 +1,15 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import Script from 'next/script';
+import { Roboto_Condensed } from 'next/font/google';
 import '@/styles/globals.css';
+
+const robotoCondensed = Roboto_Condensed({
+  subsets: ['latin'],
+  weight: ['700', '800'],
+  display: 'swap',
+  variable: '--font-roboto-condensed',
+});
 import { MaintenanceScreen } from '@/app/components/MaintenanceScreen';
 import { ThemeProvider } from '@/app/components/ThemeProvider';
 import { TopBar } from '@/app/components/TopBar';
@@ -85,7 +93,7 @@ export default async function RootLayout({
   const showMaintenance = Boolean(maintenanceSettings?.enabled);
 
   return (
-    <html lang="ky" suppressHydrationWarning data-scroll-behavior="smooth">
+    <html lang="ky" suppressHydrationWarning data-scroll-behavior="smooth" className={robotoCondensed.variable}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
