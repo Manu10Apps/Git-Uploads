@@ -21,8 +21,8 @@ export function AnalyticsProvider() {
       return () => window.cancelIdleCallback(id);
     }
 
-    const id = window.setTimeout(run, 2000);
-    return () => window.clearTimeout(id);
+    const id = setTimeout(run, 2000);
+    return () => clearTimeout(id);
   }, []);
 
   return null;
