@@ -4,15 +4,13 @@ import { prisma } from '@/lib/prisma';
 
 /**
  * GET /api/cron/daily-ai-stories
- * Runs daily at 06:00 UTC.
+ * Runs every hour.
  *
- * Generates 5 news article drafts in Kinyarwanda using OpenAI:
- *   – 2 Rwanda stories  (politiki + ubukungu)
- *   – 2 East Africa stories (afurika-yiburasirazuba × 2)
- *   – 1 International story (mu-mahanga)
+ * Generates 1 news article draft in Kinyarwanda using OpenAI per run.
+ * The slot is selected by rotating through STORY_SLOTS based on the current hour.
  *
  * Each draft is saved with status "draft" and author "Amakuru24 AI".
- * The job is idempotent: if AI-authored drafts already exist for today it exits early.
+ * The job is idempotent: skips if an AI draft was already created in the last hour.
  *
  * Security: protected by CRON_SECRET env variable.
  */
@@ -152,32 +150,22 @@ export async function GET(req: NextRequest) {
 
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  // ── Idempotency: skip if a batch was already generated in the last 6 hours ─
-  const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
-
+  // ── Idempotency: skip if an AI draft was already created in the last hour ──
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
   const recentCount = await prisma.article.count({
-    where: {
-      author: AI_AUTHOR,
-      createdAt: { gte: sixHoursAgo },
-    },
+    where: { author: AI_AUTHOR, createdAt: { gte: oneHourAgo } },
   });
-
-  if (recentCount >= 5) {
+  if (recentCount >= 1) {
     return NextResponse.json({
       success: true,
       skipped: true,
-      message: `AI stories already generated in the last 6 hours (${recentCount} found).`,
+      message: `AI story already generated in the last hour (${recentCount} found).`,
     });
   }
 
-  // ── Resolve category IDs once ─────────────────────────────────────────────
-  const categoryCache = new Map<string, number | null>();
-  async function getCategoryId(slug: string): Promise<number | null> {
-    if (categoryCache.has(slug)) return categoryCache.get(slug)!;
-    const id = await resolveCategoryId(slug, 'amakuru');
-    categoryCache.set(slug, id);
-    return id;
-  }
+  // ── Pick one slot by rotating on current UTC hour ─────────────────────────
+  const currentHour = new Date().getUTCHours();
+  const slot = STORY_SLOTS[currentHour % STORY_SLOTS.length];
 
   const dateLabel = new Date().toLocaleDateString('fr-RW', {
     day: 'numeric',
@@ -185,77 +173,59 @@ export async function GET(req: NextRequest) {
     year: 'numeric',
     timeZone: 'Africa/Kigali',
   });
-  const slugSuffix = `${new Date().toISOString().slice(0, 10)}`;
+  const slugSuffix = `${new Date().toISOString().slice(0, 13).replace('T', '-h')}`;
 
-  // ── Generate all 5 stories in parallel ───────────────────────────────────
-  const results = await Promise.allSettled(
-    STORY_SLOTS.map((slot) => generateStory(client, slot, dateLabel)),
-  );
-
-  const saved: number[] = [];
-  const errors: string[] = [];
-  const usedSlugs = new Set<string>();
-
-  for (let i = 0; i < STORY_SLOTS.length; i++) {
-    const slot = STORY_SLOTS[i];
-    const result = results[i];
-
-    if (result.status === 'rejected' || result.value === null) {
-      errors.push(`Slot "${slot.regionTag}": generation failed`);
-      continue;
-    }
-
-    const story = result.value;
-    const categoryId = await getCategoryId(slot.categorySlug);
-
-    if (!categoryId) {
-      errors.push(`Slot "${slot.regionTag}": category "${slot.categorySlug}" not found`);
-      continue;
-    }
-
-    // Build a unique slug: base title slug + date suffix + index if collision
-    let slug = toSlug(story.title, `${slugSuffix}-${i + 1}`);
-    if (usedSlugs.has(slug)) {
-      slug = `${slug}-${Date.now()}`;
-    }
-    usedSlugs.add(slug);
-
-    // Check DB for slug collision and resolve
-    const existing = await prisma.article.findUnique({ where: { slug } });
-    if (existing) {
-      slug = `${slug}-${Date.now()}`;
-    }
-
-    const wordCount = story.content.split(/\s+/).filter(Boolean).length;
-    const readTime = Math.max(1, Math.ceil(wordCount / 200));
-
-    try {
-      const article = await prisma.article.create({
-        data: {
-          title: story.title,
-          slug,
-          excerpt: story.excerpt,
-          content: story.content,
-          categoryId,
-          author: AI_AUTHOR,
-          status: 'draft',
-          readTime,
-          tags: JSON.stringify(['AI', slot.regionTag]),
-          featured: false,
-        },
-      });
-      saved.push(article.id);
-    } catch (err) {
-      console.error(`[daily-ai-stories] DB save failed for slot "${slot.regionTag}":`, err);
-      errors.push(`Slot "${slot.regionTag}": failed to save to database`);
-    }
+  // ── Generate 1 story ──────────────────────────────────────────────────────
+  const story = await generateStory(client, slot, dateLabel);
+  if (story === null) {
+    return NextResponse.json(
+      { success: false, error: `Generation failed for slot "${slot.regionTag}"` },
+      { status: 502 },
+    );
   }
 
-  return NextResponse.json({
-    success: true,
-    saved: saved.length,
-    savedIds: saved,
-    errors: errors.length > 0 ? errors : undefined,
-    date: dateLabel,
-  });
+  const categoryId = await resolveCategoryId(slot.categorySlug, 'amakuru');
+  if (!categoryId) {
+    return NextResponse.json(
+      { success: false, error: `Category "${slot.categorySlug}" not found` },
+      { status: 500 },
+    );
+  }
+
+  let slug = toSlug(story.title, slugSuffix);
+  const existing = await prisma.article.findUnique({ where: { slug } });
+  if (existing) slug = `${slug}-${Date.now()}`;
+
+  const wordCount = story.content.split(/\s+/).filter(Boolean).length;
+  const readTime = Math.max(1, Math.ceil(wordCount / 200));
+
+  try {
+    const article = await prisma.article.create({
+      data: {
+        title: story.title,
+        slug,
+        excerpt: story.excerpt,
+        content: story.content,
+        categoryId,
+        author: AI_AUTHOR,
+        status: 'draft',
+        readTime,
+        tags: JSON.stringify(['AI', slot.regionTag]),
+        featured: false,
+      },
+    });
+    return NextResponse.json({
+      success: true,
+      saved: 1,
+      savedId: article.id,
+      slot: slot.regionTag,
+      date: dateLabel,
+    });
+  } catch (err) {
+    console.error(`[daily-ai-stories] DB save failed for slot "${slot.regionTag}":`, err);
+    return NextResponse.json(
+      { success: false, error: 'Failed to save article to database' },
+      { status: 500 },
+    );
+  }
 }

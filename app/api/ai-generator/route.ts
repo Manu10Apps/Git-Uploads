@@ -4,6 +4,29 @@ import type { ChatCompletion } from 'openai/resources/chat/completions';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// In-memory rate limiter: max 5 requests per IP per 60 seconds
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const ipWindowMap = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfterSecs: number } {
+  const now = Date.now();
+  const entry = ipWindowMap.get(ip);
+
+  if (!entry || now >= entry.resetAt) {
+    ipWindowMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, retryAfterSecs: 0 };
+  }
+
+  if (entry.count >= RATE_LIMIT_MAX) {
+    const retryAfterSecs = Math.ceil((entry.resetAt - now) / 1000);
+    return { allowed: false, retryAfterSecs };
+  }
+
+  entry.count += 1;
+  return { allowed: true, retryAfterSecs: 0 };
+}
+
 async function createCompletionWithRetry(
   client: OpenAI,
   params: Parameters<OpenAI['chat']['completions']['create']>[0],
@@ -31,6 +54,22 @@ async function createCompletionWithRetry(
 }
 
 export async function POST(req: NextRequest) {
+  // Rate limiting
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    'unknown';
+  const rateCheck = checkRateLimit(ip);
+  if (!rateCheck.allowed) {
+    return NextResponse.json(
+      { error: `Too many requests. Please wait ${rateCheck.retryAfterSecs}s before trying again.` },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(rateCheck.retryAfterSecs) },
+      },
+    );
+  }
+
   if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json({ error: 'AI service is not configured.' }, { status: 503 });
   }
@@ -104,9 +143,10 @@ Requirements:
       return NextResponse.json({ error: 'Invalid OpenAI API key.' }, { status: 502 });
     }
     if (err?.status === 429) {
+      const retryAfter = Number(err?.headers?.['retry-after'] ?? 60);
       return NextResponse.json(
-        { error: 'OpenAI rate limit reached. Please wait a moment and try again.' },
-        { status: 429 },
+        { error: `AI service is temporarily busy. Please try again in ${retryAfter}s.` },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } },
       );
     }
     return NextResponse.json({ error: 'Failed to generate article. Please try again.' }, { status: 502 });
