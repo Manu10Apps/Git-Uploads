@@ -270,7 +270,7 @@ export default function LoginPage() {
             }}
             className={`px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
               mode === 'login'
-                ? 'bg-red-600 text-white'
+                ? 'bg-[#667684] text-white'
                 : 'text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
@@ -287,7 +287,7 @@ export default function LoginPage() {
             }}
             className={`px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
               mode === 'create'
-                ? 'bg-red-600 text-white'
+                ? 'bg-[#667684] text-white'
                 : 'text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
@@ -510,7 +510,7 @@ export default function LoginPage() {
                 ? !email || !isEmailValid
                 : !email || !password || !isEmailValid || (mode === 'create' && (!name || password.length < 8)))
             }
-            className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+            className="w-full bg-[#667684] hover:bg-[#556270] disabled:bg-[#8898a6] disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
           >
             {isLoading
               ? resetToken

@@ -209,7 +209,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               type="submit"
               disabled={!query.trim() || isLoading}
               aria-busy={isLoading}
-              className="mt-4 w-full px-4 py-3 bg-red-700 hover:bg-red-800 disabled:bg-red-700/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+              className="mt-4 w-full px-4 py-3 bg-[#667684] hover:bg-[#556270] disabled:bg-[#667684]/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
             >
               {isLoading ? t.common.searching : t.common.search}
             </button>

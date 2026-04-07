@@ -37,7 +37,7 @@ export default function GlobalError({
 
             <button
               onClick={reset}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#667684] hover:bg-[#556270] text-white font-medium rounded-lg transition-colors"
             >
               <RefreshCw className="w-5 h-5" />
               Reload Application
