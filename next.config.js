@@ -6,7 +6,7 @@ const nextConfig = {
   compress: true,
   outputFileTracingRoot: path.join(__dirname),
   experimental: {
-    optimizePackageImports: ['lucide-react'],
+    optimizePackageImports: ['lucide-react', 'recharts', 'date-fns', 'react-markdown'],
   },
   images: {
     remotePatterns: [
@@ -25,6 +25,16 @@ const nextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        // Next.js image optimization output — cache for 1 day, stale-while-revalidate for 7 days
+        source: '/_next/image:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, stale-while-revalidate=604800',
           },
         ],
       },

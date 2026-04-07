@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700;800&display=swap');
 
 @font-face {
   font-family: 'Sinbad';
@@ -329,7 +328,7 @@ button:disabled {
   padding: 0.4rem 0.85rem;
   background: #e2001a;
   color: #ffffff;
-  font-family: 'Roboto Condensed', 'Arial Narrow', Arial, sans-serif;
+  font-family: var(--font-roboto-condensed), 'Arial Narrow', Arial, sans-serif;
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.12em;

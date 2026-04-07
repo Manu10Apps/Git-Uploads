@@ -1,43 +1,19 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
+import { NAV_CATEGORY_ITEMS } from '@/lib/nav-categories';
 import Link from 'next/link';
 import Image from 'next/image';
-
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  description?: string;
-}
 
 export function Footer() {
   const { language, setLanguage } = useAppStore();
   const t = getTranslation(language);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/admin/categories');
-        const data = await response.json();
-        if (data.success) {
-          setCategories(data.data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch categories:', error);
-        setCategories([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCategories();
-  }, []);
+  const categoryItems = NAV_CATEGORY_ITEMS
+    .filter((item) => item.href !== '/' && item.slug && item.slug !== 'epaper')
+    .slice(0, 6);
 
   const languages = [
     { code: 'ky', name: 'Kinyarwanda' },
@@ -64,23 +40,24 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Ibice - Categories except Ahabanza */}
+          {/* Ibice - Categories */}
           <div className="space-y-4">
             <h4 className="font-bold">Ibice</h4>
             <ul className="space-y-3 text-sm flex flex-col items-center sm:items-start">
-              {categories
-                .filter((category) => category.name !== 'Ahabanza')
-                .slice(0, 6)
-                .map((category) => (
-                  <li key={category.id}>
+              {categoryItems.map((item) => {
+                const [section, key] = item.key.split('.');
+                const name = (t as Record<string, Record<string, string>>)[section]?.[key] || item.slug!;
+                return (
+                  <li key={item.slug}>
                     <Link
-                      href={`/category/${category.slug}`}
+                      href={item.href}
                       className="text-white dark:text-white hover:text-red-600 dark:hover:text-red-600 transition-colors font-light"
                     >
-                      {category.name}
+                      {name}
                     </Link>
                   </li>
-                ))}
+                );
+              })}
             </ul>
           </div>
 
