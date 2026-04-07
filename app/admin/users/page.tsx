@@ -232,7 +232,7 @@ export default function AdminUsersPage() {
             </div>
             <button
               onClick={() => { setShowCreateForm((v) => !v); setError(''); setSuccess(''); }}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#667684] hover:bg-[#556270] text-white font-semibold rounded-lg transition-colors text-sm"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#f61f00] hover:bg-[#556270] text-white font-semibold rounded-lg transition-colors text-sm"
             >
               {showCreateForm ? '✕ Cancel' : '+ Add User'}
             </button>
@@ -294,7 +294,7 @@ export default function AdminUsersPage() {
                 <div className="sm:col-span-2 flex justify-end">
                   <button
                     type="submit"
-                    className="px-6 py-2.5 bg-[#667684] hover:bg-[#556270] text-white font-semibold rounded-lg text-sm transition-colors"
+                    className="px-6 py-2.5 bg-[#f61f00] hover:bg-[#556270] text-white font-semibold rounded-lg text-sm transition-colors"
                   >
                     Create User
                   </button>
@@ -393,7 +393,7 @@ export default function AdminUsersPage() {
                                 <div className="flex items-center gap-2">
                                   <button
                                     type="submit"
-                                    className="inline-flex items-center gap-1 px-3 py-2 bg-[#667684] hover:bg-[#556270] text-white text-xs font-semibold rounded"
+                                    className="inline-flex items-center gap-1 px-3 py-2 bg-[#f61f00] hover:bg-[#556270] text-white text-xs font-semibold rounded"
                                   >
                                     <Save className="w-3 h-3" /> Save
                                   </button>

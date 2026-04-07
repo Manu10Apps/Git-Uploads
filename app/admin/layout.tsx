@@ -170,7 +170,7 @@ export default function AdminLayout({
                   isItemActive
                     ? isDashboard
                       ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
-                      : 'bg-[#667684] text-white'
+                      : 'bg-[#f61f00] text-white'
                     : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
