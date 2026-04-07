@@ -9,10 +9,11 @@ const robotoCondensed = Roboto_Condensed({
   weight: ['700', '800'],
   display: 'swap',
   variable: '--font-roboto-condensed',
+  preload: true,
 });
 import { MaintenanceScreen } from '@/app/components/MaintenanceScreen';
 import { ThemeProvider } from '@/app/components/ThemeProvider';
-import { DeferredTopBar } from '@/app/components/DeferredTopBar';
+import { TopBar } from '@/app/components/TopBar';
 import { AnalyticsProvider } from '@/app/components/AnalyticsProvider';
 import { getMaintenanceSettings, shouldBypassMaintenance } from '@/lib/maintenance';
 
@@ -106,13 +107,6 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/favicon.png?v=20260403" />
         <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
         {showMaintenance && <meta name="robots" content="noindex, nofollow" />}
-        {/* Apply saved theme before first paint to avoid FOUC and eliminate
-            the ThemeProvider useEffect re-render that contributes to TBT. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{var s=localStorage.getItem('amakuru-app-store');var d=s?JSON.parse(s):{};var t=d.state&&d.state.theme||'system';if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}`,
-          }}
-        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -148,7 +142,7 @@ export default async function RootLayout({
             <MaintenanceScreen message={maintenanceSettings?.message || ''} />
           ) : (
             <>
-              <DeferredTopBar />
+              <TopBar />
               {children}
             </>
           )}
