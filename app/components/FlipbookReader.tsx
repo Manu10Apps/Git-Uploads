@@ -285,7 +285,7 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
           <button
             onClick={() => { setShowThumbs(v => !v); }}
             title="All pages"
-            className={`p-1.5 rounded-lg transition-colors ${showThumbs ? 'bg-[#667684] text-white' : 'hover:bg-neutral-800 text-neutral-400'}`}
+            className={`p-1.5 rounded-lg transition-colors ${showThumbs ? 'bg-[#f61f00] text-white' : 'hover:bg-neutral-800 text-neutral-400'}`}
           >
             <Grid size={14} />
           </button>

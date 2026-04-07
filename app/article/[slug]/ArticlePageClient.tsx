@@ -596,7 +596,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               <button
                 type="submit"
                 disabled={replySubmitting}
-                className="rounded-md py-2 px-3 text-sm bg-[#667684] hover:bg-[#556270] text-white disabled:bg-neutral-400"
+                className="rounded-md py-2 px-3 text-sm bg-[#f61f00] hover:bg-[#556270] text-white disabled:bg-neutral-400"
               >
                 {replySubmitting ? 'Kohereza...' : 'Ohereza Igisubizo'}
               </button>
@@ -928,7 +928,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
 
                 <div className="flex justify-end">
                   <button
-                    className="rounded-md focus:opacity-90 hover:opacity-95 transition duration-300 flex flex-nowrap text-center items-center py-2 px-4 text-base bg-[#667684] hover:bg-[#556270] text-white disabled:bg-neutral-400"
+                    className="rounded-md focus:opacity-90 hover:opacity-95 transition duration-300 flex flex-nowrap text-center items-center py-2 px-4 text-base bg-[#f61f00] hover:bg-[#556270] text-white disabled:bg-neutral-400"
                     type="submit"
                     disabled={commentSubmitting}
                   >

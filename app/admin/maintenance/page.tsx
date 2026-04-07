@@ -170,7 +170,7 @@ export default function MaintenancePage() {
             <button
               type="button"
               onClick={() => router.push('/admin/dashboard')}
-              className="px-5 py-2.5 rounded-lg bg-[#667684] hover:bg-[#556270] text-white font-semibold"
+              className="px-5 py-2.5 rounded-lg bg-[#f61f00] hover:bg-[#556270] text-white font-semibold"
             >
               Back to Dashboard
             </button>
@@ -252,7 +252,7 @@ export default function MaintenancePage() {
                   type="button"
                   onClick={handleSave}
                   disabled={!hasUnsavedChanges || saveStatus === 'saving'}
-                  className="inline-flex items-center gap-2 rounded-lg bg-[#667684] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#556270] transition-colors"
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#f61f00] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#556270] transition-colors"
                 >
                   <Save className="w-4 h-4" />
                   {saveStatus === 'saving' ? 'Saving...' : 'Save settings'}

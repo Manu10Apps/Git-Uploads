@@ -202,7 +202,7 @@ export default function DashboardPage() {
                 type="button"
                 onClick={() => runImageFixAction('fix')}
                 disabled={isActionLoading || adminRole !== 'admin'}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#667684] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#556270] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 rounded-lg bg-[#f61f00] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#556270] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Wrench className="w-4 h-4" />
                 {isActionLoading ? 'Applying...' : 'Fix Broken Images'}
@@ -261,7 +261,7 @@ export default function DashboardPage() {
                 type="button"
                 onClick={() => setIsCacheModalOpen(true)}
                 disabled={isClearCacheLoading}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#667684] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#556270] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 rounded-lg bg-[#f61f00] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#556270] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <RefreshCcw className={`w-4 h-4 ${isClearCacheLoading ? 'animate-spin' : ''}`} />
                 {isClearCacheLoading ? 'Clearing Cache...' : 'Clear Cache'}
@@ -311,7 +311,7 @@ export default function DashboardPage() {
                     type="button"
                     onClick={clearWebsiteCache}
                     disabled={isClearCacheLoading}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#667684] text-sm font-semibold text-white hover:bg-[#556270] disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#f61f00] text-sm font-semibold text-white hover:bg-[#556270] disabled:opacity-50"
                   >
                     <RefreshCcw className={`w-4 h-4 ${isClearCacheLoading ? 'animate-spin' : ''}`} />
                     {isClearCacheLoading ? 'Clearing...' : 'Confirm Clear Cache'}

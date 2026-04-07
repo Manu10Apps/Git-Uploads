@@ -52,7 +52,7 @@ export default function VerifyAdminEmailPage() {
         {!loading && (
           <Link
             href="/admin/login"
-            className="inline-flex items-center justify-center px-4 py-2 bg-[#667684] hover:bg-[#556270] text-white rounded-lg font-semibold"
+            className="inline-flex items-center justify-center px-4 py-2 bg-[#f61f00] hover:bg-[#556270] text-white rounded-lg font-semibold"
           >
             Go to Admin Login
           </Link>

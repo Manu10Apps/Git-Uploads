@@ -73,7 +73,7 @@ export default function AnalyticsDashboard() {
                 onClick={() => setDays(d)}
                 className={`px-4 py-2 rounded-lg transition ${
                   days === d
-                    ? 'bg-[#667684] text-white'
+                    ? 'bg-[#f61f00] text-white'
                     : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
                 }`}
               >
