@@ -19,7 +19,8 @@ const nextConfig = {
   headers: async () => {
     return [
       {
-        source: '/uploads/:path*',
+        // Next.js static assets have content-hashed filenames — safe to cache forever
+        source: '/_next/static/:path*',
         headers: [
           {
             key: 'Cache-Control',
@@ -28,17 +29,33 @@ const nextConfig = {
         ],
       },
       {
-        source: '/logo.png',
+        // Uploads: cache for 1 hour, then must revalidate (files can be updated)
+        source: '/uploads/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=86400, stale-while-revalidate=604800',
+            value: 'public, max-age=3600, must-revalidate',
           },
         ],
       },
       {
-        source: '/:path*',
+        // Logo: always revalidate so updates appear immediately
+        source: '/logo.png',
         headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+        ],
+      },
+      {
+        // All pages: never serve stale HTML — always check server for fresh content
+        source: '/((?!_next/static|_next/image|favicon\\.ico).*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
           {
             key: 'X-UA-Compatible',
             value: 'IE=edge',
