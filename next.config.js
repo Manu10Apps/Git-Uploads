@@ -30,7 +30,7 @@ const nextConfig = {
       },
       {
         // Next.js image optimization output — cache for 1 day, stale-while-revalidate for 7 days
-        source: '/_next/image:path*',
+        source: '/_next/image/:path*',
         headers: [
           {
             key: 'Cache-Control',
