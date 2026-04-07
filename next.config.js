@@ -6,7 +6,7 @@ const nextConfig = {
   compress: true,
   outputFileTracingRoot: path.join(__dirname),
   experimental: {
-    optimizePackageImports: ['lucide-react', 'recharts', 'date-fns', 'react-markdown'],
+    optimizePackageImports: ['lucide-react'],
   },
   images: {
     remotePatterns: [
@@ -25,16 +25,6 @@ const nextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        // Next.js image optimization output — cache for 1 day, stale-while-revalidate for 7 days
-        source: '/_next/image/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=86400, stale-while-revalidate=604800',
           },
         ],
       },
@@ -59,12 +49,12 @@ const nextConfig = {
         ],
       },
       {
-        // All pages: never serve stale HTML — always check server for fresh content
+        // All pages: browser must revalidate but 304s are allowed; Vercel ISR sets s-maxage on top
         source: '/((?!_next/static|_next/image|favicon\\.ico).*)',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate',
+            value: 'no-cache',
           },
           {
             key: 'X-UA-Compatible',
@@ -77,6 +67,16 @@ const nextConfig = {
           {
             key: 'X-Frame-Options',
             value: 'DENY',
+          },
+        ],
+      },
+      {
+        // Admin routes: never cache — always private and fresh
+        source: '/admin/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, private, must-revalidate',
           },
         ],
       },

@@ -1,4 +1,6 @@
-import { headers } from 'next/headers';
+import { unstable_cache } from 'next/cache';
+import { prisma } from '@/lib/prisma';
+import { resolveArticleImage } from '@/lib/article-images';
 
 export type HomepageArticle = {
   id: number;
@@ -26,66 +28,82 @@ export type HomepageAdvert = {
   updatedAt: string;
 };
 
-type ArticlesResponse = {
-  success?: boolean;
-  data?: HomepageArticle[];
-};
-
-type AdvertsResponse = {
-  success?: boolean;
-  data?: HomepageAdvert[];
-};
-
-function getBaseUrl(requestHeaders: Headers) {
-  const forwardedHost = requestHeaders.get('x-forwarded-host');
-  const host = forwardedHost || requestHeaders.get('host') || 'localhost:3000';
-  const forwardedProto = requestHeaders.get('x-forwarded-proto');
-  const protocol = forwardedProto || (host.includes('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https');
-
-  return `${protocol}://${host}`;
-}
-
-async function fetchHomepageArticles(baseUrl: string) {
-  try {
-    const response = await fetch(`${baseUrl}/api/articles?limit=24&summary=true`, {
-      next: { revalidate: 60, tags: ['articles'] },
-    });
-
-    if (!response.ok) {
+const getHomepageArticles = unstable_cache(
+  async (): Promise<HomepageArticle[]> => {
+    try {
+      const now = new Date();
+      const articles = await prisma.article.findMany({
+        where: {
+          status: 'published',
+          publishedAt: { lte: now },
+        },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          image: true,
+          author: true,
+          publishedAt: true,
+          readTime: true,
+          featured: true,
+          category: { select: { slug: true } },
+        },
+        orderBy: { publishedAt: 'desc' },
+        take: 24,
+      });
+      return articles.map((a) => ({
+        id: a.id,
+        title: a.title,
+        slug: a.slug,
+        excerpt: a.excerpt,
+        image: resolveArticleImage(a.image, ''),
+        category: a.category.slug,
+        author: a.author,
+        publishedAt: a.publishedAt?.toLocaleDateString(),
+        publishedAtRaw: a.publishedAt?.toISOString(),
+        readTime: a.readTime,
+        featured: a.featured,
+        views: 0,
+      }));
+    } catch {
       return [];
     }
+  },
+  ['homepage-articles'],
+  { revalidate: 60, tags: ['articles'] },
+);
 
-    const payload = (await response.json()) as ArticlesResponse;
-    return Array.isArray(payload.data) ? payload.data : [];
-  } catch {
-    return [];
-  }
-}
-
-async function fetchHomepageAdverts(baseUrl: string) {
-  try {
-    const response = await fetch(`${baseUrl}/api/adverts`, {
-      next: { revalidate: 300, tags: ['adverts'] },
-    });
-
-    if (!response.ok) {
+const getHomepageAdverts = unstable_cache(
+  async (): Promise<HomepageAdvert[]> => {
+    try {
+      const db = prisma as any;
+      const adverts = await db.advert.findMany({
+        where: { isActive: true },
+        orderBy: { createdAt: 'desc' },
+      });
+      return adverts.map((a: any) => ({
+        id: String(a.id),
+        title: a.title,
+        url: a.url || '',
+        imageUrl: a.imageUrl,
+        position: a.position,
+        isActive: a.isActive,
+        createdAt: new Date(a.createdAt).toISOString(),
+        updatedAt: new Date(a.updatedAt).toISOString(),
+      }));
+    } catch {
       return [];
     }
-
-    const payload = (await response.json()) as AdvertsResponse;
-    return Array.isArray(payload.data) ? payload.data : [];
-  } catch {
-    return [];
-  }
-}
+  },
+  ['homepage-adverts'],
+  { revalidate: 300, tags: ['adverts'] },
+);
 
 export async function getHomepageData() {
-  const requestHeaders = await headers();
-  const baseUrl = getBaseUrl(requestHeaders);
   const [articles, adverts] = await Promise.all([
-    fetchHomepageArticles(baseUrl),
-    fetchHomepageAdverts(baseUrl),
+    getHomepageArticles(),
+    getHomepageAdverts(),
   ]);
-
   return { articles, adverts };
 }
