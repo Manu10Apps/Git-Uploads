@@ -42,13 +42,13 @@ export default function BreakingNewsCarousel({ articles = [] }: BreakingNewsCaro
     }
   }, [articles]);
 
-  // Auto-rotate featured article every 2 seconds (3 recent articles only)
+  // Auto-rotate featured article every 5 seconds (was 2s — less main-thread churn)
   useEffect(() => {
     if (newsItems.length < 3) return;
 
     autoPlayRef.current = setInterval(() => {
       setCurrentFeaturedIndex((prev) => (prev + 1) % 3);
-    }, 2000);
+    }, 5000);
 
     return () => {
       if (autoPlayRef.current) clearInterval(autoPlayRef.current);

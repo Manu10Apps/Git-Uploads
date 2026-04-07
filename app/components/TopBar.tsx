@@ -3,6 +3,32 @@
 import React, { useEffect, useState } from 'react';
 import { MapPin } from 'lucide-react';
 
+// Hoisted outside the component — created once, not on every fetchWeatherData call.
+const WEATHER_CONDITIONS: Record<number, { condition: string; conditionKy: string; icon: string }> = {
+  0: { condition: 'Clear', conditionKy: 'Hari ikirere gikeye', icon: '☀️' },
+  1: { condition: 'Mostly Clear', conditionKy: 'Hari ikirere gikeye gake', icon: '🌤️' },
+  2: { condition: 'Partly Cloudy', conditionKy: 'Hari ibicu bike', icon: '⛅' },
+  3: { condition: 'Overcast', conditionKy: 'Hari ibicu byinshi', icon: '☁️' },
+  45: { condition: 'Foggy', conditionKy: 'Hari igihu', icon: '🌫️' },
+  48: { condition: 'Foggy', conditionKy: 'Hari igihu', icon: '🌫️' },
+  51: { condition: 'Light Drizzle', conditionKy: 'Hari ubuhehere buke', icon: '🌧️' },
+  53: { condition: 'Drizzle', conditionKy: 'Hari ubuhehere', icon: '🌧️' },
+  55: { condition: 'Heavy Drizzle', conditionKy: "Hari akavura k'urushyana", icon: '🌧️' },
+  61: { condition: 'Light Rain', conditionKy: 'Hari udutonyanga duke', icon: '🌧️' },
+  63: { condition: 'Rain', conditionKy: 'Hari akavura', icon: '🌧️' },
+  65: { condition: 'Heavy Rain', conditionKy: 'Hari imvura', icon: '⛈️' },
+  71: { condition: 'Light Snow', conditionKy: 'Urubura ruke', icon: '❄️' },
+  73: { condition: 'Snow', conditionKy: 'Urubura', icon: '❄️' },
+  75: { condition: 'Heavy Snow', conditionKy: 'Urubura rwinshi', icon: '❄️' },
+  80: { condition: 'Light Showers', conditionKy: 'Hari akavura gake cyane', icon: '🌧️' },
+  81: { condition: 'Showers', conditionKy: 'Hari akavura', icon: '⛈️' },
+  82: { condition: 'Heavy Showers', conditionKy: 'Hari imvura', icon: '⛈️' },
+  85: { condition: 'Snow Showers', conditionKy: "Hari akavura k'urubura", icon: '❄️' },
+  86: { condition: 'Heavy Snow Showers', conditionKy: "Hari imvura y'urubura", icon: '❄️' },
+  95: { condition: 'Thunderstorm', conditionKy: "Hari imvura ivanze n'inkuba", icon: '⛈️' },
+  96: { condition: 'Thunderstorm with Hail', conditionKy: "Hari imvura ivanze n'inkuba n'imirabyo", icon: '⛈️' },
+};
+
 interface TopBarData {
   dateTime: string;
   simplifiedDate?: string;
@@ -151,7 +177,6 @@ export function TopBar() {
       const weatherData = await response.json();
       const current = weatherData.current;
       
-      // Map WMO weather codes to conditions (in Kinyarwanda)
       const weatherConditions: { [key: number]: { condition: string; conditionKy: string; icon: string } } = {
         0: { condition: 'Clear', conditionKy: 'Hari ikirere gikeye', icon: '☀️' },
         1: { condition: 'Mostly Clear', conditionKy: 'Hari ikirere gikeye gake', icon: '🌤️' },
@@ -177,7 +202,7 @@ export function TopBar() {
         96: { condition: 'Thunderstorm with Hail', conditionKy: 'Hari imvura ivanze n\'inkuba n\'imirabyo', icon: '⛈️' },
       };
 
-      const weatherInfo = weatherConditions[current.weather_code] || { condition: 'Unknown', conditionKy: 'Ifuzo ritamenyekana', icon: '🌤️' };
+      const weatherInfo = WEATHER_CONDITIONS[current.weather_code] || { condition: 'Unknown', conditionKy: 'Ifuzo ritamenyekana', icon: '🌤️' };
 
       return {
         temp: Math.round(current.temperature_2m),
@@ -264,14 +289,36 @@ export function TopBar() {
     deferredDetectLocation();
   }, []);
 
-  // Update data whenever location changes
+  // Update data whenever location changes.
+  // Defer the very first call so it doesn't fire during initial hydration
+  // and add to TBT — the fallback data is already displayed.
   useEffect(() => {
-    void updateData();
-    const interval = setInterval(() => {
-      void updateData();
-    }, 60000);
+    let intervalId: ReturnType<typeof setInterval>;
 
-    return () => clearInterval(interval);
+    const startUpdates = () => {
+      void updateData();
+      intervalId = setInterval(() => {
+        void updateData();
+      }, 60000);
+    };
+
+    let idleId: number | undefined;
+
+    if ('requestIdleCallback' in window) {
+      idleId = window.requestIdleCallback(startUpdates, { timeout: 3000 });
+    } else {
+      const tid = window.setTimeout(startUpdates, 1500);
+      return () => {
+        window.clearTimeout(tid);
+        clearInterval(intervalId);
+      };
+    }
+
+    return () => {
+      if (idleId !== undefined) window.cancelIdleCallback(idleId);
+      clearInterval(intervalId);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userLocation]);
 
   const updateData = async () => {
