@@ -43,9 +43,7 @@ export async function GET(
     });
   } catch (error) {
     console.error(`[translation] Failed to translate article ${articleId} to ${lang}:`, error);
-    return NextResponse.json(
-      { error: 'Translation failed. Please try again later.' },
-      { status: 500 }
-    );
+    // Gracefully fall back to original content instead of returning 500
+    return NextResponse.json({ data: null, isOriginal: true });
   }
 }
