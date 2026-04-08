@@ -90,9 +90,9 @@ export function useArticleTranslation({
         }
       } catch (error: any) {
         if (error.name === 'AbortError') return;
-        console.error('[translation] Article translation failed:', error);
-        setTranslationError('Translation unavailable');
+        // Silently fall back to original content
         setTranslation(null);
+        setTranslationError(null);
       } finally {
         setIsTranslating(false);
       }
