@@ -39,6 +39,29 @@ export function Footer() {
     fetchCategories();
   }, []);
 
+  // Map category slugs to nav translation keys
+  const slugToNavKey: Record<string, keyof typeof t.nav> = {
+    amakuru: 'news',
+    politiki: 'politics',
+    ubuzima: 'health',
+    uburezi: 'education',
+    ubukungu: 'business',
+    siporo: 'sports',
+    ikoranabuhanga: 'technology',
+    imyidagaduro: 'entertainment',
+    ubutabera: 'justice',
+    ibidukikije: 'environment',
+    imyemerere: 'faith',
+    'afurika-yiburasirazuba': 'eastAfrica',
+    'mu-mahanga': 'international',
+    epaper: 'epaper',
+  };
+
+  const translateCategoryName = (category: Category) => {
+    const navKey = slugToNavKey[category.slug];
+    return navKey ? (t.nav as any)[navKey] || category.name : category.name;
+  };
+
   const languages = [
     { code: 'ky', name: 'Kinyarwanda' },
     { code: 'en', name: 'English' },
@@ -77,7 +100,7 @@ export function Footer() {
                       href={`/category/${category.slug}`}
                       className="text-white dark:text-white hover:text-red-600 dark:hover:text-red-600 transition-colors font-light"
                     >
-                      {category.name}
+                      {translateCategoryName(category)}
                     </Link>
                   </li>
                 ))}
