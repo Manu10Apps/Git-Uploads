@@ -48,7 +48,7 @@ export function useArticleTranslation({
 
   const fetchTranslation = useCallback(
     async (lang: SupportedLanguage) => {
-      if (lang === 'ky') {
+      if (lang === 'ky' || !articleId) {
         setTranslation(null);
         setTranslationError(null);
         return;
