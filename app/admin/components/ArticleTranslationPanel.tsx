@@ -293,9 +293,6 @@ export default function ArticleTranslationPanel({
           Article Translations
         </h3>
       </div>
-      <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-        Auto-translate or manually edit translations for each language. Changes are saved to the database for instant loading.
-      </p>
 
       {/* Translate All button */}
       <button
