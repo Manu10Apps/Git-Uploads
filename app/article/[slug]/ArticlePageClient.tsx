@@ -50,13 +50,22 @@ interface ArticleComment {
 
 type CommentReaction = 'like' | 'dislike';
 
-const formatDateInKinyarwanda = (dateString: string) => {
+const monthNames: Record<string, string[]> = {
+  en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+  ky: ['Mutarama', 'Gashyantare', 'Werurwe', 'Mata', 'Gicurasi', 'Kamena', 'Nyakanga', 'Kanama', 'Nzeri', 'Ukwakira', 'Ugushyingo', 'Ukuboza'],
+  sw: ['Januari', 'Februari', 'Machi', 'Aprili', 'Mei', 'Juni', 'Julai', 'Agosti', 'Septemba', 'Oktoba', 'Novemba', 'Desemba'],
+};
+
+const formatDate = (dateString: string, language: string = 'ky') => {
   const date = new Date(dateString);
-  const months = [
-    'Mutarama', 'Gashyantare', 'Werurwe', 'Mata', 'Gicurasi', 'Kamena',
-    'Nyakanga', 'Kanama', 'Nzeri', 'Ukwakira', 'Ugushyingo', 'Ukuboza'
-  ];
-  return `Tariki ya ${date.getDate()} ${months[date.getMonth()]}, ${date.getFullYear()}`;
+  const lang = language in monthNames ? language : 'ky';
+  const months = monthNames[lang];
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  if (lang === 'en') return `${month} ${day}, ${year}`;
+  if (lang === 'sw') return `Tarehe ${day} ${month}, ${year}`;
+  return `Tariki ya ${day} ${month}, ${year}`;
 };
 
 const renderSocialLink = (platform: string, url: string) => {
@@ -211,7 +220,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const gallerySection = article?.gallery && article.gallery.length > 0 ? (
     <div className="mb-8 sm:mb-10 md:mb-12">
       <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white mb-4 sm:mb-6">
-        Andi mafoto y'inkuru
+        {t.article.morePhotos}
       </h2>
       <div className={`grid ${galleryGridClass} gap-4 sm:gap-6`}>
         {article.gallery.map((item, index) => (
@@ -419,7 +428,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
       });
       const data = await res.json();
       if (!res.ok) {
-        setCommentError(data.error || 'Habaye ikosa, ongera ugerageze.');
+        setCommentError(data.error || t.article.errorTryAgain);
       } else {
         await fetchComments();
         setFormData({ name: '', email: '', comment: '' });
@@ -428,7 +437,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
         setTimeout(() => setCommentSuccess(false), 4000);
       }
     } catch {
-      setCommentError('Habaye ikosa, ongera ugerageze.');
+      setCommentError(t.article.errorTryAgain);
     } finally {
       setCommentSubmitting(false);
     }
@@ -477,7 +486,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
       const data = await res.json();
 
       if (!res.ok) {
-        setReplyError(data.error || 'Habaye ikosa, ongera ugerageze.');
+        setReplyError(data.error || t.article.errorTryAgain);
       } else {
         await fetchComments();
         setReplyFormData({ name: '', email: '', comment: '' });
@@ -486,7 +495,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
         setTimeout(() => setReplySuccessId(null), 4000);
       }
     } catch {
-      setReplyError('Habaye ikosa, ongera ugerageze.');
+      setReplyError(t.article.errorTryAgain);
     } finally {
       setReplySubmitting(false);
     }
@@ -530,7 +539,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
           {comment.name}
         </p>
         <p className={`text-xs text-neutral-500 dark:text-neutral-500 ${isReply ? 'mb-1' : 'mb-2'}`}>
-          {new Date(comment.createdAt).toLocaleDateString('rw-RW', { year: 'numeric', month: 'long', day: 'numeric' })}
+          {new Date(comment.createdAt).toLocaleDateString(language === 'en' ? 'en-US' : language === 'sw' ? 'sw-TZ' : 'rw-RW', { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
         <p className={isReply ? 'text-sm text-neutral-700 dark:text-neutral-300' : 'text-neutral-700 dark:text-neutral-300'}>
           {comment.content}
@@ -542,7 +551,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
             onClick={() => openReplyForm(comment.id)}
             className="text-sm font-medium text-red-700 dark:text-red-400 hover:underline"
           >
-            Musubize
+            {t.article.reply}
           </button>
           <button
             type="button"
@@ -563,7 +572,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
             <span>{comment.dislikes}</span>
           </button>
           {replySuccessId === comment.id && (
-            <span className="text-xs text-green-600 dark:text-green-400">Igisubizo cyoherejwe.</span>
+            <span className="text-xs text-green-600 dark:text-green-400">{t.article.replySubmitted}</span>
           )}
         </div>
 
@@ -575,7 +584,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                 value={replyFormData.name}
                 onChange={handleReplyInputChange}
                 className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 text-neutral-900 dark:text-white text-sm rounded-lg focus:ring-0 focus:outline-none block w-full p-2.5"
-                placeholder="Andika izina ryawe"
+                placeholder={t.article.namePlaceholder}
                 required
                 pattern="[A-Za-z\s]{3,20}"
                 type="text"
@@ -585,7 +594,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                 value={replyFormData.email}
                 onChange={handleReplyInputChange}
                 className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 text-neutral-900 dark:text-white text-sm rounded-lg focus:ring-0 focus:outline-none block w-full p-2.5"
-                placeholder="Andika Imeli yawe"
+                placeholder={t.article.emailPlaceholder}
                 required
                 pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
                 type="email"
@@ -597,7 +606,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               onChange={handleReplyInputChange}
               rows={3}
               className="px-3 py-2 w-full text-sm text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-600 rounded-lg focus:ring-0 focus:outline-none resize-none bg-transparent"
-              placeholder="Andika igisubizo..."
+              placeholder={t.article.replyPlaceholder}
               required
             />
             {replyError && (
@@ -609,14 +618,14 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                 onClick={() => setActiveReplyId(null)}
                 className="rounded-md py-2 px-3 text-sm bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-600 dark:hover:bg-neutral-500 text-neutral-800 dark:text-white"
               >
-                Hagarika
+                {t.article.cancel}
               </button>
               <button
                 type="submit"
                 disabled={replySubmitting}
                 className="rounded-md py-2 px-3 text-sm bg-[#f61f00] hover:bg-[#556270] text-white disabled:bg-neutral-400"
               >
-                {replySubmitting ? 'Kohereza...' : 'Ohereza Igisubizo'}
+                {replySubmitting ? t.article.submitting : t.article.submitReply}
               </button>
             </div>
           </form>
@@ -643,13 +652,13 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
       const data = await res.json();
 
       if (!res.ok) {
-        setCommentError(data.error || 'Habaye ikosa, ongera ugerageze.');
+        setCommentError(data.error || t.article.errorTryAgain);
         return;
       }
 
       setComments((prev) => updateCommentReaction(prev, commentId, data.comment.likes, data.comment.dislikes, data.comment.visitorReaction));
     } catch {
-      setCommentError('Habaye ikosa, ongera ugerageze.');
+      setCommentError(t.article.errorTryAgain);
     } finally {
       setReactionLoadingId(null);
     }
@@ -671,7 +680,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
         <Header />
         <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
           <div className="text-center">
-            <p className="text-neutral-600 dark:text-neutral-400">Inkuru ziri gushakishwa...</p>
+            <p className="text-neutral-600 dark:text-neutral-400">{t.article.loadingArticles}</p>
           </div>
         </div>
         <Footer />
@@ -730,9 +739,9 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 pb-4 sm:pb-6 border-b border-neutral-200 dark:border-neutral-800">
               {/* Author */}
               <div>
-                <p className="font-semibold text-sm sm:text-base text-neutral-900 dark:text-white">Yanditswe na {article.author}</p>
+                <p className="font-semibold text-sm sm:text-base text-neutral-900 dark:text-white">{t.article.writtenBy} {article.author}</p>
                 <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400">
-                  {formatDateInKinyarwanda(article.publishedAt)}
+                  {formatDate(article.publishedAt, language)}
                 </p>
               </div>
 
@@ -857,9 +866,9 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
 
           {/* Contact Author - Chief Editor */}
           <section className="mb-8 sm:mb-10 md:mb-12 rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white mb-2">Andikira Umwanditsi</h2>
+            <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white mb-2">{t.article.contactAuthor}</h2>
             <p className="text-sm sm:text-base text-neutral-700 dark:text-neutral-300 mb-4">
-              Ushobora kuvugana na {article.author} ukoresheje imbuga nkoranyambaga ze.
+              {t.article.contactAuthorDesc.replace('{author}', article.author)}
             </p>
             <div className="flex flex-wrap gap-3">
               {article.authorSocialPlatform && article.authorSocialUrl && renderSocialLink(article.authorSocialPlatform, article.authorSocialUrl)}
@@ -884,7 +893,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
 
           {/* Comments Section */}
           <section className="mt-8 sm:mt-10 md:mt-12 bg-neutral-100 dark:bg-neutral-800 p-4 sm:p-6 md:p-8 rounded-lg sm:rounded-md">
-            <h2 className="mb-4 sm:mb-6 text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">Ibitekerezo ({totalComments})</h2>
+            <h2 className="mb-4 sm:mb-6 text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">{t.article.comments} ({totalComments})</h2>
             <div>
               {/* Comment Form */}
               <form
@@ -905,7 +914,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                       value={formData.name}
                       onChange={handleInputChange}
                       className="bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 text-neutral-900 dark:text-white text-sm rounded-lg focus:ring-0 focus:outline-none block w-full p-2.5"
-                      placeholder="Andika izina ryawe"
+                      placeholder={t.article.namePlaceholder}
                       required
                       pattern="[A-Za-z\s]{3,20}"
                       type="text"
@@ -921,7 +930,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                       value={formData.email}
                       onChange={handleInputChange}
                       className="bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 text-neutral-900 dark:text-white text-sm rounded-lg focus:ring-0 focus:outline-none block w-full p-2.5"
-                      placeholder="Andika Imeli yawe"
+                      placeholder={t.article.emailPlaceholder}
                       required
                       pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
                       type="email"
@@ -939,7 +948,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                     onChange={handleInputChange}
                     rows={4}
                     className="px-4 py-2 w-full text-sm text-neutral-900 dark:text-white border-0 focus:ring-0 focus:outline-none resize-none bg-transparent"
-                    placeholder="Andika igitekerezo..."
+                    placeholder={t.article.commentPlaceholder}
                     required
                   />
                 </div>
@@ -948,7 +957,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                   <p className="text-sm text-red-600 dark:text-red-400 mb-3">{commentError}</p>
                 )}
                 {commentSuccess && (
-                  <p className="text-sm text-green-600 dark:text-green-400 mb-3">Igitekerezo cyawe cyoherejwe!</p>
+                  <p className="text-sm text-green-600 dark:text-green-400 mb-3">{t.article.commentSubmitted}</p>
                 )}
 
                 <div className="flex justify-end">
@@ -957,7 +966,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                     type="submit"
                     disabled={commentSubmitting}
                   >
-                    {commentSubmitting ? 'Kohereza...' : 'Ohereza Igitekerezo'}
+                    {commentSubmitting ? t.article.submitting : t.article.submitComment}
                   </button>
                 </div>
               </form>
@@ -972,8 +981,8 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                   <div className="flex items-start gap-3" style={{ color: '#d01a00' }}>
                     <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0" />
                     <p className="text-sm leading-6">
-                      <span className="font-semibold">Umuburo! </span>
-                      Ibitekerezo bitangwa mu bwisanzure n'ubwubahane, imvugo z'urwango no kutagira imyitwarire iboneye bihanwa n'amategeko y'ibihugu.
+                      <span className="font-semibold">{t.article.warning} </span>
+                      {t.article.warningText}
                     </p>
                   </div>
                 </div>
@@ -984,13 +993,13 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
           {/* Related Articles - Same Category Stories - INKURU BIFITANYE ISANO */}
           <section className="mt-16 border-t border-neutral-200 dark:border-neutral-700 pt-12">
             <div className="mb-10">
-              <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">INKURU BIFITANYE ISANO</div>
+              <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">{t.article.relatedStories}</div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {relatedLoading ? (
                 <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-100 dark:hover:border-red-900/50 transition-colors">
                   <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru ziri gushakishwa...</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">{t.article.loadingArticles}</p>
                   </div>
                 </article>
               ) : relatedArticles.length > 0 ? (
@@ -1012,7 +1021,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                           {relatedArticle.title}
                         </h3>
                         <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                          {formatDateInKinyarwanda(relatedArticle.publishedAt)}
+                          {formatDate(relatedArticle.publishedAt, language)}
                         </p>
                       </div>
                     </article>
@@ -1020,7 +1029,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               ) : (
                 <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900">
                   <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru (0) bifitanye isano</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">{t.article.noRelatedArticles}</p>
                   </div>
                 </article>
               )}
@@ -1030,13 +1039,13 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
           {/* Most Viewed Articles - IZIKUNZWE CYANE */}
           <section className="mt-16 border-t border-neutral-200 dark:border-neutral-700 pt-12">
             <div className="mb-10">
-              <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">IZIKUNZWE CYANE</div>
+              <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">{t.article.mostViewed}</div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {mostViewedLoading ? (
                 <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-100 dark:hover:border-red-900/50 transition-colors">
                   <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru ziri gushakishwa...</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">{t.article.loadingArticles}</p>
                   </div>
                 </article>
               ) : mostViewedArticles.length > 0 ? (
@@ -1058,7 +1067,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                           {viewedArticle.title}
                         </h3>
                         <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                          {formatDateInKinyarwanda(viewedArticle.publishedAt)}
+                          {formatDate(viewedArticle.publishedAt, language)}
                         </p>
                       </div>
                     </article>
@@ -1066,7 +1075,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               ) : (
                 <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900">
                   <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru (0) bifitanye isano</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">{t.article.noRelatedArticles}</p>
                   </div>
                 </article>
               )}
@@ -1082,13 +1091,13 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               {/* Recent Stories Section - INKURU ZIHERUKA */}
               <section className="border-t border-neutral-200 dark:border-neutral-700 pt-12">
                 <div className="mb-10">
-                  <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">INKURU ZIHERUKA</div>
+                  <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">{t.article.recentStories}</div>
                 </div>
                 <div className="grid grid-cols-1 gap-8">
                   {recentLoading ? (
                     <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-100 dark:hover:border-red-900/50 transition-colors">
                       <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru ziri gushakishwa...</p>
+                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">{t.article.loadingArticles}</p>
                       </div>
                     </article>
                   ) : recentArticles.length > 0 ? (
@@ -1110,7 +1119,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                             {recentArticle.title}
                           </h3>
                           <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
-                            {formatDateInKinyarwanda(recentArticle.publishedAt)}
+                            {formatDate(recentArticle.publishedAt, language)}
                           </p>
                         </div>
                       </article>
@@ -1118,7 +1127,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                   ) : (
                     <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900">
                       <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru (0) bifitanye isano</p>
+                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">{t.article.noRelatedArticles}</p>
                       </div>
                     </article>
                   )}
@@ -1127,13 +1136,13 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
 
               <section className="border-t border-neutral-200 dark:border-neutral-700 pt-12 mt-12">
                 <div className="mb-10">
-                  <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">INKURU ZIDASANZWE</div>
+                  <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">{t.article.trendingStories}</div>
                 </div>
                 <div className="grid grid-cols-1 gap-8">
                   {mostViralLoading ? (
                     <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-100 dark:hover:border-red-900/50 transition-colors">
                       <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru ziri gushakishwa...</p>
+                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">{t.article.loadingArticles}</p>
                       </div>
                     </article>
                   ) : mostViralArticles.length > 0 ? (
@@ -1155,7 +1164,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                             {viralArticle.title}
                           </h3>
                           <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
-                            {formatDateInKinyarwanda(viralArticle.publishedAt)}
+                            {formatDate(viralArticle.publishedAt, language)}
                           </p>
                         </div>
                       </article>
@@ -1163,7 +1172,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                   ) : (
                     <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900">
                       <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru (0) zidasanzwe</p>
+                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">{t.article.noTrendingArticles}</p>
                       </div>
                     </article>
                   )}
@@ -1172,13 +1181,13 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
 
               <section className="border-t border-neutral-200 dark:border-neutral-700 pt-12 mt-12">
                 <div className="mb-10">
-                  <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">AFRIKA Y'IBURASIRAZUBA</div>
+                  <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">{t.article.eastAfricaSection}</div>
                 </div>
                 <div className="grid grid-cols-1 gap-8">
                   {eastAfricaLoading ? (
                     <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-100 dark:hover:border-red-900/50 transition-colors">
                       <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru ziri gushakishwa...</p>
+                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">{t.article.loadingArticles}</p>
                       </div>
                     </article>
                   ) : eastAfricaArticles.length > 0 ? (
@@ -1200,7 +1209,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                             {eastAfricaArticle.title}
                           </h3>
                           <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
-                            {formatDateInKinyarwanda(eastAfricaArticle.publishedAt)}
+                            {formatDate(eastAfricaArticle.publishedAt, language)}
                           </p>
                         </div>
                       </article>
@@ -1208,7 +1217,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                   ) : (
                     <article className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900">
                       <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 flex items-center justify-center">
-                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Inkuru (0) zo muri Afurika y'Iburasirazuba</p>
+                        <p className="text-neutral-500 dark:text-neutral-400 text-sm">{t.article.noEastAfricaArticles}</p>
                       </div>
                     </article>
                   )}
