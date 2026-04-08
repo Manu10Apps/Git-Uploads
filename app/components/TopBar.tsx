@@ -107,46 +107,70 @@ export function TopBar() {
   const detectLocation = async () => {
     try {
       if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-          const { latitude, longitude } = position.coords;
-          
-          // Get city name and timezone from coordinates using reverse geocoding
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
-            { signal: AbortSignal.timeout(5000) }
-          );
-          const geoData = await response.json();
-          const city = geoData.address?.city || geoData.address?.town || geoData.address?.county || 'Unknown';
-          const country = geoData.address?.country || 'Rwanda';
-          
-          // Get timezone using lat/lon (optional - uses env var if available)
-          let timezone = getTimezoneFromCoords(latitude, longitude);
-          
-          const timezoneDbKey = process.env.NEXT_PUBLIC_TIMEZONEDB_KEY;
-          if (timezoneDbKey && timezoneDbKey !== 'YOUR_TIMEZONE_KEY') {
-            const tzResponse = await fetch(
-              `https://api.timezonedb.com/v2.1/get-time-zone?key=${timezoneDbKey}&format=json&by=position&lat=${latitude}&lng=${longitude}`,
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+
+            // Get city name and timezone from coordinates using reverse geocoding
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
               { signal: AbortSignal.timeout(5000) }
-            ).catch(() => null);
-            
-            const tzData = await tzResponse?.json().catch(() => null);
-            if (tzData?.zoneName) {
-              timezone = tzData.zoneName;
+            );
+            const geoData = await response.json();
+            const city = geoData.address?.city || geoData.address?.town || geoData.address?.county || 'Unknown';
+            const country = geoData.address?.country || 'Rwanda';
+
+            // Get timezone using lat/lon (optional - uses env var if available)
+            let timezone = getTimezoneFromCoords(latitude, longitude);
+
+            const timezoneDbKey = process.env.NEXT_PUBLIC_TIMEZONEDB_KEY;
+            if (timezoneDbKey && timezoneDbKey !== 'YOUR_TIMEZONE_KEY') {
+              const tzResponse = await fetch(
+                `https://api.timezonedb.com/v2.1/get-time-zone?key=${timezoneDbKey}&format=json&by=position&lat=${latitude}&lng=${longitude}`,
+                { signal: AbortSignal.timeout(5000) }
+              ).catch(() => null);
+
+              const tzData = await tzResponse?.json().catch(() => null);
+              if (tzData?.zoneName) {
+                timezone = tzData.zoneName;
+              }
             }
+
+            setUserLocation({ lat: latitude, lon: longitude, city, country, timezone });
+          },
+          async () => {
+            // Geolocation denied — fall back to IP-based geolocation
+            await detectLocationByIP();
           }
-          
-          setUserLocation({ lat: latitude, lon: longitude, city, country, timezone });
-        }, 
-        (error) => {
-          // If geolocation denied, use default (Kigali)
-          console.log('Geolocation permission denied, using default location');
-          setUserLocation({ ...DEFAULT_LOCATION, country: 'Rwanda' });
-        });
+        );
+      } else {
+        await detectLocationByIP();
       }
     } catch (error) {
       console.error('Location detection error:', error);
-      setUserLocation({ ...DEFAULT_LOCATION, country: 'Rwanda' });
+      await detectLocationByIP();
     }
+  };
+
+  // IP-based geolocation fallback (no permission required)
+  const detectLocationByIP = async () => {
+    try {
+      const response = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) });
+      const data = await response.json();
+      if (data && data.latitude && data.longitude) {
+        setUserLocation({
+          lat: data.latitude,
+          lon: data.longitude,
+          city: data.city || 'Unknown',
+          country: data.country_name || 'Unknown',
+          timezone: data.timezone || getTimezoneFromCoords(data.latitude, data.longitude),
+        });
+        return;
+      }
+    } catch {
+      // IP geo unavailable — use hardcoded default
+    }
+    setUserLocation({ ...DEFAULT_LOCATION, country: 'Rwanda' });
   };
 
   // Fallback timezone mapping based on coordinates
