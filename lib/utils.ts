@@ -79,6 +79,51 @@ export function formatKinyarwandaDateTime(dateInput?: string | Date | null): {
   };
 }
 
+export function formatLocalizedDateTime(
+  dateInput: string | Date | null | undefined,
+  t: { timeAgo: Record<string, string>; months: string[] }
+): { dateLabel: string; timeLabel: string } {
+  const fallback = { dateLabel: 'N/A', timeLabel: t.timeAgo.now };
+  if (!dateInput) return fallback;
+
+  const parsedDate = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  if (!(parsedDate instanceof Date) || Number.isNaN(parsedDate.getTime())) return fallback;
+
+  const day = String(parsedDate.getDate()).padStart(2, '0');
+  const monthIndex = parsedDate.getMonth();
+  const year = parsedDate.getFullYear();
+  const diffMs = Date.now() - parsedDate.getTime();
+  const diffMinutes = Math.max(0, Math.floor(diffMs / 60000));
+
+  let timeLabel = t.timeAgo.now;
+  if (diffMinutes >= 5 && diffMinutes < 60) {
+    timeLabel = t.timeAgo.minutesAgo.replace('{n}', String(diffMinutes));
+  } else if (diffMinutes >= 60) {
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) {
+      timeLabel = diffHours === 1 ? t.timeAgo.hourAgo : t.timeAgo.hoursAgo.replace('{n}', String(diffHours));
+    } else {
+      const diffDays = Math.floor(diffHours / 24);
+      if (diffDays < 30) {
+        timeLabel = diffDays === 1 ? t.timeAgo.dayAgo : t.timeAgo.daysAgo.replace('{n}', String(diffDays));
+      } else {
+        const diffMonths = Math.floor(diffDays / 30);
+        if (diffMonths < 12) {
+          timeLabel = diffMonths === 1 ? t.timeAgo.monthAgo : t.timeAgo.monthsAgo.replace('{n}', String(diffMonths));
+        } else {
+          const diffYears = Math.floor(diffDays / 365);
+          timeLabel = diffYears === 1 ? t.timeAgo.yearAgo : t.timeAgo.yearsAgo.replace('{n}', String(diffYears));
+        }
+      }
+    }
+  }
+
+  return {
+    dateLabel: `${day} ${t.months[monthIndex]} ${year}`,
+    timeLabel,
+  };
+}
+
 export function formatCategoryLabel(category?: string | null): string {
   if (!category) return 'GENERAL';
   const trimmed = category.trim();

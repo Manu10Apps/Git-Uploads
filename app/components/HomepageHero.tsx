@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArticleImage } from '@/app/components/ArticleImage';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
-import { formatCategoryLabel, formatKinyarwandaDateTime } from '@/lib/utils';
+import { formatCategoryLabel, formatLocalizedDateTime } from '@/lib/utils';
 import type { HomepageArticle } from '@/lib/homepage-data';
 
 type TranslationMap = Record<number, { title: string; excerpt: string }>;
@@ -57,8 +57,35 @@ export function HomepageHero({
     return translations[article.id]?.title || article.title;
   };
 
-  const featuredDateTime = formatKinyarwandaDateTime(
-    featuredArticle.publishedAtRaw || featuredArticle.publishedAt || null
+  const slugToNavKey: Record<string, keyof typeof t.nav> = {
+    amakuru: 'news',
+    politiki: 'politics',
+    ubuzima: 'health',
+    uburezi: 'education',
+    ubukungu: 'business',
+    siporo: 'sports',
+    ikoranabuhanga: 'technology',
+    imyidagaduro: 'entertainment',
+    ubutabera: 'justice',
+    ibidukikije: 'environment',
+    imyemerere: 'faith',
+    'afurika-yiburasirazuba': 'eastAfrica',
+    'mu-mahanga': 'international',
+  };
+
+  const getCategoryLabel = (category?: string | null) => {
+    if (!category) return 'GENERAL';
+    const slug = category.trim().toLowerCase();
+    const navKey = slugToNavKey[slug];
+    if (navKey && (t.nav as Record<string, string>)[navKey]) {
+      return (t.nav as Record<string, string>)[navKey].toUpperCase();
+    }
+    return formatCategoryLabel(category);
+  };
+
+  const featuredDateTime = formatLocalizedDateTime(
+    featuredArticle.publishedAtRaw || featuredArticle.publishedAt || null,
+    t
   );
 
   return (
@@ -101,7 +128,7 @@ export function HomepageHero({
                 </h3>
                 <div className="mt-2 flex items-center justify-between w-full text-xs font-bold text-neutral-600 dark:text-neutral-400">
                   <span className="truncate pr-2">
-                    {formatCategoryLabel(featuredArticle.category)}
+                    {getCategoryLabel(featuredArticle.category)}
                   </span>
                   <div className="flex items-center gap-2 ml-auto">
                     <span className="whitespace-nowrap">{featuredDateTime.timeLabel}</span>
