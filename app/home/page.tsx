@@ -6,7 +6,7 @@ import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 import { Header, Footer, GridNewsLayout, BreakingNewsCarousel } from '@/app/components';
 import { ArticleImage } from '@/app/components/ArticleImage';
-import { formatCategoryLabel, formatKinyarwandaDateTime } from '@/lib/utils';
+import { formatCategoryLabel, formatLocalizedDateTime } from '@/lib/utils';
 
 export default function HomePage() {
   const { language } = useAppStore();
@@ -75,6 +75,32 @@ export default function HomePage() {
     }, 1000);
   };
 
+  const slugToNavKey: Record<string, keyof typeof t.nav> = {
+    amakuru: 'news',
+    politiki: 'politics',
+    ubuzima: 'health',
+    uburezi: 'education',
+    ubukungu: 'business',
+    siporo: 'sports',
+    ikoranabuhanga: 'technology',
+    imyidagaduro: 'entertainment',
+    ubutabera: 'justice',
+    ibidukikije: 'environment',
+    imyemerere: 'faith',
+    'afurika-yiburasirazuba': 'eastAfrica',
+    'mu-mahanga': 'international',
+  };
+
+  const getCategoryLabel = (category?: string | null) => {
+    if (!category) return 'GENERAL';
+    const slug = category.trim().toLowerCase();
+    const navKey = slugToNavKey[slug];
+    if (navKey && (t.nav as Record<string, string>)[navKey]) {
+      return (t.nav as Record<string, string>)[navKey].toUpperCase();
+    }
+    return formatCategoryLabel(category);
+  };
+
   return (
     <>
       <Header />
@@ -103,7 +129,7 @@ export default function HomePage() {
                       </div>
                     <div className="flex-grow">
                       <div className="text-red-700 text-xs font-semibold tracking-widest mb-2">
-                        INKURU ZIGEZWEHO
+                        {t.home.latestArticles}
                       </div>
                       <h3 className="text-xl md:text-2xl font-serif font-bold text-neutral-900 dark:text-white mb-3 leading-tight">
                         <Link href={`/article/${articles[0].slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
@@ -114,14 +140,14 @@ export default function HomePage() {
                         {articles[0].excerpt}
                       </p>
                       <div className="flex items-center justify-between w-full text-xs font-bold text-neutral-600 dark:text-neutral-400">
-                        <span className="truncate pr-2">{formatCategoryLabel(articles[0].category)}</span>
+                        <span className="truncate pr-2">{getCategoryLabel(articles[0].category)}</span>
                         <div className="flex items-center gap-2 ml-auto">
                           <span className="whitespace-nowrap">
-                            {formatKinyarwandaDateTime(articles[0].publishedAtRaw || articles[0].publishedAt).timeLabel}
+                            {formatLocalizedDateTime(articles[0].publishedAtRaw || articles[0].publishedAt, t).timeLabel}
                           </span>
                           <span className="mx-0.5">·</span>
                           <span className="whitespace-nowrap">
-                            {formatKinyarwandaDateTime(articles[0].publishedAtRaw || articles[0].publishedAt).dateLabel}
+                            {formatLocalizedDateTime(articles[0].publishedAtRaw || articles[0].publishedAt, t).dateLabel}
                           </span>
                         </div>
                       </div>
