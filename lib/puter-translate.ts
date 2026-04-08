@@ -75,17 +75,43 @@ ${JSON.stringify({ title: article.title, excerpt: article.excerpt, content: arti
 
   const response = await window.puter.ai.chat(prompt, { model: 'gpt-5.4-nano' });
 
-  // Extract JSON from the response
-  const responseText = typeof response === 'string' ? response : String(response);
-  const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+  // Handle various response formats from puter.ai
+  let responseText: string;
+  if (typeof response === 'string') {
+    responseText = response;
+  } else if (response && typeof response === 'object') {
+    // puter.ai v2 may return { message: { content: "..." } } or { text: "..." }
+    const r = response as any;
+    responseText = r?.message?.content || r?.text || r?.content || JSON.stringify(response);
+  } else {
+    responseText = String(response);
+  }
+  
+  // Try to find JSON in a code block first, then bare JSON
+  const codeBlockMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const jsonStr = codeBlockMatch ? codeBlockMatch[1].trim() : responseText;
+  const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
+    console.error('[puter-translate] No JSON found in response:', responseText.slice(0, 500));
     throw new Error('Failed to parse translation response');
   }
 
-  const parsed = JSON.parse(jsonMatch[0]) as PuterTranslationResult;
+  let parsed: PuterTranslationResult;
+  try {
+    parsed = JSON.parse(jsonMatch[0]) as PuterTranslationResult;
+  } catch (parseErr) {
+    console.error('[puter-translate] JSON parse error:', parseErr, jsonMatch[0].slice(0, 500));
+    throw new Error('Failed to parse translation JSON');
+  }
 
-  if (!parsed.title || !parsed.excerpt || !parsed.content) {
+  if (!parsed.title || !parsed.content) {
+    console.error('[puter-translate] Incomplete response:', parsed);
     throw new Error('Incomplete translation response');
+  }
+
+  // Ensure excerpt has a value
+  if (!parsed.excerpt) {
+    parsed.excerpt = parsed.title;
   }
 
   return parsed;
