@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Languages, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Languages, CheckCircle, Loader2, AlertCircle, Save } from 'lucide-react';
 import { puterTranslateArticle } from '@/lib/puter-translate';
 
 interface ArticleTranslationPanelProps {
@@ -11,15 +11,26 @@ interface ArticleTranslationPanelProps {
   content: string;
 }
 
-interface LangStatus {
-  status: 'idle' | 'translating' | 'done' | 'error';
+interface TranslationForm {
+  title: string;
+  excerpt: string;
+  content: string;
+}
+
+type LangStatusType = 'idle' | 'loading' | 'loaded' | 'translating' | 'saving' | 'saved' | 'error';
+
+interface LangState {
+  status: LangStatusType;
+  form: TranslationForm;
   error?: string;
 }
 
 const LANGUAGES = [
-  { code: 'en', label: 'English' },
-  { code: 'sw', label: 'Kiswahili' },
+  { code: 'en', label: 'English', flag: '🇬🇧' },
+  { code: 'sw', label: 'Kiswahili', flag: '🇹🇿' },
 ] as const;
+
+const emptyForm: TranslationForm = { title: '', excerpt: '', content: '' };
 
 export default function ArticleTranslationPanel({
   articleId,
@@ -27,134 +38,383 @@ export default function ArticleTranslationPanel({
   excerpt,
   content,
 }: ArticleTranslationPanelProps) {
-  const [langStatus, setLangStatus] = useState<Record<string, LangStatus>>({
-    en: { status: 'idle' },
-    sw: { status: 'idle' },
+  const [activeTab, setActiveTab] = useState<string>('en');
+  const [langs, setLangs] = useState<Record<string, LangState>>({
+    en: { status: 'idle', form: { ...emptyForm } },
+    sw: { status: 'idle', form: { ...emptyForm } },
   });
   const [translatingAll, setTranslatingAll] = useState(false);
 
-  const translateToLang = async (langCode: string) => {
-    setLangStatus((prev) => ({ ...prev, [langCode]: { status: 'translating' } }));
+  // Load existing translations from DB on mount
+  useEffect(() => {
+    const loadExisting = async (langCode: string) => {
+      setLangs((prev) => ({
+        ...prev,
+        [langCode]: { ...prev[langCode], status: 'loading' },
+      }));
+      try {
+        const res = await fetch(
+          `/api/translations/cache?articleId=${articleId}&lang=${langCode}`
+        );
+        const json = await res.json();
+        if (json.data) {
+          setLangs((prev) => ({
+            ...prev,
+            [langCode]: {
+              status: 'loaded',
+              form: {
+                title: json.data.title || '',
+                excerpt: json.data.excerpt || '',
+                content: json.data.content || '',
+              },
+            },
+          }));
+        } else {
+          setLangs((prev) => ({
+            ...prev,
+            [langCode]: { ...prev[langCode], status: 'idle' },
+          }));
+        }
+      } catch {
+        setLangs((prev) => ({
+          ...prev,
+          [langCode]: { ...prev[langCode], status: 'idle' },
+        }));
+      }
+    };
+    LANGUAGES.forEach((l) => loadExisting(l.code));
+  }, [articleId]);
 
+  const updateField = useCallback(
+    (langCode: string, field: keyof TranslationForm, value: string) => {
+      setLangs((prev) => ({
+        ...prev,
+        [langCode]: {
+          ...prev[langCode],
+          form: { ...prev[langCode].form, [field]: value },
+        },
+      }));
+    },
+    []
+  );
+
+  const autoTranslate = async (langCode: string) => {
+    setLangs((prev) => ({
+      ...prev,
+      [langCode]: { ...prev[langCode], status: 'translating' },
+    }));
     try {
       const result = await puterTranslateArticle(
         { title, excerpt, content },
         'ky',
         langCode as any
       );
+      setLangs((prev) => ({
+        ...prev,
+        [langCode]: {
+          status: 'loaded',
+          form: {
+            title: result.title || '',
+            excerpt: result.excerpt || '',
+            content: result.content || '',
+          },
+        },
+      }));
+    } catch (err: any) {
+      setLangs((prev) => ({
+        ...prev,
+        [langCode]: {
+          ...prev[langCode],
+          status: 'error',
+          error: err?.message || 'Translation failed',
+        },
+      }));
+    }
+  };
 
-      // Save to database
+  const saveTranslation = async (langCode: string) => {
+    const form = langs[langCode].form;
+    if (!form.title.trim() || !form.content.trim()) return;
+
+    setLangs((prev) => ({
+      ...prev,
+      [langCode]: { ...prev[langCode], status: 'saving' },
+    }));
+    try {
       const res = await fetch('/api/translations/cache', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           articleId,
           language: langCode,
-          title: result.title,
-          excerpt: result.excerpt,
-          content: result.content,
+          title: form.title.trim(),
+          excerpt: form.excerpt.trim(),
+          content: form.content.trim(),
         }),
       });
-
-      if (!res.ok) throw new Error('Failed to save translation');
-
-      setLangStatus((prev) => ({ ...prev, [langCode]: { status: 'done' } }));
-    } catch (err: any) {
-      setLangStatus((prev) => ({
+      if (!res.ok) throw new Error('Failed to save');
+      setLangs((prev) => ({
         ...prev,
-        [langCode]: { status: 'error', error: err?.message || 'Translation failed' },
+        [langCode]: { ...prev[langCode], status: 'saved', error: undefined },
+      }));
+    } catch (err: any) {
+      setLangs((prev) => ({
+        ...prev,
+        [langCode]: {
+          ...prev[langCode],
+          status: 'error',
+          error: err?.message || 'Save failed',
+        },
       }));
     }
   };
 
-  const translateAll = async () => {
+  const translateAndSaveAll = async () => {
     setTranslatingAll(true);
     for (const lang of LANGUAGES) {
-      if (langStatus[lang.code]?.status === 'done') continue;
-      await translateToLang(lang.code);
+      // Auto-translate
+      setLangs((prev) => ({
+        ...prev,
+        [lang.code]: { ...prev[lang.code], status: 'translating' },
+      }));
+      try {
+        const result = await puterTranslateArticle(
+          { title, excerpt, content },
+          'ky',
+          lang.code as any
+        );
+        const form = {
+          title: result.title || '',
+          excerpt: result.excerpt || '',
+          content: result.content || '',
+        };
+        setLangs((prev) => ({
+          ...prev,
+          [lang.code]: { status: 'saving', form },
+        }));
+        // Save immediately with the result
+        const res = await fetch('/api/translations/cache', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            articleId,
+            language: lang.code,
+            title: form.title.trim(),
+            excerpt: form.excerpt.trim(),
+            content: form.content.trim(),
+          }),
+        });
+        if (!res.ok) throw new Error('Failed to save');
+        setLangs((prev) => ({
+          ...prev,
+          [lang.code]: { ...prev[lang.code], status: 'saved', error: undefined },
+        }));
+      } catch (err: any) {
+        setLangs((prev) => ({
+          ...prev,
+          [lang.code]: {
+            ...prev[lang.code],
+            status: 'error',
+            error: err?.message || 'Failed',
+          },
+        }));
+      }
     }
     setTranslatingAll(false);
   };
 
-  const allDone = LANGUAGES.every((l) => langStatus[l.code]?.status === 'done');
-  const anyTranslating = LANGUAGES.some((l) => langStatus[l.code]?.status === 'translating');
+  const activeLang = langs[activeTab];
+  const isBusy =
+    activeLang?.status === 'translating' ||
+    activeLang?.status === 'saving' ||
+    activeLang?.status === 'loading';
 
   return (
-    <div className="mt-8 border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 rounded-lg p-4 sm:p-6">
+    <div className="mt-8 space-y-0">
+      {/* Header */}
       <div className="flex items-center gap-2 mb-4">
-        <Languages className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-        <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-200">
-          Translate Article
+        <Languages className="w-5 h-5 text-red-700 dark:text-red-400" />
+        <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+          Article Translations
         </h3>
       </div>
-      <p className="text-sm text-blue-700 dark:text-blue-300 mb-4">
-        Translate the article title, excerpt, and content to other languages. Translations are saved to the database for instant loading.
+      <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+        Auto-translate or manually edit translations for each language. Changes are saved to the database for instant loading.
       </p>
 
-      <div className="space-y-3 mb-4">
-        {LANGUAGES.map((lang) => {
-          const st = langStatus[lang.code];
-          return (
-            <div
-              key={lang.code}
-              className="flex items-center justify-between bg-white dark:bg-neutral-800 rounded-md px-4 py-3 border border-neutral-200 dark:border-neutral-700"
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-neutral-900 dark:text-white">
-                  {lang.label}
-                </span>
-                {st?.status === 'done' && (
-                  <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                    <CheckCircle className="w-3.5 h-3.5" /> Saved
-                  </span>
-                )}
-                {st?.status === 'translating' && (
-                  <span className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Translating...
-                  </span>
-                )}
-                {st?.status === 'error' && (
-                  <span className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
-                    <AlertCircle className="w-3.5 h-3.5" /> {st.error}
-                  </span>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => translateToLang(lang.code)}
-                disabled={st?.status === 'translating' || translatingAll}
-                className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white transition-colors"
-              >
-                {st?.status === 'done' ? 'Re-translate' : 'Translate'}
-              </button>
-            </div>
-          );
-        })}
-      </div>
-
+      {/* Translate All button */}
       <button
         type="button"
-        onClick={translateAll}
-        disabled={translatingAll || anyTranslating || allDone}
-        className="w-full px-4 py-2.5 text-sm font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white transition-colors flex items-center justify-center gap-2"
+        onClick={translateAndSaveAll}
+        disabled={translatingAll}
+        className="mb-6 w-full sm:w-auto px-5 py-2.5 text-sm font-semibold rounded-lg bg-red-700 hover:bg-red-800 disabled:bg-red-700/50 disabled:cursor-not-allowed text-white transition-colors flex items-center justify-center gap-2"
       >
-        {translatingAll || anyTranslating ? (
+        {translatingAll ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />
-            Translating...
-          </>
-        ) : allDone ? (
-          <>
-            <CheckCircle className="w-4 h-4" />
-            All Translations Saved
+            Translating &amp; Saving All...
           </>
         ) : (
           <>
             <Languages className="w-4 h-4" />
-            Translate to All Languages
+            Auto-Translate &amp; Save All Languages
           </>
         )}
       </button>
+
+      {/* Language Tabs */}
+      <div className="flex border-b border-neutral-200 dark:border-neutral-700 mb-0">
+        {LANGUAGES.map((lang) => {
+          const st = langs[lang.code];
+          const isActive = activeTab === lang.code;
+          return (
+            <button
+              key={lang.code}
+              type="button"
+              onClick={() => setActiveTab(lang.code)}
+              className={`flex items-center gap-2 px-4 sm:px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
+                isActive
+                  ? 'border-red-700 text-red-700 dark:text-red-400 dark:border-red-400'
+                  : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'
+              }`}
+            >
+              <span>{lang.flag}</span>
+              <span>{lang.label}</span>
+              {st?.status === 'saved' && (
+                <CheckCircle className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+              )}
+              {(st?.status === 'loaded') && (
+                <span className="w-2 h-2 rounded-full bg-blue-500" title="Loaded from DB" />
+              )}
+              {st?.status === 'error' && (
+                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Active Language Form */}
+      {LANGUAGES.map((lang) => {
+        if (lang.code !== activeTab) return null;
+        const st = langs[lang.code];
+        return (
+          <div
+            key={lang.code}
+            className="bg-white dark:bg-neutral-900 rounded-b-lg shadow-sm p-4 sm:p-6 lg:p-8 border border-t-0 border-neutral-200 dark:border-neutral-700"
+          >
+            {/* Status Bar */}
+            {st.status === 'loading' && (
+              <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 mb-4">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Loading existing translation...
+              </div>
+            )}
+            {st.status === 'saved' && (
+              <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 mb-4">
+                <CheckCircle className="w-4 h-4" />
+                Translation saved successfully!
+              </div>
+            )}
+            {st.status === 'error' && (
+              <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 mb-4">
+                <AlertCircle className="w-4 h-4" />
+                {st.error}
+              </div>
+            )}
+
+            {/* Title */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
+                Article Title ({lang.label}) *
+              </label>
+              <input
+                type="text"
+                placeholder={`Enter ${lang.label} headline`}
+                value={st.form.title}
+                onChange={(e) => updateField(lang.code, 'title', e.target.value)}
+                disabled={isBusy}
+                className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-700 focus:border-transparent outline-none disabled:opacity-50"
+              />
+            </div>
+
+            {/* Excerpt */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
+                Excerpt / Summary ({lang.label}) *
+              </label>
+              <textarea
+                placeholder={`Brief summary in ${lang.label}`}
+                rows={3}
+                value={st.form.excerpt}
+                onChange={(e) => updateField(lang.code, 'excerpt', e.target.value)}
+                disabled={isBusy}
+                className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-700 focus:border-transparent outline-none disabled:opacity-50"
+              />
+            </div>
+
+            {/* Content */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
+                Article Content ({lang.label}) *
+              </label>
+              <textarea
+                placeholder={`Full article content in ${lang.label}`}
+                rows={10}
+                value={st.form.content}
+                onChange={(e) => updateField(lang.code, 'content', e.target.value)}
+                disabled={isBusy}
+                className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-700 focus:border-transparent outline-none font-mono text-sm disabled:opacity-50"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={() => autoTranslate(lang.code)}
+                disabled={isBusy || translatingAll}
+                className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white transition-colors flex items-center justify-center gap-2"
+              >
+                {st.status === 'translating' ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Translating...
+                  </>
+                ) : (
+                  <>
+                    <Languages className="w-4 h-4" />
+                    Auto-Translate to {lang.label}
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => saveTranslation(lang.code)}
+                disabled={
+                  isBusy ||
+                  translatingAll ||
+                  !st.form.title.trim() ||
+                  !st.form.content.trim()
+                }
+                className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg bg-green-700 hover:bg-green-800 disabled:bg-green-700/50 disabled:cursor-not-allowed text-white transition-colors flex items-center justify-center gap-2"
+              >
+                {st.status === 'saving' ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Save {lang.label} Translation
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
