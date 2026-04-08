@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 import { Languages, Loader2, AlertTriangle } from 'lucide-react';
@@ -19,6 +20,11 @@ export function TranslationBanner({
 }: TranslationBannerProps) {
   const { language, setLanguage } = useAppStore();
   const t = getTranslation(language);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    setIsAdmin(!!localStorage.getItem('adminAuth'));
+  }, []);
 
   if (isTranslating) {
     return (
@@ -35,6 +41,8 @@ export function TranslationBanner({
   }
 
   if (isTranslated) {
+    if (!isAdmin) return null;
+
     return (
       <div className="mb-4 flex items-center gap-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
         <Languages className="w-4 h-4 flex-shrink-0" />
