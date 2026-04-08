@@ -15,8 +15,8 @@ export async function getCurrentEpaperEdition() {
       },
     });
   } catch (error: any) {
-    // Silently handle table-not-found errors (during initial migration)
-    if (error?.code === 'P1025' || error?.message?.includes('does not exist')) {
+    // Silently handle table-not-found and DB-unreachable errors (e.g. at build time)
+    if (error?.code === 'P1025' || error?.code === 'P1001' || error?.message?.includes('does not exist')) {
       return null;
     }
     console.error('Error fetching current epaper:', error);
@@ -38,8 +38,8 @@ export async function getActiveEpaperEditions(limit = 10) {
       },
     });
   } catch (error: any) {
-    // Silently handle table-not-found errors (during initial migration)
-    if (error?.code === 'P1025' || error?.message?.includes('does not exist')) {
+    // Silently handle table-not-found and DB-unreachable errors (e.g. at build time)
+    if (error?.code === 'P1025' || error?.code === 'P1001' || error?.message?.includes('does not exist')) {
       return [];
     }
     console.error('Error fetching active epaper editions:', error);
@@ -61,8 +61,8 @@ export async function getArchivedEpaperEditions(limit = 100) {
       },
     });
   } catch (error: any) {
-    // Silently handle table-not-found errors (during initial migration)
-    if (error?.code === 'P1025' || error?.message?.includes('does not exist')) {
+    // Silently handle table-not-found and DB-unreachable errors (e.g. at build time)
+    if (error?.code === 'P1025' || error?.code === 'P1001' || error?.message?.includes('does not exist')) {
       return [];
     }
     console.error('Error fetching archived epaper editions:', error);

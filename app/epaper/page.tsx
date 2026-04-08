@@ -7,6 +7,8 @@ import { getTranslation } from '@/lib/translations';
 import { FlipbookReader } from '@/app/components/FlipbookReader';
 import { Calendar, Archive } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'E-Paper - Weekly Digital Edition | Intambwe Media',
   description: 'Read the latest weekly digital edition of Intambwe Media newspaper.',
