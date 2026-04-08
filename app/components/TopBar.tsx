@@ -2,31 +2,33 @@
 
 import React, { useEffect, useState } from 'react';
 import { MapPin } from 'lucide-react';
+import { useAppStore } from '@/lib/store';
+import { getTranslation } from '@/lib/translations';
 
 // Hoisted outside the component — created once, not on every fetchWeatherData call.
-const WEATHER_CONDITIONS: Record<number, { condition: string; conditionKy: string; icon: string }> = {
-  0: { condition: 'Clear', conditionKy: 'Hari ikirere gikeye', icon: '☀️' },
-  1: { condition: 'Mostly Clear', conditionKy: 'Hari ikirere gikeye gake', icon: '🌤️' },
-  2: { condition: 'Partly Cloudy', conditionKy: 'Hari ibicu bike', icon: '⛅' },
-  3: { condition: 'Overcast', conditionKy: 'Hari ibicu byinshi', icon: '☁️' },
-  45: { condition: 'Foggy', conditionKy: 'Hari igihu', icon: '🌫️' },
-  48: { condition: 'Foggy', conditionKy: 'Hari igihu', icon: '🌫️' },
-  51: { condition: 'Light Drizzle', conditionKy: 'Hari ubuhehere buke', icon: '🌧️' },
-  53: { condition: 'Drizzle', conditionKy: 'Hari ubuhehere', icon: '🌧️' },
-  55: { condition: 'Heavy Drizzle', conditionKy: "Hari akavura k'urushyana", icon: '🌧️' },
-  61: { condition: 'Light Rain', conditionKy: 'Hari udutonyanga duke', icon: '🌧️' },
-  63: { condition: 'Rain', conditionKy: 'Hari akavura', icon: '🌧️' },
-  65: { condition: 'Heavy Rain', conditionKy: 'Hari imvura', icon: '⛈️' },
-  71: { condition: 'Light Snow', conditionKy: 'Urubura ruke', icon: '❄️' },
-  73: { condition: 'Snow', conditionKy: 'Urubura', icon: '❄️' },
-  75: { condition: 'Heavy Snow', conditionKy: 'Urubura rwinshi', icon: '❄️' },
-  80: { condition: 'Light Showers', conditionKy: 'Hari akavura gake cyane', icon: '🌧️' },
-  81: { condition: 'Showers', conditionKy: 'Hari akavura', icon: '⛈️' },
-  82: { condition: 'Heavy Showers', conditionKy: 'Hari imvura', icon: '⛈️' },
-  85: { condition: 'Snow Showers', conditionKy: "Hari akavura k'urubura", icon: '❄️' },
-  86: { condition: 'Heavy Snow Showers', conditionKy: "Hari imvura y'urubura", icon: '❄️' },
-  95: { condition: 'Thunderstorm', conditionKy: "Hari imvura ivanze n'inkuba", icon: '⛈️' },
-  96: { condition: 'Thunderstorm with Hail', conditionKy: "Hari imvura ivanze n'inkuba n'imirabyo", icon: '⛈️' },
+const WEATHER_CONDITIONS: Record<number, { condition: string; conditionKy: string; conditionSw: string; icon: string }> = {
+  0: { condition: 'Clear', conditionKy: 'Hari ikirere gikeye', conditionSw: 'Angavu', icon: '☀️' },
+  1: { condition: 'Mostly Clear', conditionKy: 'Hari ikirere gikeye gake', conditionSw: 'Angavu zaidi', icon: '🌤️' },
+  2: { condition: 'Partly Cloudy', conditionKy: 'Hari ibicu bike', conditionSw: 'Mawingu kidogo', icon: '⛅' },
+  3: { condition: 'Overcast', conditionKy: 'Hari ibicu byinshi', conditionSw: 'Mawingu mengi', icon: '☁️' },
+  45: { condition: 'Foggy', conditionKy: 'Hari igihu', conditionSw: 'Ukungu', icon: '🌫️' },
+  48: { condition: 'Foggy', conditionKy: 'Hari igihu', conditionSw: 'Ukungu', icon: '🌫️' },
+  51: { condition: 'Light Drizzle', conditionKy: 'Hari ubuhehere buke', conditionSw: 'Manyunyu kidogo', icon: '🌧️' },
+  53: { condition: 'Drizzle', conditionKy: 'Hari ubuhehere', conditionSw: 'Manyunyu', icon: '🌧️' },
+  55: { condition: 'Heavy Drizzle', conditionKy: "Hari akavura k'urushyana", conditionSw: 'Manyunyu makubwa', icon: '🌧️' },
+  61: { condition: 'Light Rain', conditionKy: 'Hari udutonyanga duke', conditionSw: 'Mvua kidogo', icon: '🌧️' },
+  63: { condition: 'Rain', conditionKy: 'Hari akavura', conditionSw: 'Mvua', icon: '🌧️' },
+  65: { condition: 'Heavy Rain', conditionKy: 'Hari imvura', conditionSw: 'Mvua kubwa', icon: '⛈️' },
+  71: { condition: 'Light Snow', conditionKy: 'Urubura ruke', conditionSw: 'Theluji kidogo', icon: '❄️' },
+  73: { condition: 'Snow', conditionKy: 'Urubura', conditionSw: 'Theluji', icon: '❄️' },
+  75: { condition: 'Heavy Snow', conditionKy: 'Urubura rwinshi', conditionSw: 'Theluji kubwa', icon: '❄️' },
+  80: { condition: 'Light Showers', conditionKy: 'Hari akavura gake cyane', conditionSw: 'Manyunyu kidogo', icon: '🌧️' },
+  81: { condition: 'Showers', conditionKy: 'Hari akavura', conditionSw: 'Mvua', icon: '⛈️' },
+  82: { condition: 'Heavy Showers', conditionKy: 'Hari imvura', conditionSw: 'Mvua kubwa', icon: '⛈️' },
+  85: { condition: 'Snow Showers', conditionKy: "Hari akavura k'urubura", conditionSw: 'Mvua ya theluji', icon: '❄️' },
+  86: { condition: 'Heavy Snow Showers', conditionKy: "Hari imvura y'urubura", conditionSw: 'Mvua kubwa ya theluji', icon: '❄️' },
+  95: { condition: 'Thunderstorm', conditionKy: "Hari imvura ivanze n'inkuba", conditionSw: 'Dhoruba ya radi', icon: '⛈️' },
+  96: { condition: 'Thunderstorm with Hail', conditionKy: "Hari imvura ivanze n'inkuba n'imirabyo", conditionSw: 'Dhoruba ya radi na mvua ya mawe', icon: '⛈️' },
 };
 
 interface TopBarData {
@@ -36,6 +38,7 @@ interface TopBarData {
     temp: number;
     condition: string;
     conditionKy: string;
+    conditionSw: string;
     icon: string;
   };
   location: {
@@ -63,6 +66,7 @@ const FALLBACK_TOPBAR_DATA: TopBarData = {
     temp: 24,
     condition: 'Partly Cloudy',
     conditionKy: 'Hari ikibunda gike',
+    conditionSw: 'Mawingu kidogo',
     icon: '🌤️',
   },
   location: {
@@ -76,29 +80,40 @@ const FALLBACK_TOPBAR_DATA: TopBarData = {
   ],
 };
 
-function getDateStrings(timezone: string) {
+function getDateStrings(timezone: string, lang: string = 'ky') {
   const now = new Date();
   const daysKy = ['Ku Cyumweru', 'Kuwa Mbere', 'Kuwa Kabiri', 'Kuwa Gatatu', 'Kuwa Kane', 'Kuwa Gatanu', 'Kuwa Gatandatu'];
   const monthsKy = ['Mutarama', 'Gashyantare', 'Werurwe', 'Mata', 'Gicurasi', 'Kamena', 'Nyakanga', 'Kanama', 'Nzeri', 'Ukwakira', 'Ugushyingo', 'Ukuboza'];
+  const daysEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const monthsEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const daysSw = ['Jumapili', 'Jumatatu', 'Jumanne', 'Jumatano', 'Alhamisi', 'Ijumaa', 'Jumamosi'];
+  const monthsSw = ['Januari', 'Februari', 'Machi', 'Aprili', 'Mei', 'Juni', 'Julai', 'Agosti', 'Septemba', 'Oktoba', 'Novemba', 'Desemba'];
+
+  const days = lang === 'en' ? daysEn : lang === 'sw' ? daysSw : daysKy;
+  const months = lang === 'en' ? monthsEn : lang === 'sw' ? monthsSw : monthsKy;
+  const datePrefix = lang === 'en' ? '' : lang === 'sw' ? 'Tarehe' : 'Tariki ya';
 
   const localizedNow = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
-  const dayName = daysKy[localizedNow.getDay()];
+  const dayName = days[localizedNow.getDay()];
   const day = String(localizedNow.getDate()).padStart(2, '0');
-  const monthName = monthsKy[localizedNow.getMonth()];
+  const monthName = months[localizedNow.getMonth()];
   const year = localizedNow.getFullYear();
   const hours = String(localizedNow.getHours()).padStart(2, '0');
   const minutes = String(localizedNow.getMinutes()).padStart(2, '0');
 
+  const datePart = datePrefix ? `${datePrefix} ${day} ${monthName}` : `${monthName} ${day}`;
+
   return {
-    dateTime: `${dayName}, Tariki ya ${day} ${monthName}, ${year} | ${hours}:${minutes}`,
+    dateTime: `${dayName}, ${datePart}, ${year} | ${hours}:${minutes}`,
     simplifiedDate: `${day}/${String(localizedNow.getMonth() + 1).padStart(2, '0')}/${year.toString().slice(-2)}`,
   };
 }
 
 export function TopBar() {
+  const { language } = useAppStore();
   const [data, setData] = useState<TopBarData>(() => ({
     ...FALLBACK_TOPBAR_DATA,
-    ...getDateStrings(DEFAULT_LOCATION.timezone),
+    ...getDateStrings(DEFAULT_LOCATION.timezone, language),
   }));
   const [previousRates, setPreviousRates] = useState<{ [key: string]: number }>({});
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number; city: string; country: string; timezone: string }>({ ...DEFAULT_LOCATION, country: 'Rwanda' });
@@ -198,12 +213,13 @@ export function TopBar() {
       const current = weatherData.current;
       
 
-      const weatherInfo = WEATHER_CONDITIONS[current.weather_code] || { condition: 'Unknown', conditionKy: 'Ifuzo ritamenyekana', icon: '🌤️' };
+      const weatherInfo = WEATHER_CONDITIONS[current.weather_code] || { condition: 'Unknown', conditionKy: 'Ifuzo ritamenyekana', conditionSw: 'Haijulikani', icon: '🌤️' };
 
       return {
         temp: Math.round(current.temperature_2m),
         condition: weatherInfo.condition,
         conditionKy: weatherInfo.conditionKy,
+        conditionSw: weatherInfo.conditionSw,
         icon: weatherInfo.icon,
       };
     } catch (error) {
@@ -213,6 +229,7 @@ export function TopBar() {
         temp: 24,
         condition: 'Partly Cloudy',
         conditionKy: 'Hari ibicu bike',
+        conditionSw: 'Mawingu kidogo',
         icon: '🌤️',
       };
     }
@@ -318,7 +335,7 @@ export function TopBar() {
   }, [userLocation]);
 
   const updateData = async () => {
-    const { dateTime, simplifiedDate } = getDateStrings(userLocation.timezone);
+    const { dateTime, simplifiedDate } = getDateStrings(userLocation.timezone, language);
 
     const [weatherData, exchangeData] = await Promise.all([
       fetchWeatherData(userLocation.lat, userLocation.lon),
@@ -333,6 +350,18 @@ export function TopBar() {
       exchanges: exchangeData,
     });
   };
+
+  // Re-format date when language changes
+  useEffect(() => {
+    const { dateTime, simplifiedDate } = getDateStrings(userLocation.timezone, language);
+    setData((prev) => ({ ...prev, dateTime, simplifiedDate }));
+  }, [language]);
+
+  const weatherConditionText = language === 'en'
+    ? data.weather.condition
+    : language === 'sw'
+      ? data.weather.conditionSw
+      : data.weather.conditionKy;
 
   return (
     <div className="min-h-[40px] bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-950 dark:to-neutral-900 border-b border-neutral-700 dark:border-neutral-800 text-white/90 text-xs">
@@ -349,7 +378,7 @@ export function TopBar() {
           <div className="flex items-center gap-1 sm:gap-2 min-w-0 border-l border-neutral-600 pl-2 max-[380px]:border-l-0 max-[380px]:pl-0">
             <span className="flex-shrink-0">{data.weather.icon}</span>
             <span className="text-white/80 text-xs flex-shrink-0">{data.weather.temp}°C</span>
-            <span className="text-neutral-400 text-xs truncate hidden sm:inline">{data.weather.conditionKy}</span>
+            <span className="text-neutral-400 text-xs truncate hidden sm:inline">{weatherConditionText}</span>
           </div>
 
           {/* USD Only */}
@@ -372,7 +401,7 @@ export function TopBar() {
             <span>{data.weather.icon}</span>
             <div className="flex items-center gap-1">
               <span className="text-white/80">{data.weather.temp}°C</span>
-              <span className="text-neutral-400">{data.weather.conditionKy}</span>
+              <span className="text-neutral-400">{weatherConditionText}</span>
             </div>
           </div>
 

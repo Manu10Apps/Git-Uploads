@@ -68,6 +68,22 @@ export const en = {
     comments: 'Comments',
     noComments: 'No comments yet',
   },
+  // TopBar
+  topbar: {
+    datePrefix: 'Date',
+  },
+  // Footer brand
+  footerBrand: {
+    description: 'In-depth coverage of critical issues in East Africa, produced independently and with integrity.',
+  },
+  // Newsletter
+  newsletter: {
+    label: 'STAY INFORMED',
+    title: 'Get exclusive and in-depth news',
+    description: 'Subscribe to our newsletter to receive in-depth analysis and exclusive reporting, the latest news from East Africa.',
+    placeholder: 'Your email',
+    subscribe: 'Subscribe',
+  },
   // Common
   common: {
     loading: 'Loading...',
@@ -160,6 +176,22 @@ export const ky = {
     comments: 'Ibitekerezo',
     noComments: 'Nta bikoresho byavuguruwe',
   },
+  // TopBar
+  topbar: {
+    datePrefix: 'Tariki ya',
+  },
+  // Footer brand
+  footerBrand: {
+    description: "Inkuru zicukumbuye ku bibazo bikomeye muri Afurika y'Iburasirazuba, zikozwe mu buryo bwigenga kandi bwizewe.",
+  },
+  // Newsletter
+  newsletter: {
+    label: 'GUMANA AMAKURU',
+    title: 'Habwa amakuru yihariye kandi acukumbuye',
+    description: "Iyandikishe ku nkuru zacu kugira ngo ujye ubona amakuru acukumbuye n'ubusesenguzi bwihariye, amakuru agezweho yo muri Afurika y'Iburasirazuba.",
+    placeholder: 'Imeli yawe',
+    subscribe: 'Emeza',
+  },
   // Common
   common: {
     loading: 'Iri hanze...',
@@ -247,6 +279,22 @@ export const sw = {
     factCheck: 'Angalia Ukweli',
     comments: 'Maoni',
     noComments: 'Hakuna maoni',
+  },
+  // TopBar
+  topbar: {
+    datePrefix: 'Tarehe',
+  },
+  // Footer brand
+  footerBrand: {
+    description: 'Habari za kina kuhusu masuala muhimu katika Afrika Mashariki, zilizoandaliwa kwa uhuru na uaminifu.',
+  },
+  // Newsletter
+  newsletter: {
+    label: 'PATA HABARI',
+    title: 'Pata habari za kipekee na za kina',
+    description: 'Jisajili kwenye jarida letu ili upate uchambuzi wa kina na taarifa za kipekee, habari za hivi karibuni kutoka Afrika Mashariki.',
+    placeholder: 'Barua pepe yako',
+    subscribe: 'Jisajili',
   },
   common: {
     loading: 'Inapakia...',

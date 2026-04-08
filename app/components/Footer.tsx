@@ -60,13 +60,13 @@ export function Footer() {
               className="h-12 w-12 rounded-lg mx-auto sm:mx-0"
             />
             <p className="text-sm text-neutral-400 font-light leading-relaxed">
-              Inkuru zicukumbuye ku bibazo bikomeye muri Afurika y’Iburasirazuba, zikozwe mu buryo bwigenga kandi bwizewe.
+              {t.footerBrand.description}
             </p>
           </div>
 
           {/* Ibice - Categories except Ahabanza */}
           <div className="space-y-4">
-            <h4 className="font-bold">Ibice</h4>
+            <h4 className="font-bold">{t.footer.sections}</h4>
             <ul className="space-y-3 text-sm flex flex-col items-center sm:items-start">
               {categories
                 .filter((category) => category.name !== 'Ahabanza')
