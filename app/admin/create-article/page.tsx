@@ -6,6 +6,7 @@ import { CategorySelect } from '@/app/components';
 import { AlertCircle, CheckCircle, Upload, X, Lock } from 'lucide-react';
 import AdminHeader from '@/app/admin/components/AdminHeader';
 import ContentEditor from '@/app/admin/components/ContentEditor';
+import ArticleTranslationPanel from '@/app/admin/components/ArticleTranslationPanel';
 import { normalizeArticleImageUrl } from '@/lib/utils';
 import { NAV_CATEGORY_SLUGS } from '@/lib/nav-categories';
 import { ArticleImage } from '@/app/components/ArticleImage';
@@ -78,6 +79,7 @@ export default function CreateArticlePage() {
   const [galleryCaption, setGalleryCaption] = useState('');
   const galleryFileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [selectedGalleryFiles, setSelectedGalleryFiles] = useState<File[]>([]);
+  const [savedArticle, setSavedArticle] = useState<{ id: number; title: string; excerpt: string; content: string } | null>(null);
   const [socialProfile, setSocialProfile] = useState<{ socialLocked: boolean; socialLinks: Record<string, string> } | null>(null);
   const [socialLoading, setSocialLoading] = useState(false);
 
@@ -330,6 +332,17 @@ export default function CreateArticlePage() {
               : 'Article saved as unpublished successfully!';
 
         setMessage({ type: 'success', text: successMessage });
+
+        // Save article data for translation panel before clearing form
+        if (data.data?.id) {
+          setSavedArticle({
+            id: data.data.id,
+            title: form.title.trim(),
+            excerpt: form.excerpt.trim(),
+            content: form.content.trim(),
+          });
+        }
+
         setForm({
           title: '',
           excerpt: '',
@@ -348,10 +361,6 @@ export default function CreateArticlePage() {
           galleryColumns: 2,
           galleryPosition: 'middle',
         });
-        // Redirect to admin dashboard after 2 seconds
-        setTimeout(() => {
-          router.push('/admin/articles');
-        }, 2000);
       } else {
         setMessage({ type: 'error', text: data.error || 'Failed to publish article' });
       }
@@ -973,6 +982,27 @@ export default function CreateArticlePage() {
               )}
             </div>
           </form>
+
+          {/* Translation Panel - shown after article is saved */}
+          {savedArticle && (
+            <>
+              <ArticleTranslationPanel
+                articleId={savedArticle.id}
+                title={savedArticle.title}
+                excerpt={savedArticle.excerpt}
+                content={savedArticle.content}
+              />
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => router.push('/admin/articles')}
+                  className="px-6 py-2.5 bg-neutral-700 hover:bg-neutral-800 dark:bg-neutral-600 dark:hover:bg-neutral-500 text-white font-semibold rounded-lg transition-colors"
+                >
+                  Go to Articles
+                </button>
+              </div>
+            </>
+          )}
 
           {/* Info Box */}
           <div className="mt-12 bg-amber-50 dark:bg-amber-950/30 border border-red-200 dark:border-amber-900/50 rounded-lg p-6">

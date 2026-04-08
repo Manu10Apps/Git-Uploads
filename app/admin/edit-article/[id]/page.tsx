@@ -8,6 +8,7 @@ import ContentEditor from '@/app/admin/components/ContentEditor';
 import { ArticleImage } from '@/app/components/ArticleImage';
 import { normalizeArticleImageUrl } from '@/lib/utils';
 import { NAV_CATEGORY_SLUGS } from '@/lib/nav-categories';
+import ArticleTranslationPanel from '@/app/admin/components/ArticleTranslationPanel';
 
 const FALLBACK_ARTICLE_IMAGE = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675"><rect width="1200" height="675" fill="#e5e5e5"/><rect x="80" y="80" width="1040" height="515" rx="24" fill="#d4d4d4"/><circle cx="300" cy="250" r="68" fill="#bdbdbd"/><path d="M180 515l215-195 145 130 185-170 295 235H180z" fill="#a3a3a3"/><text x="600" y="610" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" fill="#525252">Intambwe Media</text></svg>')}`;
 
@@ -77,6 +78,7 @@ export default function EditArticlePage() {
   const [selectedGalleryFiles, setSelectedGalleryFiles] = useState<File[]>([]);
   const [adminRole, setAdminRole] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
+  const [showTranslation, setShowTranslation] = useState(false);
   const [socialProfile, setSocialProfile] = useState<{ socialLocked: boolean; socialLinks: Record<string, string> } | null>(null);
   const [socialLoading, setSocialLoading] = useState(false);
 
@@ -391,9 +393,7 @@ export default function EditArticlePage() {
           status,
           publishedAt: status === 'published' ? (publishedAtForUpdate || prev.publishedAt) : '',
         }));
-        setTimeout(() => {
-          router.push('/admin/articles');
-        }, 2000);
+        setShowTranslation(true);
       } else {
         setMessage({ type: 'error', text: data.error || 'Failed to update article' });
       }
@@ -1053,6 +1053,27 @@ export default function EditArticlePage() {
               )}
             </div>
           </form>
+
+          {/* Translation Panel - shown after article is saved */}
+          {showTranslation && (
+            <>
+              <ArticleTranslationPanel
+                articleId={parseInt(articleId as string)}
+                title={form.title}
+                excerpt={form.excerpt}
+                content={form.content}
+              />
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => router.push('/admin/articles')}
+                  className="px-6 py-2.5 bg-neutral-700 hover:bg-neutral-800 dark:bg-neutral-600 dark:hover:bg-neutral-500 text-white font-semibold rounded-lg transition-colors"
+                >
+                  Go to Articles
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </main>
     </>
