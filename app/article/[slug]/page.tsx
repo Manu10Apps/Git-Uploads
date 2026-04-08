@@ -8,6 +8,18 @@ const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ lang?: string }>;
+}
+
+async function getTranslation(articleId: number, lang: string) {
+  try {
+    return await prisma.articleTranslation.findUnique({
+      where: { articleId_language: { articleId, language: lang } },
+      select: { title: true, excerpt: true },
+    });
+  } catch {
+    return null;
+  }
 }
 
 async function getArticleBySlug(slug: string) {
@@ -15,6 +27,7 @@ async function getArticleBySlug(slug: string) {
     const article = await prisma.article.findUnique({
       where: { slug },
       select: {
+        id: true,
         title: true,
         excerpt: true,
         image: true,
@@ -42,8 +55,9 @@ function resolveAbsoluteImageUrl(image: string | null | undefined): string {
   return `${SITE_URL}${normalized.startsWith('/') ? '' : '/'}${normalized}`;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+  const { lang } = await searchParams;
   const article = await getArticleBySlug(slug);
 
   if (!article) {
@@ -53,10 +67,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const title = article.seoTitle || article.title;
-  const description = article.seoDescription || article.excerpt;
+  let title = article.seoTitle || article.title;
+  let description = article.seoDescription || article.excerpt;
+
+  // If a valid translation language is requested, fetch translated title/excerpt
+  const validLang = lang && ['en', 'sw'].includes(lang) ? lang : null;
+  if (validLang && article.id) {
+    const translation = await getTranslation(article.id, validLang);
+    if (translation) {
+      title = translation.title || title;
+      description = translation.excerpt || description;
+    }
+  }
+
   const imageUrl = resolveAbsoluteImageUrl(article.image);
-  const articleUrl = `${SITE_URL}/article/${slug}`;
+  const articleUrl = validLang
+    ? `${SITE_URL}/article/${slug}?lang=${validLang}`
+    : `${SITE_URL}/article/${slug}`;
 
   return {
     title: `${title} | Intambwe Media`,
@@ -64,7 +91,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     authors: [{ name: article.author }],
     openGraph: {
       type: 'article',
-      locale: 'ky_RW',
+      locale: validLang === 'en' ? 'en_US' : validLang === 'sw' ? 'sw_KE' : 'ky_RW',
       url: articleUrl,
       siteName: 'Intambwe Media',
       title,
