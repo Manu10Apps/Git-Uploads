@@ -2,7 +2,7 @@
 
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { AlertCircle, CheckCircle, Upload, X, Lock } from 'lucide-react';
+import { AlertCircle, CheckCircle, Upload, X, Lock, Languages } from 'lucide-react';
 import AdminHeader from '@/app/admin/components/AdminHeader';
 import ContentEditor from '@/app/admin/components/ContentEditor';
 import { ArticleImage } from '@/app/components/ArticleImage';
@@ -79,6 +79,7 @@ export default function EditArticlePage() {
   const [adminRole, setAdminRole] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
   const [showTranslation, setShowTranslation] = useState(false);
+  const [showTranslatePanel, setShowTranslatePanel] = useState(false);
   const [socialProfile, setSocialProfile] = useState<{ socialLocked: boolean; socialLinks: Record<string, string> } | null>(null);
   const [socialLoading, setSocialLoading] = useState(false);
 
@@ -1052,6 +1053,30 @@ export default function EditArticlePage() {
                 </button>
               )}
             </div>
+
+            {/* Translate Button */}
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={() => setShowTranslatePanel(!showTranslatePanel)}
+                disabled={!form.title.trim() || !form.content.trim()}
+                className="w-full sm:w-auto px-5 py-2.5 text-sm font-semibold rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:bg-transparent dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-600 dark:hover:text-white dark:disabled:border-neutral-700 dark:disabled:text-neutral-600 transition-colors flex items-center gap-2"
+              >
+                <Languages className="w-4 h-4" />
+                {showTranslatePanel ? 'Hide Translations' : 'Translate Article'}
+              </button>
+            </div>
+
+            {showTranslatePanel && (
+              <div className="mt-4">
+                <ArticleTranslationPanel
+                  articleId={parseInt(articleId as string)}
+                  title={form.title.trim()}
+                  excerpt={form.excerpt.trim()}
+                  content={form.content.trim()}
+                />
+              </div>
+            )}
           </form>
 
           {/* Translation Panel - shown after article is saved */}
