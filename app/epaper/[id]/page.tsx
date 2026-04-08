@@ -6,6 +6,8 @@ import { FlipbookReader } from '@/app/components/FlipbookReader';
 import { ChevronLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 interface RouteParams {
   params: Promise<{
     id: string;

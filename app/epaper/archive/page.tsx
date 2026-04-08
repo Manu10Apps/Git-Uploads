@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma';
 import { formatIssueDate } from '@/lib/epaper-client';
 import { Calendar, Download } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'E-Paper Archive | Intambwe Media',
   description: 'Browse and read past editions of the Intambwe Media weekly digital newspaper.',
