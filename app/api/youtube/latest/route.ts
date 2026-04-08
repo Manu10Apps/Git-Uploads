@@ -78,8 +78,12 @@ function hasExplicitLiveOrPremiereBadge(contextText: string | undefined): boolea
   );
 }
 
-function resolveDisplayPublishedAt(rawPublishedAt: string | undefined, contextText?: string): string | undefined {
-  if (isLiveOrPremiereSignal(rawPublishedAt) || hasExplicitLiveOrPremiereBadge(contextText)) {
+function resolveDisplayPublishedAt(rawPublishedAt: string | undefined, contextText?: string, rawDuration?: string): string | undefined {
+  if (
+    isLiveOrPremiereSignal(rawPublishedAt)
+    || hasExplicitLiveOrPremiereBadge(contextText)
+    || rawDuration?.toLowerCase() === 'live'
+  ) {
     return '[LIVE]Live';
   }
 
@@ -371,8 +375,10 @@ function parseVideosFromChannelPage(html: string): YouTubeVideo[] {
     const title = decodeXml(getRendererText(renderer.title) || 'YouTube Video');
     const rawPublishedAt = getRendererText(renderer.publishedTimeText) || undefined;
     const rendererContext = JSON.stringify(renderer);
-    const publishedAt = resolveDisplayPublishedAt(rawPublishedAt, rendererContext);
-    const duration = getRendererText(renderer.lengthText) || undefined;
+    const rawDuration = getRendererText(renderer.lengthText) || undefined;
+    const publishedAt = resolveDisplayPublishedAt(rawPublishedAt, rendererContext, rawDuration);
+    const isLive = publishedAt === '[LIVE]Live';
+    const duration = isLive ? undefined : rawDuration;
 
     videos.push({
       id,

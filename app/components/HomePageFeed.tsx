@@ -363,6 +363,21 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                           }
                         }}
                       />
+                      {video.publishedAt?.startsWith('[LIVE]') && (
+                        <span
+                          className="absolute top-2 left-2 inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-bold text-white shadow-sm animate-[pulse_1.8s_ease-in-out_infinite]"
+                          style={{ backgroundColor: 'rgb(226, 0, 26)' }}
+                        >
+                          <svg className="h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <circle cx="12" cy="12" r="3" fill="currentColor" />
+                            <path d="M5 8C2.5 10.5 2.5 13.5 5 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            <path d="M19 8C21.5 10.5 21.5 13.5 19 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            <path d="M8 6C4.5 9.5 4.5 14.5 8 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            <path d="M16 6C19.5 9.5 19.5 14.5 16 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                          </svg>
+                          LIVE
+                        </span>
+                      )}
                       {video.duration && (
                         <span className="absolute bottom-2 right-2 rounded bg-black/85 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">
                           {video.duration}
