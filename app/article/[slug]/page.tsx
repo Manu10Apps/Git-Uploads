@@ -90,6 +90,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     alternates: {
       canonical: articleUrl,
+      languages: {
+        'x-default': articleUrl,
+        rw: `${SITE_URL}/rw/article/${slug}`,
+        en: `${SITE_URL}/en/article/${slug}`,
+        sw: `${SITE_URL}/sw/article/${slug}`,
+      },
     },
   };
 }

@@ -10,3 +10,5 @@ export { GridNewsLayout } from './GridNewsLayout';
 export { AnalyticsProvider } from './AnalyticsProvider';
 export { default as BreakingNewsCarousel } from './BreakingNewsCarousel';
 export { default as CategorySelect } from './CategorySelect';
+export { HreflangTags } from './HreflangTags';
+export { TranslationBanner } from './TranslationBanner';

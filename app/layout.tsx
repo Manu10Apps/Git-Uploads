@@ -15,6 +15,7 @@ import { MaintenanceScreen } from '@/app/components/MaintenanceScreen';
 import { ThemeProvider } from '@/app/components/ThemeProvider';
 import { TopBar } from '@/app/components/TopBar';
 import { AnalyticsProvider } from '@/app/components/AnalyticsProvider';
+import { HreflangTags } from '@/app/components/HreflangTags';
 import { getMaintenanceSettings, shouldBypassMaintenance } from '@/lib/maintenance';
 
 export const metadata: Metadata = {
@@ -89,12 +90,14 @@ export default async function RootLayout({
 }) {
   const requestHeaders = await headers();
   const pathname = requestHeaders.get('x-pathname') || '/';
+  const locale = requestHeaders.get('x-language') || 'ky';
+  const htmlLang = locale === 'ky' ? 'rw' : locale;
   const bypassMaintenance = shouldBypassMaintenance(pathname);
   const maintenanceSettings = bypassMaintenance ? null : await getMaintenanceSettings();
   const showMaintenance = Boolean(maintenanceSettings?.enabled);
 
   return (
-    <html lang="ky" suppressHydrationWarning data-scroll-behavior="smooth" className={robotoCondensed.variable}>
+    <html lang={htmlLang} suppressHydrationWarning data-scroll-behavior="smooth" className={robotoCondensed.variable}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -106,6 +109,7 @@ export default async function RootLayout({
         <link rel="icon" href="/favicon.png?v=20260403" type="image/png" />
         <link rel="apple-touch-icon" href="/favicon.png?v=20260403" />
         <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+        <HreflangTags />
         {showMaintenance && <meta name="robots" content="noindex, nofollow" />}
         <script
           type="application/ld+json"

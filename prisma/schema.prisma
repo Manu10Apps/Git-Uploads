@@ -18,6 +18,7 @@ model Category {
   parent      Category? @relation("CategoryParent", fields: [parentId], references: [id], onDelete: SetNull)
   children    Category[] @relation("CategoryParent")
   articles    Article[]
+  translations CategoryTranslation[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   status      String    @default("active") // "active" or "archived"
@@ -51,11 +52,47 @@ model Article {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   comments        Comment[]
+  translations    ArticleTranslation[]
 
   @@index([categoryId])
   @@index([status])
   @@index([publishedAt])
   @@map("articles")
+}
+
+model ArticleTranslation {
+  id                Int       @id @default(autoincrement())
+  articleId         Int
+  article           Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  language          String    // "en" | "sw"
+  title             String
+  excerpt           String
+  content           String
+  seoTitle          String?
+  seoDescription    String?
+  translationSource String    @default("ai") // "ai" | "manual" | "deepl" | "google"
+  versionHash       String    // hash of original content at time of translation
+  translatedAt      DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([articleId, language])
+  @@index([articleId])
+  @@index([language])
+  @@map("article_translations")
+}
+
+model CategoryTranslation {
+  id          Int       @id @default(autoincrement())
+  categoryId  Int
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  language    String    // "en" | "sw"
+  name        String
+  description String?
+  translatedAt DateTime @default(now())
+
+  @@unique([categoryId, language])
+  @@index([categoryId])
+  @@map("category_translations")
 }
 
 model Comment {

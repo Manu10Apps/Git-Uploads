@@ -414,6 +414,16 @@ export async function PATCH(
       include: { category: true },
     });
 
+    // Re-queue translations when a published article's content changes
+    if (updatedArticle.status === 'published' && (body.title || body.content || body.excerpt)) {
+      import('@/lib/translation-cache').then(({ queueArticleTranslations, invalidateArticleCache }) => {
+        invalidateArticleCache(updatedArticle.id);
+        queueArticleTranslations(updatedArticle.id).catch((err: unknown) =>
+          console.error(`[translation] Failed to re-queue translations for article ${updatedArticle.id}:`, err)
+        );
+      });
+    }
+
     // Format response
     const formattedArticle = {
       id: updatedArticle.id,

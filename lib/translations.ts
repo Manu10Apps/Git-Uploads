@@ -268,3 +268,7 @@ export type Language = keyof typeof translations;
 export function getTranslation(lang: Language) {
   return translations[lang] || translations.en;
 }
+
+// Re-export i18n utilities for newer components
+export { getLocale, t } from '@/lib/i18n';
+export type { SupportedLanguage } from '@/lib/translation-service';
