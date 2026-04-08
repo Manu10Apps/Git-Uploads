@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHash } from 'crypto';
 import { prisma } from '@/lib/prisma';
-import { generateContentHash } from '@/lib/translation-service';
+
+function generateContentHash(title: string, content: string): string {
+  return createHash('sha256').update(`${title}||${content}`).digest('hex').slice(0, 16);
+}
 
 /**
  * GET /api/translations/cache?articleId=123&lang=en
