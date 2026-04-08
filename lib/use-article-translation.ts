@@ -3,13 +3,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAppStore } from '@/lib/store';
 import type { SupportedLanguage } from '@/lib/translation-service';
+import { puterTranslateArticle } from '@/lib/puter-translate';
 
 interface TranslatedArticle {
   title: string;
   excerpt: string;
   content: string;
-  seoTitle?: string;
-  seoDescription?: string;
   translationSource: string;
   translatedAt: string;
 }
@@ -44,7 +43,7 @@ export function useArticleTranslation({
   const [translation, setTranslation] = useState<TranslatedArticle | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
+  const cancelledRef = useRef(false);
 
   const fetchTranslation = useCallback(
     async (lang: SupportedLanguage) => {
@@ -62,49 +61,51 @@ export function useArticleTranslation({
         return;
       }
 
-      // Abort any in-flight request
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-
+      cancelledRef.current = false;
       setIsTranslating(true);
       setTranslationError(null);
 
       try {
-        const response = await fetch(
-          `/api/translations/article/${articleId}?lang=${lang}`,
-          { signal: controller.signal }
+        const result = await puterTranslateArticle(
+          {
+            title: originalTitle,
+            excerpt: originalExcerpt,
+            content: originalContent,
+          },
+          'ky',
+          lang
         );
 
-        if (!response.ok) {
-          throw new Error(`Translation request failed: ${response.status}`);
-        }
+        if (cancelledRef.current) return;
 
-        const result = await response.json();
+        const translatedArticle: TranslatedArticle = {
+          title: result.title,
+          excerpt: result.excerpt,
+          content: result.content,
+          translationSource: 'puter-ai',
+          translatedAt: new Date().toISOString(),
+        };
 
-        if (result.data && !result.isOriginal) {
-          translationCache.set(cacheKey, result.data);
-          setTranslation(result.data);
-        } else {
-          setTranslation(null);
-        }
+        translationCache.set(cacheKey, translatedArticle);
+        setTranslation(translatedArticle);
       } catch (error: any) {
-        if (error.name === 'AbortError') return;
-        // Silently fall back to original content
+        if (cancelledRef.current) return;
         setTranslation(null);
         setTranslationError(null);
       } finally {
-        setIsTranslating(false);
+        if (!cancelledRef.current) {
+          setIsTranslating(false);
+        }
       }
     },
-    [articleId]
+    [articleId, originalTitle, originalExcerpt, originalContent]
   );
 
   useEffect(() => {
     fetchTranslation(language as SupportedLanguage);
 
     return () => {
-      abortRef.current?.abort();
+      cancelledRef.current = true;
     };
   }, [language, fetchTranslation]);
 
