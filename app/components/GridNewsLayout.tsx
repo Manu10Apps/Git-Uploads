@@ -29,6 +29,33 @@ export function GridNewsLayout({ articles }: GridNewsLayoutProps) {
   const t = getTranslation(language);
   const [isSaved, setIsSaved] = React.useState<Record<string, boolean>>({});
 
+  const slugToNavKey: Record<string, keyof typeof t.nav> = {
+    amakuru: 'news',
+    politiki: 'politics',
+    ubuzima: 'health',
+    uburezi: 'education',
+    ubukungu: 'business',
+    siporo: 'sports',
+    ikoranabuhanga: 'technology',
+    imyidagaduro: 'entertainment',
+    ubutabera: 'justice',
+    ibidukikije: 'environment',
+    imyemerere: 'faith',
+    'afurika-yiburasirazuba': 'eastAfrica',
+    'mu-mahanga': 'international',
+    ubushakashatsi: 'investigations',
+    umumare: 'culture',
+  };
+
+  const getCategoryLabel = (category: string) => {
+    const slug = category.trim().toLowerCase();
+    const navKey = slugToNavKey[slug];
+    if (navKey && (t.nav as Record<string, string>)[navKey]) {
+      return (t.nav as Record<string, string>)[navKey].toUpperCase();
+    }
+    return category.toUpperCase();
+  };
+
   const getCategoryColor = (category: string): string => {
     const colors: Record<string, string> = {
       amakuru: 'bg-red-600',
@@ -114,7 +141,7 @@ export function GridNewsLayout({ articles }: GridNewsLayoutProps) {
                   <div className="article-card__featured-content absolute bottom-0 left-0 right-0 p-6 md:p-8 text-white">
                     <div className="article-card__label mb-3 md:mb-4">
                       <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold text-white ${getCategoryColor(featuredArticle.category)}`}>
-                        {featuredArticle.category.toUpperCase()}
+                        {getCategoryLabel(featuredArticle.category)}
                       </span>
                     </div>
                     
@@ -156,7 +183,7 @@ export function GridNewsLayout({ articles }: GridNewsLayoutProps) {
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                           <div className="absolute top-3 left-3">
                             <span className={`inline-block px-2 py-1 rounded text-xs font-bold text-white ${getCategoryColor(secondaryArticle.category)}`}>
-                              {secondaryArticle.category.toUpperCase()}
+                              {getCategoryLabel(secondaryArticle.category)}
                             </span>
                           </div>
                         </div>
@@ -239,7 +266,7 @@ export function GridNewsLayout({ articles }: GridNewsLayoutProps) {
                           {/* Category Badge */}
                           <div className="absolute top-3 left-3">
                             <span className={`inline-block px-3 py-1 rounded text-xs font-bold text-white ${getCategoryColor(article.category)}`}>
-                              {article.category.toUpperCase()}
+                              {getCategoryLabel(article.category)}
                             </span>
                           </div>
                         </div>

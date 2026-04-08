@@ -19,6 +19,7 @@ export default function BreakingNewsCarousel({ articles = [] }: BreakingNewsCaro
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0);
+  const [translations, setTranslations] = useState<Record<number, { title: string; excerpt: string }>>({});
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -45,6 +46,27 @@ export default function BreakingNewsCarousel({ articles = [] }: BreakingNewsCaro
       setLoading(false);
     }
   }, [articles]);
+
+  // Fetch translations when language changes
+  useEffect(() => {
+    if (language === 'ky') {
+      setTranslations({});
+      return;
+    }
+    const ids = newsItems.map((a) => a.id);
+    if (ids.length === 0) return;
+
+    let cancelled = false;
+    const fetchTranslations = async () => {
+      try {
+        const res = await fetch(`/api/translations/batch?ids=${ids.join(',')}&lang=${language}`);
+        const json = await res.json();
+        if (!cancelled && json.data) setTranslations(json.data);
+      } catch { /* fallback to originals */ }
+    };
+    fetchTranslations();
+    return () => { cancelled = true; };
+  }, [language, newsItems]);
 
   // Auto-rotate featured article every 5 seconds (was 2s — less main-thread churn)
   useEffect(() => {
@@ -95,6 +117,11 @@ export default function BreakingNewsCarousel({ articles = [] }: BreakingNewsCaro
     return null;
   }
 
+  const getTitle = (article: HomepageArticle) => {
+    if (language === 'ky') return article.title;
+    return translations[article.id]?.title || article.title;
+  };
+
   const featuredArticle = newsItems[currentFeaturedIndex];
   const maxFeaturedIndex = 3; // Show only 3 recent articles
 
@@ -126,9 +153,9 @@ export default function BreakingNewsCarousel({ articles = [] }: BreakingNewsCaro
               <Link
                 href={`/article/${featuredArticle.slug}`}
                 className="flex-shrink-0 px-3 sm:px-4 py-4 text-xs sm:text-sm text-black dark:text-white font-semibold transition-colors whitespace-nowrap hover:text-neutral-700 dark:hover:text-neutral-300 line-clamp-1"
-                title={featuredArticle.title}
+                title={getTitle(featuredArticle)}
               >
-                {featuredArticle.title}
+                {getTitle(featuredArticle)}
               </Link>
             </div>
           </div>
