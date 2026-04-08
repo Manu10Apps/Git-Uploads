@@ -5,10 +5,11 @@ import { Languages, CheckCircle, Loader2, AlertCircle, Save } from 'lucide-react
 import { puterTranslateArticle } from '@/lib/puter-translate';
 
 interface ArticleTranslationPanelProps {
-  articleId: number | string;
+  articleId?: number | string | null;
   title: string;
   excerpt: string;
   content: string;
+  onTranslationsReady?: (translations: Record<string, { title: string; excerpt: string; content: string }>) => void;
 }
 
 interface TranslationForm {
@@ -37,7 +38,9 @@ export default function ArticleTranslationPanel({
   title,
   excerpt,
   content,
+  onTranslationsReady,
 }: ArticleTranslationPanelProps) {
+  const isPrePublish = !articleId;
   const [activeTab, setActiveTab] = useState<string>('en');
   const [langs, setLangs] = useState<Record<string, LangState>>({
     en: { status: 'idle', form: { ...emptyForm } },
@@ -45,8 +48,9 @@ export default function ArticleTranslationPanel({
   });
   const [translatingAll, setTranslatingAll] = useState(false);
 
-  // Load existing translations from DB on mount
+  // Load existing translations from DB on mount (only when articleId is available)
   useEffect(() => {
+    if (!articleId) return;
     const loadExisting = async (langCode: string) => {
       setLangs((prev) => ({
         ...prev,
@@ -120,6 +124,23 @@ export default function ArticleTranslationPanel({
           },
         },
       }));
+      // Notify parent of ready translations in pre-publish mode
+      if (isPrePublish && onTranslationsReady) {
+        // Get all current translations including this new one
+        setLangs((prev) => {
+          const all: Record<string, { title: string; excerpt: string; content: string }> = {};
+          for (const l of LANGUAGES) {
+            const f = l.code === langCode
+              ? { title: result.title || '', excerpt: result.excerpt || '', content: result.content || '' }
+              : prev[l.code].form;
+            if (f.title.trim() && f.content.trim()) {
+              all[l.code] = f;
+            }
+          }
+          onTranslationsReady(all);
+          return prev;
+        });
+      }
     } catch (err: any) {
       setLangs((prev) => ({
         ...prev,
@@ -135,6 +156,26 @@ export default function ArticleTranslationPanel({
   const saveTranslation = async (langCode: string) => {
     const form = langs[langCode].form;
     if (!form.title.trim() || !form.content.trim()) return;
+
+    // In pre-publish mode, just mark as ready and notify parent
+    if (isPrePublish) {
+      setLangs((prev) => ({
+        ...prev,
+        [langCode]: { ...prev[langCode], status: 'saved', error: undefined },
+      }));
+      if (onTranslationsReady) {
+        const all: Record<string, { title: string; excerpt: string; content: string }> = {};
+        for (const l of LANGUAGES) {
+          const f = langs[l.code].form;
+          if (f.title.trim() && f.content.trim()) {
+            all[l.code] = f;
+          }
+        }
+        all[langCode] = form;
+        onTranslationsReady(all);
+      }
+      return;
+    }
 
     setLangs((prev) => ({
       ...prev,
@@ -171,6 +212,7 @@ export default function ArticleTranslationPanel({
 
   const translateAndSaveAll = async () => {
     setTranslatingAll(true);
+    const allResults: Record<string, { title: string; excerpt: string; content: string }> = {};
     for (const lang of LANGUAGES) {
       // Auto-translate
       setLangs((prev) => ({
@@ -188,27 +230,37 @@ export default function ArticleTranslationPanel({
           excerpt: result.excerpt || '',
           content: result.content || '',
         };
-        setLangs((prev) => ({
-          ...prev,
-          [lang.code]: { status: 'saving', form },
-        }));
-        // Save immediately with the result
-        const res = await fetch('/api/translations/cache', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            articleId,
-            language: lang.code,
-            title: form.title.trim(),
-            excerpt: form.excerpt.trim(),
-            content: form.content.trim(),
-          }),
-        });
-        if (!res.ok) throw new Error('Failed to save');
-        setLangs((prev) => ({
-          ...prev,
-          [lang.code]: { ...prev[lang.code], status: 'saved', error: undefined },
-        }));
+
+        if (isPrePublish) {
+          // Pre-publish: just fill forms, don't save to DB
+          setLangs((prev) => ({
+            ...prev,
+            [lang.code]: { status: 'saved', form, error: undefined },
+          }));
+          allResults[lang.code] = form;
+        } else {
+          setLangs((prev) => ({
+            ...prev,
+            [lang.code]: { status: 'saving', form },
+          }));
+          // Save immediately with the result
+          const res = await fetch('/api/translations/cache', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              articleId,
+              language: lang.code,
+              title: form.title.trim(),
+              excerpt: form.excerpt.trim(),
+              content: form.content.trim(),
+            }),
+          });
+          if (!res.ok) throw new Error('Failed to save');
+          setLangs((prev) => ({
+            ...prev,
+            [lang.code]: { ...prev[lang.code], status: 'saved', error: undefined },
+          }));
+        }
       } catch (err: any) {
         setLangs((prev) => ({
           ...prev,
@@ -219,6 +271,9 @@ export default function ArticleTranslationPanel({
           },
         }));
       }
+    }
+    if (isPrePublish && onTranslationsReady && Object.keys(allResults).length > 0) {
+      onTranslationsReady(allResults);
     }
     setTranslatingAll(false);
   };
@@ -252,12 +307,12 @@ export default function ArticleTranslationPanel({
         {translatingAll ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />
-            Translating &amp; Saving All...
+            Translating {isPrePublish ? 'All...' : '& Saving All...'}
           </>
         ) : (
           <>
             <Languages className="w-4 h-4" />
-            Auto-Translate &amp; Save All Languages
+            {isPrePublish ? 'Auto-Translate All Languages' : 'Auto-Translate & Save All Languages'}
           </>
         )}
       </button>
@@ -407,7 +462,7 @@ export default function ArticleTranslationPanel({
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
-                    Save {lang.label} Translation
+                    {isPrePublish ? `Ready ${lang.label}` : `Save ${lang.label} Translation`}
                   </>
                 )}
               </button>

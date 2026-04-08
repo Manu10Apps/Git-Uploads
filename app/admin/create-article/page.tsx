@@ -3,7 +3,7 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CategorySelect } from '@/app/components';
-import { AlertCircle, CheckCircle, Upload, X, Lock } from 'lucide-react';
+import { AlertCircle, CheckCircle, Upload, X, Lock, Languages } from 'lucide-react';
 import AdminHeader from '@/app/admin/components/AdminHeader';
 import ContentEditor from '@/app/admin/components/ContentEditor';
 import ArticleTranslationPanel from '@/app/admin/components/ArticleTranslationPanel';
@@ -80,6 +80,8 @@ export default function CreateArticlePage() {
   const galleryFileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [selectedGalleryFiles, setSelectedGalleryFiles] = useState<File[]>([]);
   const [savedArticle, setSavedArticle] = useState<{ id: number; title: string; excerpt: string; content: string } | null>(null);
+  const [showTranslatePanel, setShowTranslatePanel] = useState(false);
+  const [pendingTranslations, setPendingTranslations] = useState<Record<string, { title: string; excerpt: string; content: string }>>({});
   const [socialProfile, setSocialProfile] = useState<{ socialLocked: boolean; socialLinks: Record<string, string> } | null>(null);
   const [socialLoading, setSocialLoading] = useState(false);
 
@@ -341,6 +343,28 @@ export default function CreateArticlePage() {
             excerpt: form.excerpt.trim(),
             content: form.content.trim(),
           });
+
+          // Save any pending pre-publish translations to DB
+          if (Object.keys(pendingTranslations).length > 0) {
+            for (const [langCode, trans] of Object.entries(pendingTranslations)) {
+              try {
+                await fetch('/api/translations/cache', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    articleId: data.data.id,
+                    language: langCode,
+                    title: trans.title.trim(),
+                    excerpt: trans.excerpt.trim(),
+                    content: trans.content.trim(),
+                  }),
+                });
+              } catch {
+                // Translation save failed silently — can be retried from edit page
+              }
+            }
+            setPendingTranslations({});
+          }
         }
 
         setForm({
@@ -952,6 +976,35 @@ export default function CreateArticlePage() {
                 Feature this article on homepage
               </label>
             </div>
+
+            {/* Translate Before Publishing */}
+            <div className="mb-6">
+              <button
+                type="button"
+                onClick={() => setShowTranslatePanel(!showTranslatePanel)}
+                disabled={!form.title.trim() || !form.content.trim()}
+                className="w-full sm:w-auto px-5 py-2.5 text-sm font-semibold rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:bg-transparent dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-600 dark:hover:text-white dark:disabled:border-neutral-700 dark:disabled:text-neutral-600 transition-colors flex items-center gap-2"
+              >
+                <Languages className="w-4 h-4" />
+                {showTranslatePanel ? 'Hide Translations' : 'Translate Before Publishing'}
+                {Object.keys(pendingTranslations).length > 0 && (
+                  <span className="inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold bg-green-600 text-white rounded-full">
+                    {Object.keys(pendingTranslations).length}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {showTranslatePanel && (
+              <div className="mb-8">
+                <ArticleTranslationPanel
+                  title={form.title.trim()}
+                  excerpt={form.excerpt.trim()}
+                  content={form.content.trim()}
+                  onTranslationsReady={(translations) => setPendingTranslations(translations)}
+                />
+              </div>
+            )}
 
             {/* Submit Buttons */}
             <div className={`grid grid-cols-1 ${adminRole === 'editor' ? 'sm:grid-cols-2' : 'sm:grid-cols-3'} gap-3`}>
