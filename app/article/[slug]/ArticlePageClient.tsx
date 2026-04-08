@@ -162,6 +162,24 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const router = useRouter();
   const { language } = useAppStore();
   const t = getTranslation(language);
+
+  const slugToNavKey: Record<string, keyof typeof t.nav> = {
+    amakuru: 'news', politiki: 'politics', ubuzima: 'health', uburezi: 'education',
+    ubukungu: 'business', siporo: 'sports', ikoranabuhanga: 'technology',
+    imyidagaduro: 'entertainment', ubutabera: 'justice', ibidukikije: 'environment',
+    imyemerere: 'faith', 'afurika-yiburasirazuba': 'eastAfrica', 'mu-mahanga': 'international',
+    ubushakashatsi: 'investigations', umumare: 'culture',
+  };
+  const getCategoryLabel = (category?: string | null) => {
+    if (!category) return 'General';
+    const slug = category.trim().toLowerCase();
+    const navKey = slugToNavKey[slug];
+    if (navKey && (t.nav as Record<string, string>)[navKey]) {
+      return (t.nav as Record<string, string>)[navKey];
+    }
+    return category;
+  };
+
   const [isSaved, setIsSaved] = React.useState(false);
   const [linkCopied, setLinkCopied] = React.useState(false);
   const [article, setArticle] = useState<Article | null>(null);
@@ -725,7 +743,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
             />
             <div className="mb-3 sm:mb-4">
               <span className="inline-block px-2 sm:px-3 py-1 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-300 rounded-full text-xs sm:text-sm font-semibold capitalize">
-                {article.category}
+                {getCategoryLabel(article.category)}
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight mb-3 sm:mb-4 text-neutral-900 dark:text-white text-justify">
