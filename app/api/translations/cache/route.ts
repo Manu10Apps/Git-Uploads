@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { articleId, language, title, excerpt, content } = body;
 
-    const id = parseInt(articleId, 10);
+    const id = typeof articleId === 'number' ? articleId : parseInt(String(articleId), 10);
     if (isNaN(id) || id <= 0 || !['en', 'sw'].includes(language)) {
       return NextResponse.json({ error: 'Invalid parameters' }, { status: 400 });
     }
@@ -87,16 +87,16 @@ export async function POST(request: NextRequest) {
       create: {
         articleId: id,
         language,
-        title,
-        excerpt: excerpt || '',
-        content,
+        title: String(title),
+        excerpt: String(excerpt || ''),
+        content: String(content),
         translationSource: 'puter-ai',
         versionHash,
       },
       update: {
-        title,
-        excerpt: excerpt || '',
-        content,
+        title: String(title),
+        excerpt: String(excerpt || ''),
+        content: String(content),
         translationSource: 'puter-ai',
         versionHash,
         translatedAt: new Date(),
@@ -104,7 +104,9 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: 'Failed to save translation' }, { status: 500 });
+  } catch (err) {
+    console.error('[translations/cache POST] Error:', err);
+    const message = err instanceof Error ? err.message : 'Failed to save translation';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
