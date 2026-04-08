@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 import { useArticleTranslation } from '@/lib/use-article-translation';
@@ -160,7 +160,8 @@ const renderSocialLink = (platform: string, url: string) => {
 
 export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const router = useRouter();
-  const { language } = useAppStore();
+  const searchParams = useSearchParams();
+  const { language, setLanguage } = useAppStore();
   const t = getTranslation(language);
 
   const slugToNavKey: Record<string, keyof typeof t.nav> = {
@@ -402,11 +403,26 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     fetchAdverts();
   }, []);
 
+  // Read lang query param on load to set language from shared link
   useEffect(() => {
-    setShareUrl(window.location.href);
-  }, []);
+    const langParam = searchParams.get('lang');
+    if (langParam && (langParam === 'en' || langParam === 'sw' || langParam === 'ky')) {
+      setLanguage(langParam);
+    }
+  }, [searchParams, setLanguage]);
 
-  const shareTitle = article?.title || 'Amakuru';
+  // Build share URL with language param
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (language !== 'ky') {
+      url.searchParams.set('lang', language);
+    } else {
+      url.searchParams.delete('lang');
+    }
+    setShareUrl(url.toString());
+  }, [language]);
+
+  const shareTitle = translatedTitle || article?.title || 'Amakuru';
 
   const shareLinks = {
     whatsapp: `https://wa.me/?text=${encodeURIComponent(`${shareTitle} ${shareUrl}`)}`,
