@@ -423,9 +423,11 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   }, [language]);
 
   const shareTitle = translatedTitle || article?.title || 'Amakuru';
+  const shareExcerpt = translatedExcerpt || article?.excerpt || '';
+  const shareText = shareExcerpt ? `${shareTitle}\n\n${shareExcerpt}` : shareTitle;
 
   const shareLinks = {
-    whatsapp: `https://wa.me/?text=${encodeURIComponent(`${shareTitle} ${shareUrl}`)}`,
+    whatsapp: `https://wa.me/?text=${encodeURIComponent(`${shareText}\n\n${shareUrl}`)}`,
     twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`,
     linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
