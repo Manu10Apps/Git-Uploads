@@ -4,12 +4,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import type { HomepageArticle } from '@/lib/homepage-data';
+import { useAppStore } from '@/lib/store';
+import { getTranslation } from '@/lib/translations';
 
 interface BreakingNewsCarouselProps {
   articles?: HomepageArticle[];
 }
 
 export default function BreakingNewsCarousel({ articles = [] }: BreakingNewsCarouselProps) {
+  const { language } = useAppStore();
+  const t = getTranslation(language);
   const [newsItems, setNewsItems] = useState<HomepageArticle[]>(articles);
   const [loading, setLoading] = useState(true);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -115,7 +119,7 @@ export default function BreakingNewsCarousel({ articles = [] }: BreakingNewsCaro
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 flex-shrink-0 text-green-500 drop-shadow-sm" aria-hidden="true">
                   <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
                 </svg>
-                Amakuru Agezweho
+                {t.home.latestUpdates}
               </Link>
 
               {/* Featured article only */}

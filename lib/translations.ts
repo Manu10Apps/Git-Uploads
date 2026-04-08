@@ -36,6 +36,7 @@ export const en = {
     newsletters: 'Popular Newsletters',
     latestNews: 'Latest News',
     latestInvestigations: 'Latest Investigations',
+    latestUpdates: 'Latest Updates',
     viewMore: 'View More',
   },
   // Footer
@@ -144,6 +145,7 @@ export const ky = {
     newsletters: 'Ibanga Ryigazeti Risura',
     latestNews: 'Inkuru Zanyuma',
     latestInvestigations: 'Ubushakashatsi Bushya',
+    latestUpdates: 'Amakuru Agezweho',
     viewMore: 'Reba Ikindi',
   },
   // Footer
@@ -250,6 +252,7 @@ export const sw = {
     newsletters: 'Jarida la Jioni Linalosimuliwa',
     latestNews: 'Habari za Hivi Karibuni',
     latestInvestigations: 'Utafiti Mpya',
+    latestUpdates: 'Habari za Hivi Punde',
     viewMore: 'Tazama Zaidi',
   },
   footer: {
