@@ -3,7 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArticleImage } from '@/app/components/ArticleImage';
+import { useAppStore } from '@/lib/store';
+import { getTranslation } from '@/lib/translations';
 import type { HomepageArticle } from '@/lib/homepage-data';
+
+type TranslationMap = Record<number, { title: string; excerpt: string }>;
 
 type YouTubeVideo = {
   id: string;
@@ -135,10 +139,13 @@ function PagerControls({
 }
 
 export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
+  const language = useAppStore((s) => s.language);
+  const t = getTranslation(language);
   const [latestPage, setLatestPage] = React.useState(0);
   const [mostViewedPage, setMostViewedPage] = React.useState(0);
   const [youtubeVideos, setYouTubeVideos] = React.useState<YouTubeVideo[]>([]);
   const [youtubeLoading, setYouTubeLoading] = React.useState(true);
+  const [translations, setTranslations] = React.useState<TranslationMap>({});
 
   const latestTotalPages = Math.max(1, Math.ceil(articles.length / LATEST_PAGE_SIZE));
   const mostViewedTotalPages = Math.max(1, Math.ceil(mostViewed.length / MOST_VIEWED_PAGE_SIZE));
@@ -183,6 +190,44 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
     };
   }, []);
 
+  // Fetch article translations when language changes
+  React.useEffect(() => {
+    if (language === 'ky') {
+      setTranslations({});
+      return;
+    }
+
+    const allIds = [...new Set([...articles, ...mostViewed].map((a) => a.id))];
+    if (allIds.length === 0) return;
+
+    let cancelled = false;
+    const fetchTranslations = async () => {
+      try {
+        const res = await fetch(
+          `/api/translations/batch?ids=${allIds.join(',')}&lang=${language}`
+        );
+        const json = await res.json();
+        if (!cancelled && json.data) {
+          setTranslations(json.data);
+        }
+      } catch {
+        // fallback to originals
+      }
+    };
+    fetchTranslations();
+    return () => { cancelled = true; };
+  }, [language, articles, mostViewed]);
+
+  const getTitle = (article: HomepageArticle) => {
+    if (language === 'ky') return article.title;
+    return translations[article.id]?.title || article.title;
+  };
+
+  const getExcerpt = (article: HomepageArticle) => {
+    if (language === 'ky') return article.excerpt;
+    return translations[article.id]?.excerpt || article.excerpt;
+  };
+
   return (
     <>
       <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
@@ -191,7 +236,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
             <div className="text-center lg:text-left">
               <div className="imv-header-nav mb-2">
                 <div className="imv-header-nav-title">
-                  INKURU ZIHERUKA
+                  {t.home.latestArticles}
                   <span className="a1" />
                   <span className="a2" />
                   <span className="a3" />
@@ -221,7 +266,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                     <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-36 sm:h-40">
                       <ArticleImage
                         src={article.image}
-                        alt={article.title}
+                        alt={getTitle(article)}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
@@ -232,11 +277,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                     </div>
                     <h3 className="text-lg font-serif font-bold text-neutral-900 dark:text-white mb-3 line-clamp-2">
                       <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
-                        {article.title}
+                        {getTitle(article)}
                       </Link>
                     </h3>
                     <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 line-clamp-2 font-light">
-                      {article.excerpt}
+                      {getExcerpt(article)}
                     </p>
                     <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-500">
                       <span>{article.publishedAt}</span>
@@ -247,7 +292,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-neutral-600 dark:text-neutral-400">Nta nkuru zirashyirwaho</p>
+              <p className="text-neutral-600 dark:text-neutral-400">{t.home.noArticles}</p>
             </div>
           )}
         </div>
@@ -259,7 +304,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
             <div className="text-center lg:text-left">
               <div className="imv-header-nav mb-2">
                 <div className="imv-header-nav-title">
-                  IZIKUNZWE CYANE
+                  {t.home.mostViewedArticles}
                   <span className="a1" />
                   <span className="a2" />
                   <span className="a3" />
@@ -289,7 +334,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                     <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-700 h-56 cursor-pointer">
                       <ArticleImage
                         src={article.image}
-                        alt={article.title}
+                        alt={getTitle(article)}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
@@ -300,11 +345,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                     </div>
                     <h3 className="text-base font-serif font-bold text-neutral-900 dark:text-white mb-2 line-clamp-2">
                       <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
-                        {article.title}
+                        {getTitle(article)}
                       </Link>
                     </h3>
                     <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3 line-clamp-2">
-                      {article.excerpt}
+                      {getExcerpt(article)}
                     </p>
                     <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
                       <span>{article.author}</span>
@@ -320,7 +365,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
             <div className="mb-4 flex flex-wrap items-center justify-center gap-3 lg:justify-between">
               <div className="imv-header-nav">
                 <div className="imv-header-nav-title">
-                  AMASHUSHO AHERUKA
+                  {t.home.latestVideos}
                   <span className="a1" />
                   <span className="a2" />
                   <span className="a3" />
@@ -423,7 +468,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               </div>
             ) : (
               <div className="rounded-lg border border-neutral-200 bg-white p-4 text-sm text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
-                Nta mashusho abonetse muri aka kanya.
+                {t.home.noVideos}
               </div>
             )}
           </div>
