@@ -145,7 +145,7 @@ export function TopBar() {
       }
     } catch (error) {
       console.error('Location detection error:', error);
-      setUserLocation(DEFAULT_LOCATION);
+      setUserLocation({ ...DEFAULT_LOCATION, country: 'Rwanda' });
     }
   };
 
