@@ -228,6 +228,34 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
     return translations[article.id]?.excerpt || article.excerpt;
   };
 
+  const slugToNavKey: Record<string, keyof typeof t.nav> = {
+    amakuru: 'news',
+    politiki: 'politics',
+    ubuzima: 'health',
+    uburezi: 'education',
+    ubukungu: 'business',
+    siporo: 'sports',
+    ikoranabuhanga: 'technology',
+    imyidagaduro: 'entertainment',
+    ubutabera: 'justice',
+    ibidukikije: 'environment',
+    imyemerere: 'faith',
+    'afurika-yiburasirazuba': 'eastAfrica',
+    'mu-mahanga': 'international',
+    ubushakashatsi: 'investigations',
+    umumare: 'culture',
+  };
+
+  const getCategoryLabel = (category?: string | null) => {
+    if (!category) return 'GENERAL';
+    const slug = category.trim().toLowerCase();
+    const navKey = slugToNavKey[slug];
+    if (navKey && (t.nav as Record<string, string>)[navKey]) {
+      return (t.nav as Record<string, string>)[navKey].toUpperCase();
+    }
+    return category.toUpperCase();
+  };
+
   return (
     <>
       <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
@@ -273,7 +301,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   </Link>
                   <div className="p-3 sm:p-4 md:p-6">
                     <div className="text-red-600 dark:text-red-500 text-xs font-semibold tracking-widest mb-2 uppercase">
-                      {article.category}
+                      {getCategoryLabel(article.category)}
                     </div>
                     <h3 className="text-lg font-serif font-bold text-neutral-900 dark:text-white mb-3 line-clamp-2">
                       <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
@@ -341,7 +369,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   </Link>
                   <div className="p-5">
                     <div className="text-red-600 dark:text-red-500 text-xs font-semibold tracking-widest mb-2 uppercase">
-                      {article.category}
+                      {getCategoryLabel(article.category)}
                     </div>
                     <h3 className="text-base font-serif font-bold text-neutral-900 dark:text-white mb-2 line-clamp-2">
                       <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
