@@ -38,6 +38,12 @@ export const en = {
     latestInvestigations: 'Latest Investigations',
     latestUpdates: 'Latest Updates',
     viewMore: 'View More',
+    featured: 'FEATURED',
+    latestArticles: 'LATEST NEWS',
+    mostViewedArticles: 'MOST VIEWED',
+    latestVideos: 'LATEST VIDEOS',
+    noArticles: 'No articles published yet',
+    noVideos: 'No videos available at this time.',
   },
   // Footer
   footer: {
@@ -174,6 +180,12 @@ export const ky = {
     latestInvestigations: 'Ubushakashatsi Bushya',
     latestUpdates: 'Amakuru Agezweho',
     viewMore: 'Reba Ikindi',
+    featured: 'IZIGEZWEHO',
+    latestArticles: 'INKURU ZIHERUKA',
+    mostViewedArticles: 'IZIKUNZWE CYANE',
+    latestVideos: 'AMASHUSHO AHERUKA',
+    noArticles: 'Nta nkuru zirashyirwaho',
+    noVideos: 'Nta mashusho abonetse muri aka kanya.',
   },
   // Footer
   footer: {
@@ -308,6 +320,12 @@ export const sw = {
     latestInvestigations: 'Utafiti Mpya',
     latestUpdates: 'Habari Mpya',
     viewMore: 'Tazama Zaidi',
+    featured: 'ZILIZO KUU',
+    latestArticles: 'HABARI MPYA',
+    mostViewedArticles: 'ZILIZOSOMWA ZAIDI',
+    latestVideos: 'VIDEO MPYA',
+    noArticles: 'Hakuna makala zilizochapishwa bado',
+    noVideos: 'Hakuna video zinazopatikana kwa sasa.',
   },
   footer: {
     sections: 'Sehemu',
