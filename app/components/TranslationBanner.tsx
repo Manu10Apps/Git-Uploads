@@ -26,6 +26,9 @@ export function TranslationBanner({
     setIsAdmin(!!localStorage.getItem('adminAuth'));
   }, []);
 
+  // Hide all translation banners from non-admin users
+  if (!isAdmin) return null;
+
   if (isTranslating) {
     return (
       <div className="mb-4 flex items-center gap-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 px-4 py-3 text-sm text-blue-700 dark:text-blue-300">
@@ -41,8 +44,6 @@ export function TranslationBanner({
   }
 
   if (isTranslated) {
-    if (!isAdmin) return null;
-
     return (
       <div className="mb-4 flex items-center gap-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
         <Languages className="w-4 h-4 flex-shrink-0" />
