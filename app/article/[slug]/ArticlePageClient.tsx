@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
+import { useArticleTranslation } from '@/lib/use-article-translation';
 import { Header, FactCheckBox, Footer } from '@/app/components';
 import { ArticleImage } from '@/app/components/ArticleImage';
 import { ArticleContent } from '@/app/components/ArticleContent';
+import { TranslationBanner } from '@/app/components/TranslationBanner';
 import { Bookmark, Copy, Check, ThumbsDown, ThumbsUp, TriangleAlert } from 'lucide-react';
 
 interface Article {
@@ -180,6 +182,22 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const [adverts, setAdverts] = useState<any[]>([]);
   const [shareUrl, setShareUrl] = useState('');
   const commentFormRef = React.useRef<HTMLFormElement | null>(null);
+
+  // AI Translation hook — translates article content when language changes
+  const {
+    title: translatedTitle,
+    excerpt: translatedExcerpt,
+    content: translatedContent,
+    isTranslating,
+    isTranslated,
+    translationError,
+    translationSource,
+  } = useArticleTranslation({
+    articleId: article?.id || '',
+    originalTitle: article?.title || '',
+    originalExcerpt: article?.excerpt || '',
+    originalContent: article?.content || '',
+  });
 
   const galleryGridClass =
     article?.galleryColumns === 1
@@ -689,16 +707,23 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
           <article className="lg:col-span-2">
             {/* Title Section */}
             <header className="mb-6 sm:mb-8">
+            {/* Translation status banner */}
+            <TranslationBanner
+              isTranslating={isTranslating}
+              isTranslated={isTranslated}
+              translationError={translationError}
+              translationSource={translationSource}
+            />
             <div className="mb-3 sm:mb-4">
               <span className="inline-block px-2 sm:px-3 py-1 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-300 rounded-full text-xs sm:text-sm font-semibold capitalize">
                 {article.category}
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight mb-3 sm:mb-4 text-neutral-900 dark:text-white text-justify">
-              {article.title}
+              {translatedTitle || article.title}
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-neutral-600 dark:text-neutral-400 mb-4 sm:mb-6 text-justify">
-              {article.excerpt}
+              {translatedExcerpt || article.excerpt}
             </p>
 
             {/* Meta Information */}
@@ -825,7 +850,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
 
           {/* Article Content */}
           <div className="prose dark:prose-dark max-w-none mb-8 sm:mb-10 md:mb-12">
-            <ArticleContent content={article.content} />
+            <ArticleContent content={translatedContent || article.content} />
           </div>
 
           {showGalleryInMiddle && gallerySection}

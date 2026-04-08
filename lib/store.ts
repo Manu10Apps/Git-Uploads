@@ -19,8 +19,11 @@ export const useAppStore = create<AppState>()(
       setTheme: (theme) => set({ theme }),
       setLanguage: (language) => {
         set({ language });
-        // Trigger a custom event for language change (client-only)
+        // Sync to cookie so middleware/SSR can read the preference
         if (typeof window !== 'undefined') {
+          document.cookie = `preferred-lang=${language};path=/;max-age=${365 * 24 * 60 * 60};SameSite=Lax`;
+          // Update html lang attribute instantly
+          document.documentElement.lang = language === 'ky' ? 'rw' : language;
           window.dispatchEvent(new CustomEvent('languageChange', { detail: { language } }));
         }
       },

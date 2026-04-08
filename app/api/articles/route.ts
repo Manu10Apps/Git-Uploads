@@ -238,6 +238,7 @@ export async function GET(request: NextRequest) {
   const status = searchParams.get('status');
   const includeAll = searchParams.get('includeAll') === 'true';
   const page = parseInt(searchParams.get('page') || '1');
+  const lang = searchParams.get('lang'); // Language for translated content
 
   try {
     await ensureArticleAuthorSocialColumnsOnce();
@@ -384,10 +385,31 @@ export async function GET(request: NextRequest) {
           galleryPosition: parseStoredGallery(article.gallery).position,
         }));
 
+    // Apply translations for listing titles/excerpts if non-default lang requested
+    let outputArticles = formattedArticles;
+    if (lang && lang !== 'ky') {
+      try {
+        const translations = await prisma.articleTranslation.findMany({
+          where: {
+            articleId: { in: formattedArticles.map((a: any) => a.id) },
+            language: lang,
+          },
+          select: { articleId: true, title: true, excerpt: true },
+        });
+        const translationMap = new Map(translations.map((t) => [t.articleId, t]));
+        outputArticles = formattedArticles.map((a: any) => {
+          const t = translationMap.get(a.id);
+          return t ? { ...a, title: t.title, excerpt: t.excerpt } : a;
+        });
+      } catch {
+        // If translations unavailable, serve originals
+      }
+    }
+
     return NextResponse.json(
       {
         success: true,
-        data: formattedArticles,
+        data: outputArticles,
         pagination: {
           total,
           page,
@@ -659,6 +681,15 @@ export async function POST(request: NextRequest) {
       },
       include: { category: true },
     });
+
+    // Auto-queue translations for published articles (fire-and-forget)
+    if (article.status === 'published') {
+      import('@/lib/translation-cache').then(({ queueArticleTranslations }) => {
+        queueArticleTranslations(article.id).catch((err: unknown) =>
+          console.error(`[translation] Failed to queue translations for article ${article.id}:`, err)
+        );
+      });
+    }
 
     return NextResponse.json(
       {
