@@ -1004,18 +1004,6 @@ export default function CreateArticlePage() {
             </>
           )}
 
-          {/* Info Box */}
-          <div className="mt-12 bg-amber-50 dark:bg-amber-950/30 border border-red-200 dark:border-amber-900/50 rounded-lg p-6">
-            <h3 className="font-semibold text-amber-900 dark:text-amber-200 mb-2">Tips for Publishing</h3>
-            <ul className="text-sm text-amber-800 dark:text-amber-300 space-y-2">
-              <li>✓ Use clear, descriptive headlines</li>
-              <li>✓ Write compelling excerpts (100-150 characters)</li>
-              <li>✓ Use high-quality featured images from file upload or URLs</li>
-              <li>✓ Add additional gallery images with descriptive captions</li>
-              <li>✓ Add relevant tags for better discoverability</li>
-              <li>✓ Ensure read time is accurate</li>
-            </ul>
-          </div>
         </div>
       </main>
     </>
