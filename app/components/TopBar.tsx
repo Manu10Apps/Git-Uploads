@@ -101,7 +101,7 @@ export function TopBar() {
     ...getDateStrings(DEFAULT_LOCATION.timezone),
   }));
   const [previousRates, setPreviousRates] = useState<{ [key: string]: number }>({});
-  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number; city: string; timezone: string }>(DEFAULT_LOCATION);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number; city: string; country: string; timezone: string }>({ ...DEFAULT_LOCATION, country: 'Rwanda' });
 
   // Detect user's location
   const detectLocation = async () => {
@@ -115,8 +115,9 @@ export function TopBar() {
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
             { signal: AbortSignal.timeout(5000) }
           );
-          const data = await response.json();
-          const city = data.address?.city || data.address?.town || data.address?.county || 'Unknown';
+          const geoData = await response.json();
+          const city = geoData.address?.city || geoData.address?.town || geoData.address?.county || 'Unknown';
+          const country = geoData.address?.country || 'Rwanda';
           
           // Get timezone using lat/lon (optional - uses env var if available)
           let timezone = getTimezoneFromCoords(latitude, longitude);
@@ -134,17 +135,12 @@ export function TopBar() {
             }
           }
           
-          setUserLocation({
-            lat: latitude,
-            lon: longitude,
-            city: city,
-            timezone: timezone
-          });
+          setUserLocation({ lat: latitude, lon: longitude, city, country, timezone });
         }, 
         (error) => {
           // If geolocation denied, use default (Kigali)
           console.log('Geolocation permission denied, using default location');
-          setUserLocation(DEFAULT_LOCATION);
+          setUserLocation({ ...DEFAULT_LOCATION, country: 'Rwanda' });
         });
       }
     } catch (error) {
@@ -177,30 +173,6 @@ export function TopBar() {
       const weatherData = await response.json();
       const current = weatherData.current;
       
-      const weatherConditions: { [key: number]: { condition: string; conditionKy: string; icon: string } } = {
-        0: { condition: 'Clear', conditionKy: 'Hari ikirere gikeye', icon: '☀️' },
-        1: { condition: 'Mostly Clear', conditionKy: 'Hari ikirere gikeye gake', icon: '🌤️' },
-        2: { condition: 'Partly Cloudy', conditionKy: 'Hari ibicu bike', icon: '⛅' },
-        3: { condition: 'Overcast', conditionKy: 'Hari ibicu byinshi', icon: '☁️' },
-        45: { condition: 'Foggy', conditionKy: 'Hari igihu', icon: '🌫️' },
-        48: { condition: 'Foggy', conditionKy: 'Hari igihu', icon: '🌫️' },
-        51: { condition: 'Light Drizzle', conditionKy: 'Hari ubuhehere buke', icon: '🌧️' },
-        53: { condition: 'Drizzle', conditionKy: 'Hari ubuhehere', icon: '🌧️' },
-        55: { condition: 'Heavy Drizzle', conditionKy: 'Hari akavura k\'urushyana', icon: '🌧️' },
-        61: { condition: 'Light Rain', conditionKy: 'Hari udutonyanga duke', icon: '🌧️' },
-        63: { condition: 'Rain', conditionKy: 'Hari akavura', icon: '🌧️' },
-        65: { condition: 'Heavy Rain', conditionKy: 'Hari imvura', icon: '⛈️' },
-        71: { condition: 'Light Snow', conditionKy: 'Urubura ruke', icon: '❄️' },
-        73: { condition: 'Snow', conditionKy: 'Urubura', icon: '❄️' },
-        75: { condition: 'Heavy Snow', conditionKy: 'Urubura rwinshi', icon: '❄️' },
-        80: { condition: 'Light Showers', conditionKy: 'Hari akavura gake cyane', icon: '🌧️' },
-        81: { condition: 'Showers', conditionKy: 'Hari akavura', icon: '⛈️' },
-        82: { condition: 'Heavy Showers', conditionKy: 'Hari imvura', icon: '⛈️' },
-        85: { condition: 'Snow Showers', conditionKy: 'Hari akavura k\'urubura', icon: '❄️' },
-        86: { condition: 'Heavy Snow Showers', conditionKy: 'Hari imvura y\'urubura', icon: '❄️' },
-        95: { condition: 'Thunderstorm', conditionKy: 'Hari imvura ivanze n\'inkuba', icon: '⛈️' },
-        96: { condition: 'Thunderstorm with Hail', conditionKy: 'Hari imvura ivanze n\'inkuba n\'imirabyo', icon: '⛈️' },
-      };
 
       const weatherInfo = WEATHER_CONDITIONS[current.weather_code] || { condition: 'Unknown', conditionKy: 'Ifuzo ritamenyekana', icon: '🌤️' };
 
@@ -333,7 +305,7 @@ export function TopBar() {
       dateTime,
       simplifiedDate,
       weather: weatherData,
-      location: { city: userLocation.city, country: 'Rwanda' },
+      location: { city: userLocation.city, country: userLocation.country },
       exchanges: exchangeData,
     });
   };
