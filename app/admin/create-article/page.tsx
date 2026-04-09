@@ -337,6 +337,7 @@ export default function CreateArticlePage() {
 
         // Save article data for translation panel before clearing form
         if (data.data?.id) {
+          setShowTranslatePanel(false);
           setSavedArticle({
             id: data.data.id,
             title: form.title.trim(),

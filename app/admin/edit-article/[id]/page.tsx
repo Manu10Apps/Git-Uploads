@@ -394,6 +394,7 @@ export default function EditArticlePage() {
           status,
           publishedAt: status === 'published' ? (publishedAtForUpdate || prev.publishedAt) : '',
         }));
+        setShowTranslatePanel(false);
         setShowTranslation(true);
       } else {
         setMessage({ type: 'error', text: data.error || 'Failed to update article' });
