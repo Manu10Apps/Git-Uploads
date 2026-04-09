@@ -291,7 +291,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     const fetchRecentArticles = async () => {
       try {
         setRecentLoading(true);
-        const response = await fetch('/api/articles?limit=4&summary=true');
+        const response = await fetch(`/api/articles?limit=4&summary=true&lang=${language}`);
         const result = await response.json();
         const articles = result.data || [];
         setRecentArticles(articles.slice(0, 4));
@@ -304,14 +304,14 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     };
 
     fetchRecentArticles();
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     if (!article) return;
     const fetchRelatedArticles = async () => {
       try {
         setRelatedLoading(true);
-        const response = await fetch(`/api/articles?category=${article.category}&limit=6&summary=true`);
+        const response = await fetch(`/api/articles?category=${article.category}&limit=6&summary=true&lang=${language}`);
         const result = await response.json();
         const articles = result.data || [];
         const filtered = articles.filter((a: Article) => a.slug !== article.slug);
@@ -325,13 +325,13 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     };
 
     fetchRelatedArticles();
-  }, [article?.category, article?.slug]);
+  }, [article?.category, article?.slug, language]);
 
   useEffect(() => {
     const fetchMostViewedArticles = async () => {
       try {
         setMostViewedLoading(true);
-        const response = await fetch('/api/articles?limit=3&featured=true&summary=true');
+        const response = await fetch(`/api/articles?limit=3&featured=true&summary=true&lang=${language}`);
         const result = await response.json();
         const articles = result.data || [];
         setMostViewedArticles(articles.slice(0, 3));
@@ -344,13 +344,13 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     };
 
     fetchMostViewedArticles();
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     const fetchMostViralArticles = async () => {
       try {
         setMostViralLoading(true);
-        const response = await fetch('/api/articles?limit=12');
+        const response = await fetch(`/api/articles?limit=12&lang=${language}`);
         const result = await response.json();
         const articles = (result.data || []) as Article[];
         const rankedByViews = articles
@@ -367,13 +367,13 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     };
 
     fetchMostViralArticles();
-  }, [slug]);
+  }, [slug, language]);
 
   useEffect(() => {
     const fetchEastAfricaArticles = async () => {
       try {
         setEastAfricaLoading(true);
-        const response = await fetch('/api/articles?category=afurika-yiburasirazuba&limit=12');
+        const response = await fetch(`/api/articles?category=afurika-yiburasirazuba&limit=12&lang=${language}`);
         const result = await response.json();
         const articles = (result.data || []) as Article[];
         const rankedByViews = articles
@@ -390,7 +390,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     };
 
     fetchEastAfricaArticles();
-  }, [slug]);
+  }, [slug, language]);
 
   useEffect(() => {
     const fetchAdverts = async () => {
