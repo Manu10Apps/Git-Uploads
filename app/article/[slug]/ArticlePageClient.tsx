@@ -1053,9 +1053,14 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                         />
                       </div>
                       <div className="p-4">
-                        <h3 className="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-600 transition-colors mb-2">
+                        <h3 className="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-600 transition-colors mb-1">
                           {relatedArticle.title}
                         </h3>
+                        {relatedArticle.excerpt && (
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 mb-2">
+                            {relatedArticle.excerpt}
+                          </p>
+                        )}
                         <p className="text-xs text-neutral-600 dark:text-neutral-400">
                           {formatDate(relatedArticle.publishedAt, language)}
                         </p>
@@ -1099,9 +1104,14 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                         />
                       </div>
                       <div className="p-4">
-                        <h3 className="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-600 transition-colors mb-2">
+                        <h3 className="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-600 transition-colors mb-1">
                           {viewedArticle.title}
                         </h3>
+                        {viewedArticle.excerpt && (
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 mb-2">
+                            {viewedArticle.excerpt}
+                          </p>
+                        )}
                         <p className="text-xs text-neutral-600 dark:text-neutral-400">
                           {formatDate(viewedArticle.publishedAt, language)}
                         </p>
@@ -1154,6 +1164,11 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                           <h3 className="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-600 transition-colors">
                             {recentArticle.title}
                           </h3>
+                          {recentArticle.excerpt && (
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 mt-1">
+                              {recentArticle.excerpt}
+                            </p>
+                          )}
                           <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
                             {formatDate(recentArticle.publishedAt, language)}
                           </p>
@@ -1199,6 +1214,11 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                           <h3 className="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-600 transition-colors">
                             {viralArticle.title}
                           </h3>
+                          {viralArticle.excerpt && (
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 mt-1">
+                              {viralArticle.excerpt}
+                            </p>
+                          )}
                           <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
                             {formatDate(viralArticle.publishedAt, language)}
                           </p>
@@ -1244,6 +1264,11 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                           <h3 className="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-600 transition-colors">
                             {eastAfricaArticle.title}
                           </h3>
+                          {eastAfricaArticle.excerpt && (
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 mt-1">
+                              {eastAfricaArticle.excerpt}
+                            </p>
+                          )}
                           <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
                             {formatDate(eastAfricaArticle.publishedAt, language)}
                           </p>
