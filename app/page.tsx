@@ -56,7 +56,7 @@ export default async function Home() {
                 ))
               ) : (
                 <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Ad Space</span>
+                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
                 </div>
               )}
             </div>
@@ -82,7 +82,7 @@ export default async function Home() {
                 ))
               ) : (
                 <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Ad Space</span>
+                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
                 </div>
               )}
 
@@ -106,7 +106,7 @@ export default async function Home() {
                 ))
               ) : (
                 <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Ad Space</span>
+                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
                 </div>
               )}
             </div>
@@ -138,7 +138,7 @@ export default async function Home() {
               ))
             ) : (
               <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                <span className="text-neutral-400 dark:text-neutral-500 text-sm">Ad Space</span>
+                <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
               </div>
             )}
           </div>
