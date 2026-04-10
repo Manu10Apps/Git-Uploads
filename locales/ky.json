@@ -90,7 +90,9 @@
     "replySubmitted": "Igisubizo cyoherejwe.",
     "warning": "Umuburo!",
     "warningText": "Ibitekerezo bitangwa mu bwisanzure n'ubwubahane, imvugo z'urwango no kutagira imyitwarire iboneye bihanwa n'amategeko y'ibihugu.",
-    "errorTryAgain": "Habaye ikosa, ongera ugerageze."
+    "errorTryAgain": "Habaye ikosa, ongera ugerageze.",
+    "advertLabel": "Kwamamaza",
+    "advertSpace": "Aho Kwamamariza"
   },
   "common": {
     "loading": "Iri hanze...",

@@ -90,7 +90,9 @@
     "replySubmitted": "Reply submitted.",
     "warning": "Warning!",
     "warningText": "Comments should be shared freely and respectfully. Hate speech and inappropriate behavior are punishable by law.",
-    "errorTryAgain": "An error occurred, please try again."
+    "errorTryAgain": "An error occurred, please try again.",
+    "advertLabel": "Advertisement",
+    "advertSpace": "Ad Space"
   },
   "common": {
     "loading": "Loading...",

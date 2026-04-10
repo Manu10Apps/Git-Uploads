@@ -90,7 +90,9 @@
     "replySubmitted": "Jibu limetumwa.",
     "warning": "Onyo!",
     "warningText": "Maoni yanapaswa kushirikiwa kwa uhuru na heshima. Hotuba ya chuki na tabia zisizofaa zinaadhibiwa kwa mujibu wa sheria.",
-    "errorTryAgain": "Hitilafu imetokea, jaribu tena."
+    "errorTryAgain": "Hitilafu imetokea, jaribu tena.",
+    "advertLabel": "Matangazo",
+    "advertSpace": "Nafasi ya Matangazo"
   },
   "common": {
     "loading": "Inapakia...",

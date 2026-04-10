@@ -3,9 +3,15 @@ import { DeferredHomePageFeed } from '@/app/components/DeferredHomePageFeed';
 import { HomepageHero } from '@/app/components/HomepageHero';
 import { NewsletterSignup } from '@/app/components/NewsletterSignup';
 import { getHomepageData } from '@/lib/homepage-data';
+import { cookies } from 'next/headers';
+import { getTranslation } from '@/lib/translations';
 
 export default async function Home() {
   const { articles, adverts } = await getHomepageData();
+
+  const cookieStore = await cookies();
+  const preferredLang = (cookieStore.get('preferred-lang')?.value ?? 'ky') as 'en' | 'ky' | 'sw';
+  const t = getTranslation(preferredLang);
 
   const featuredPageArticles = articles.slice(0, 5);
   const featuredArticle = featuredPageArticles.find((article) => article.featured) || featuredPageArticles[0] || null;
@@ -34,7 +40,7 @@ export default async function Home() {
 
         <section className="py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">Kwamamaza</p>
+            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">{t.article.advertLabel}</p>
             <div className="lg:hidden">
               {homepageTopAdverts.length > 0 ? (
                 homepageTopAdverts.slice(0, 1).map((advert) => (
@@ -56,7 +62,7 @@ export default async function Home() {
                 ))
               ) : (
                 <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
+                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
                 </div>
               )}
             </div>
@@ -82,7 +88,7 @@ export default async function Home() {
                 ))
               ) : (
                 <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
+                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
                 </div>
               )}
 
@@ -106,7 +112,7 @@ export default async function Home() {
                 ))
               ) : (
                 <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
+                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
                 </div>
               )}
             </div>
@@ -117,7 +123,7 @@ export default async function Home() {
 
         <section className="lg:hidden py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">Kwamamaza</p>
+            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">{t.article.advertLabel}</p>
             {homepageBottomAdverts.length > 0 ? (
               homepageBottomAdverts.slice(0, 1).map((advert) => (
                 <a
@@ -138,7 +144,7 @@ export default async function Home() {
               ))
             ) : (
               <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
+                <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
               </div>
             )}
           </div>

@@ -114,6 +114,8 @@ export const en = {
     warning: 'Warning!',
     warningText: 'Comments should be shared freely and respectfully. Hate speech and inappropriate behavior are punishable by law.',
     errorTryAgain: 'An error occurred, please try again.',
+    advertLabel: 'Advertisement',
+    advertSpace: 'Ad Space',
   },
   // TopBar
   topbar: {
@@ -269,6 +271,8 @@ export const ky = {
     warning: 'Umuburo!',
     warningText: "Ibitekerezo bitangwa mu bwisanzure n'ubwubahane, imvugo z'urwango no kutagira imyitwarire iboneye bihanwa n'amategeko y'ibihugu.",
     errorTryAgain: 'Habaye ikosa, ongera ugerageze.',
+    advertLabel: 'Kwamamaza',
+    advertSpace: 'Aho Kwamamariza',
   },
   // TopBar
   topbar: {
@@ -420,6 +424,8 @@ export const sw = {
     warning: 'Onyo!',
     warningText: 'Maoni yanapaswa kushirikiwa kwa uhuru na heshima. Hotuba ya chuki na tabia zisizofaa zinaadhibiwa kwa mujibu wa sheria.',
     errorTryAgain: 'Hitilafu imetokea, jaribu tena.',
+    advertLabel: 'Matangazo',
+    advertSpace: 'Nafasi ya Matangazo',
   },
   // TopBar
   topbar: {
