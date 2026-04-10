@@ -219,7 +219,7 @@ export const ky = {
     eastAfrica: "Afrika y'Iburasirazuba",
     international: 'Mu Mahanga',
     more: 'Ibindi',
-    breaking: 'Soma Usobanukirwe',
+    breaking: 'Amakuru Mashya',
     search: 'Shakisha',
     newsletters: 'Ibanga Ryigazeti',
     subscribe: 'Kwiyandikisha',
@@ -228,7 +228,7 @@ export const ky = {
   // Homepage
   home: {
     title: 'Intambwe Media - Inkuru z\'Ibwirwanda n\'Ibirubuyubuyu',
-    breakingNews: 'Soma Usobanukirwe',
+    breakingNews: 'Amakuru Mashya',
     latestEpaper: 'E-Gazeti Yanyuma',
     epaperArchive: 'Ibigapisiro by\'E-Gazeti',
     topStories: 'Inkuru Nkuru Cyane',
