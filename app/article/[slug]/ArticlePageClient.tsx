@@ -762,7 +762,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
             <div className="mb-6 sm:mb-8">
               <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">Kwamamaza</p>
               <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                <span className="text-neutral-400 dark:text-neutral-500 text-sm">Ad Space</span>
+                <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
               </div>
             </div>
             <div className="mb-3 sm:mb-4">
@@ -899,7 +899,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               ))
             ) : (
               <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                <span className="text-neutral-400 dark:text-neutral-500 text-sm">Ad Space</span>
+                <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
               </div>
             )}
           </div>
@@ -936,7 +936,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               ))
             ) : (
               <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                <span className="text-neutral-400 dark:text-neutral-500 text-sm">Ad Space</span>
+                <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
               </div>
             )}
           </div>
@@ -1316,7 +1316,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                   ))
                 ) : (
                   <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden flex items-center justify-center border border-neutral-200 dark:border-neutral-700" style={{minHeight: '200px'}}>
-                    <span className="text-neutral-400 dark:text-neutral-500 text-sm">Ad Space</span>
+                    <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
                   </div>
                 )}
               </div>
