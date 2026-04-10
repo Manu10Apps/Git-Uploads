@@ -78,6 +78,8 @@ export function EpaperManager() {
     setUploading(true);
     setError(null);
     setSuccessMessage(null);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 90_000);
     try {
       const formData = new FormData();
       formData.append('title', uploadTitle);
@@ -88,9 +90,15 @@ export function EpaperManager() {
         method: 'POST',
         headers: { ...getAuthHeader() },
         body: formData,
+        signal: controller.signal,
       });
-      const data = await response.json();
-      if (data.success) {
+      let data: { success: boolean; error?: string; message?: string } | null = null;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error(`Server returned ${response.status} ${response.statusText}`);
+      }
+      if (data?.success) {
         setSuccessMessage(uploadDraft ? 'Draft created!' : 'Edition uploaded successfully!');
         setShowUploadModal(false);
         setUploadFile(null);
@@ -99,11 +107,16 @@ export function EpaperManager() {
         setUploadDraft(false);
         fetchEditions();
       } else {
-        setError(data.error || 'Upload failed');
+        setError(data?.error || `Upload failed (HTTP ${response.status})`);
       }
-    } catch {
-      setError('Upload failed');
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError('Upload timed out. The file may be too large or the server is slow. Please try again.');
+      } else {
+        setError(err instanceof Error ? err.message : 'Upload failed — please try again.');
+      }
     } finally {
+      clearTimeout(timeout);
       setUploading(false);
     }
   };

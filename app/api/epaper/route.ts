@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
+
+export const maxDuration = 60; // Allow up to 60s for PDF uploads on Vercel
 import { verifyToken } from '@/lib/auth';
 
 const MAX_PDF_SIZE_BYTES = 25 * 1024 * 1024;
