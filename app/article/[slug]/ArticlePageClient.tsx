@@ -881,17 +881,21 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
           </div>
 
           {/* Article Top Advertisement */}
-          {articleTopAdverts.length > 0 && (
-            <div className="mb-6 sm:mb-8">
-              {articleTopAdverts.slice(0, 1).map((advert: any) => (
+          <div className="mb-6 sm:mb-8">
+            {articleTopAdverts.length > 0 ? (
+              articleTopAdverts.slice(0, 1).map((advert: any) => (
                 <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block w-full group hover:opacity-90 transition-opacity">
                   <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
                     <img src={advert.imageUrl} alt={advert.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                 </a>
-              ))}
-            </div>
-          )}
+              ))
+            ) : (
+              <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                <span className="text-neutral-400 dark:text-neutral-500 text-sm">Ad Space</span>
+              </div>
+            )}
+          </div>
 
           {/* Article Content */}
           <div className="prose dark:prose-dark max-w-none mb-8 sm:mb-10 md:mb-12">
@@ -913,17 +917,21 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
           </section>
 
           {/* Article Bottom Advertisement */}
-          {articleBottomAdverts.length > 0 && (
-            <div className="mb-8 sm:mb-10">
-              {articleBottomAdverts.slice(0, 1).map((advert: any) => (
+          <div className="mb-8 sm:mb-10">
+            {articleBottomAdverts.length > 0 ? (
+              articleBottomAdverts.slice(0, 1).map((advert: any) => (
                 <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block w-full group hover:opacity-90 transition-opacity">
                   <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
                     <img src={advert.imageUrl} alt={advert.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                 </a>
-              ))}
-            </div>
-          )}
+              ))
+            ) : (
+              <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                <span className="text-neutral-400 dark:text-neutral-500 text-sm">Ad Space</span>
+              </div>
+            )}
+          </div>
 
           {showGalleryAtEnd && gallerySection}
 
@@ -1288,17 +1296,21 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
             </div>
 
               {/* Sidebar Advertisement */}
-              {sidebarAdverts.length > 0 && (
-                <div className="mt-8">
-                  {sidebarAdverts.slice(0, 1).map((advert: any) => (
+              <div className="mt-8">
+                {sidebarAdverts.length > 0 ? (
+                  sidebarAdverts.slice(0, 1).map((advert: any) => (
                     <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block group hover:opacity-90 transition-opacity">
                       <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden flex items-center justify-center border border-neutral-200 dark:border-neutral-700" style={{minHeight: '200px'}}>
                         <img src={advert.imageUrl} alt={advert.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       </div>
                     </a>
-                  ))}
-                </div>
-              )}
+                  ))
+                ) : (
+                  <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden flex items-center justify-center border border-neutral-200 dark:border-neutral-700" style={{minHeight: '200px'}}>
+                    <span className="text-neutral-400 dark:text-neutral-500 text-sm">Ad Space</span>
+                  </div>
+                )}
+              </div>
           </aside>
         </div>
       </main>
