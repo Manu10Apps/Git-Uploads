@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import Image from 'next/image';
-import { Download, Trash2, Star, Archive, AlertCircle, FileText, Send, RefreshCw, Pencil } from 'lucide-react';
+import { Download, Trash2, Star, Archive, AlertCircle, FileText, Send, RefreshCw, Pencil, Upload, X } from 'lucide-react';
 import Link from 'next/link';
 import { formatFileSize, formatIssueDate } from '@/lib/epaper-client';
 
@@ -30,6 +30,14 @@ export function EpaperManager() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [filterArchived, setFilterArchived] = useState(false);
   const [showDrafts, setShowDrafts] = useState(true);
+
+  // Upload modal state
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadTitle, setUploadTitle] = useState('');
+  const [uploadIssueDate, setUploadIssueDate] = useState('');
+  const [uploadDraft, setUploadDraft] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const getAuthHeader = (): HeadersInit => {
     const token = localStorage.getItem('adminToken');
@@ -59,6 +67,46 @@ export function EpaperManager() {
   React.useEffect(() => {
     fetchEditions();
   }, [fetchEditions]);
+
+  // Upload new edition
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadTitle || !uploadIssueDate) {
+      setError('Title and issue date are required');
+      return;
+    }
+    setUploading(true);
+    setError(null);
+    setSuccessMessage(null);
+    try {
+      const formData = new FormData();
+      formData.append('title', uploadTitle);
+      formData.append('issueDate', uploadIssueDate);
+      formData.append('isDraft', String(uploadDraft));
+      if (uploadFile) formData.append('file', uploadFile);
+      const response = await fetch('/api/epaper', {
+        method: 'POST',
+        headers: { ...getAuthHeader() },
+        body: formData,
+      });
+      const data = await response.json();
+      if (data.success) {
+        setSuccessMessage(uploadDraft ? 'Draft created!' : 'Edition uploaded successfully!');
+        setShowUploadModal(false);
+        setUploadFile(null);
+        setUploadTitle('');
+        setUploadIssueDate('');
+        setUploadDraft(false);
+        fetchEditions();
+      } else {
+        setError(data.error || 'Upload failed');
+      }
+    } catch {
+      setError('Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   // Publish a draft
   const handlePublishDraft = async (id: number, file: File | null, publish: boolean) => {
@@ -184,8 +232,101 @@ export function EpaperManager() {
             Manage and publish weekly digital editions. Drafts are auto-created every Monday.
           </p>
         </div>
-
+        <button
+          onClick={() => setShowUploadModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition"
+        >
+          <Upload size={16} />
+          Upload PDF
+        </button>
       </div>
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-xl w-full max-w-md mx-4 p-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-white">Upload New Edition</h3>
+              <button onClick={() => setShowUploadModal(false)} className="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300">
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleUpload} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                  Edition Title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={uploadTitle}
+                  onChange={(e) => setUploadTitle(e.target.value)}
+                  required
+                  placeholder="e.g. Weekly Edition – April 2026"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                  Issue Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={uploadIssueDate}
+                  onChange={(e) => setUploadIssueDate(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                  PDF File
+                </label>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)}
+                  className="w-full text-sm text-neutral-700 dark:text-neutral-300 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 dark:file:bg-blue-900/40 dark:file:text-blue-300 hover:file:bg-blue-100"
+                />
+                {uploadFile && (
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">{uploadFile.name} ({formatFileSize(uploadFile.size)})</p>
+                )}
+              </div>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={uploadDraft}
+                  onChange={(e) => setUploadDraft(e.target.checked)}
+                  className="w-4 h-4 rounded"
+                />
+                <span className="text-sm text-neutral-700 dark:text-neutral-300">Save as draft (don&apos;t publish yet)</span>
+              </label>
+              {error && (
+                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              )}
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowUploadModal(false)}
+                  className="px-4 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={uploading}
+                  className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium transition"
+                >
+                  {uploading ? (
+                    <><span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white inline-block"></span> Uploading...</>
+                  ) : (
+                    <><Upload size={14} /> {uploadDraft ? 'Save Draft' : 'Upload & Publish'}</>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Messages */}
       {error && (
