@@ -7,11 +7,13 @@ import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 import { ArticleImage } from '@/app/components/ArticleImage';
 import { Heart, Share2, Bookmark, FileText, Copy } from 'lucide-react';
+import { useArticleTranslation } from '@/lib/use-article-translation';
 
 interface NewsCardProps {
   id: string;
   title: string;
   excerpt: string;
+  content?: string;
   image: string;
   category: string;
   author: string;
@@ -25,6 +27,7 @@ export function NewsCard({
   id,
   title,
   excerpt,
+  content = '',
   image,
   category,
   author,
@@ -36,6 +39,17 @@ export function NewsCard({
   const router = useRouter();
   const { language } = useAppStore();
   const t = getTranslation(language);
+
+  const {
+    title: translatedTitle,
+    excerpt: translatedExcerpt,
+    isTranslating,
+  } = useArticleTranslation({
+    articleId: id,
+    originalTitle: title,
+    originalExcerpt: excerpt,
+    originalContent: content,
+  });
   const [isSaved, setIsSaved] = React.useState(false);
   const [showShareMenu, setShowShareMenu] = React.useState(false);
   const [origin, setOrigin] = React.useState('');
@@ -117,13 +131,13 @@ export function NewsCard({
       onClick={handleCardClick}
       className={`group glass rounded-lg sm:rounded-xl overflow-hidden hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 cursor-pointer ${
         featured ? 'sm:col-span-2' : ''
-      }`}
+      } ${isTranslating ? 'opacity-80' : ''}`}
     >
         {/* Image Container */}
         <div className="relative overflow-hidden bg-neutral-200 dark:bg-neutral-700 h-40 sm:h-48 md:h-56">
           <ArticleImage
             src={image}
-            alt={title}
+            alt={translatedTitle}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
 
@@ -153,12 +167,12 @@ export function NewsCard({
         <div className="p-3 sm:p-4 md:p-6 flex flex-col gap-3 sm:gap-4">
           {/* Title */}
           <h3 className="text-base sm:text-lg md:text-xl font-bold leading-tight group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-2">
-            {title}
+            {translatedTitle}
           </h3>
 
           {/* Excerpt */}
           <p className="text-xs sm:text-sm md:text-base text-neutral-600 dark:text-neutral-400 line-clamp-2">
-            {excerpt}
+            {translatedExcerpt}
           </p>
 
           {/* Meta */}
