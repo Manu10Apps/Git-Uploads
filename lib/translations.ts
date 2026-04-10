@@ -196,45 +196,68 @@ export const en = {
       'mu-mahanga': 'All news outside East Africa',
     } as Record<string, string>,
   },
-  // Terms page
-  terms: {
-    title: "Terms & Conditions",
-    subtitle: "Effective from 2026",
-    s1Title: "1. Introduction",
-    s1: "These terms and conditions govern how this website operates and is used. They aim to protect the rights of users, uphold the principles of good conduct, and safeguard information security. By using this website, you agree to comply with all these terms.",
-    s2Title: "2. By using this website you agree to the following:",
-    s2Items: [
-      "Refrain from engaging in activities that violate the law or good conduct",
-      "Not infringe on or diminish the rights of others",
-      "Avoid defamatory, harmful, or divisive language",
-      "Comply with the rules and principles governing this website",
-      "Refrain from using the website for activities that undermine peace, unity, and freedom",
+  // Privacy page
+  privacy: {
+    title: 'Privacy Policy',
+    subtitle: 'Effective from 2026',
+    sections: [
+      {
+        heading: '1. Introduction',
+        body: 'We respect every individual\'s right to privacy. This privacy policy explains how we collect, use, store and protect the personal data of users of our services, whether provided through our website or other means, including data not stored on our servers.',
+      },
+      {
+        heading: '2. Data We Collect',
+        intro: 'We may collect the following information:',
+        items: [
+          'Full name',
+          'Email address',
+          'Phone number',
+          'Information related to your use of our services',
+          'User preferences and other data related to website usage',
+        ],
+      },
+      {
+        heading: '3. How We Use Your Data',
+        intro: 'The data we collect is used for the following purposes:',
+        items: [
+          'To provide and improve our services',
+          'To simplify website usage',
+          'To improve interaction with users',
+          'To send information about services, updates or changes',
+          'To maintain security and proper functioning of services',
+        ],
+      },
+      {
+        heading: '4. Storing and Protecting Data',
+        intro: 'Personal data is stored in compliance with laws and principles governing security and privacy, aimed at:',
+        items: [
+          'Simplifying the use of our services',
+          'Delivering services in an improved manner',
+          'Analyzing and improving the performance of our services',
+          'Complying with legal requirements',
+        ],
+      },
+      {
+        heading: '5. User Rights',
+        intro: 'Under this policy, users have the following rights:',
+        items: [
+          'Access their personal data we have stored',
+          'Request correction of inaccurate data',
+          'Request deletion or restriction of use of their data, where permitted by law',
+          'Request an explanation of how their data is used',
+        ],
+      },
+      {
+        heading: '6. Data Security',
+        body: 'We implement strong measures to protect personal data from loss, alteration or misuse. When necessary, we take steps to prevent and address any security breach.',
+      },
+      {
+        heading: '7. Changes to This Policy',
+        body: 'We reserve the right to update this privacy policy when necessary. Changes will be published on the website, and users are encouraged to review this policy regularly.',
+      },
     ],
-    s3Title: "3. Prohibited Conduct",
-    s3Intro: "It is prohibited to use this website for the following activities:",
-    s3Items: [
-      "Spreading false information or content harmful to others",
-      "Publishing or promoting hate speech and discrimination",
-      "Engaging in violence, intimidation, or harassment",
-      "Preparing or distributing unlawful content",
-      "Damaging, destroying, or unlawfully accessing the website's technical infrastructure",
-    ],
-    s4Title: "4. Security and Use of Information",
-    s4: "This website handles information in compliance with the principles of security and privacy. It is prohibited to misuse, steal, or distribute information belonging to others. Users are required to comply with the privacy and data use policy.",
-    s5Title: "5. Modification of Terms",
-    s5: "The management of this website reserves the right to modify these terms and conditions when necessary. Changes will be published on the website, and continued use of the website implies acceptance of those updates.",
-    s6Title: "6. Suspension or Removal of Services",
-    s6: "When necessary and in accordance with the law, this website may suspend or remove accounts or services for individuals who have not complied with these terms and conditions.",
-    s7Title: "7. General Provisions",
-    s7Intro: "These terms must be interpreted in accordance with national law:",
-    s7Items: [
-      "Protecting the rights and dignity of people",
-      "Complying with existing laws and regulations",
-      "Maintaining peace, security, and freedom",
-      "Providing clear information",
-    ],
-    contactTitle: "📩 Ask a Question or Give Feedback",
-    contactText: "To ask for clarification or give feedback on these terms, write to us at:",
+    contactTitle: '📩 Questions or Feedback',
+    contactBody: 'To ask questions or provide feedback about this privacy policy, write to us:',
   },
 };
 
@@ -436,45 +459,68 @@ export const ky = {
       'mu-mahanga': "Amakuru yose yo hanze ya Afurika y'Iburasirazuba",
     } as Record<string, string>,
   },
-  // Terms page
-  terms: {
-    title: "Amategeko n'Amabwiriza",
-    subtitle: "Guhera muri 2026",
-    s1Title: "1. Intangiriro",
-    s1: "Aya mategeko n'amabwiriza agena uko urubuga rukora n'uko rukoreshwa. Agamije kurinda uburenganzira bw'abarukoresha, kubahiriza amahame y'imyitwarire myiza no kubungabunga umutekano w'amakuru. Ukoresheje uru rubuga, uba wemeye gukurikiza aya mategeko yose.",
-    s2Title: "2. Ukoresha uru rubuga wemera ibi bikurikira:",
-    s2Items: [
-      "Kwirinda gukora ibikorwa binyuranyije n'amategeko cyangwa n'imyitwarire myiza",
-      "Kutangiza cyangwa gutesha agaciro uburenganzira bw'abandi",
-      "Kwirinda amagambo asebanya, abangamira cyangwa ateza amakimbirane",
-      "Kubahiriza amabwiriza n'amahame agenga uru rubuga",
-      "Kwirinda gukoresha urubuga mu bikorwa byangiza amahoro, ubumwe n'ubwisanzure",
+  // Privacy page
+  privacy: {
+    title: "Politiki Ngenderwaho y'Ibanga",
+    subtitle: 'Guhera muri 2026',
+    sections: [
+      {
+        heading: '1. Intangiriro',
+        body: "Twubaha uburenganzira bw'umuntu ku giti cye n'ibanga rye. Iyi politiki ngenderwaho y'ibanga igena uko dukusanya, dukoresha, tubika kandi turinda amakuru yihariye y'abakoresha serivisi zacu, yaba abayatanga ku rubuga cyangwa mu bundi buryo, harimo n'iyo atabitswe kuri seriveri zacu.",
+      },
+      {
+        heading: '2. Amakuru Dukusanya',
+        intro: 'Dushobora gukusanya amakuru akurikira:',
+        items: [
+          "Izina ry'umuntu",
+          'Aderesi ya imeli',
+          'Nimero ya telefone',
+          "Amakuru ajyanye n'imikoreshereze ya serivisi zacu",
+          "Ibyifuzo by'urukoresha n'andi makuru ajyanye n'imikoreshereze y'uru rubuga",
+        ],
+      },
+      {
+        heading: '3. Impamvu Dukoresha Amakuru',
+        intro: 'Amakuru dukusanya akoreshwa mu ntego zikurikira:',
+        items: [
+          'Gutanga no kunoza serivisi zacu',
+          "Koroshya imikoreshereze y'urubuga",
+          "Kunoza imikoranire n'abarukoresha",
+          'Gutanga amakuru ajyanye na serivisi, amatangazo cyangwa impinduka',
+          "Kurinda umutekano n'imikorere myiza ya serivisi",
+        ],
+      },
+      {
+        heading: '4. Kubika no Kurinda Amakuru',
+        intro: "Amakuru yihariye abikwa hubahirijwe amategeko n'amahame agenga umutekano n'ibanga, agamije:",
+        items: [
+          'Koroshya imikoreshereze ya serivisi zacu',
+          'Gutanga serivisi mu buryo bunoze',
+          'Gusesengura no kunoza imikorere ya serivisi zacu',
+          "Kubahiriza ibisabwa n'amategeko",
+        ],
+      },
+      {
+        heading: "5. Uburenganzira bw'Ukoresha uru rubuga",
+        intro: 'Hakurikijwe iyi politiki, urukoresha afite uburenganzira bukurikira:',
+        items: [
+          'Kubona amakuru ye yihariye tubitse',
+          "Gusaba gukosorwa kw'amakuru atari yo",
+          "Gusaba gusibwa cyangwa kugabanywa kw'ikoreshwa ry'amakuru ye, igihe amategeko abimwemerera",
+          "Gusaba ibisobanuro ku ikoreshwa ry'amakuru ye",
+        ],
+      },
+      {
+        heading: "6. Umutekano w'Amakuru",
+        body: 'Dushyira mu bikorwa ingamba zikomeye zo kurinda amakuru yihariye kugira ngo adatakara, adahindurwa cyangwa adakoreshwa nabi. Igihe bibaye ngombwa, dufata ingamba zo gukumira no gukosora icyahungabanya umutekano w\'amakuru.',
+      },
+      {
+        heading: '7. Impinduka kuri Iyi Politiki',
+        body: "Dufite uburenganzira bwo guhindura iyi politiki ngenderwaho y'ibanga igihe bibaye ngombwa. Impinduka zigatangazwa ku rubuga, kandi abarukoresha basabwa kugenzura iyi politiki buri gihe.",
+      },
     ],
-    s3Title: "3. Imyitwarire Itemewe",
-    s3Intro: "Birabujijwe gukoresha uru rubuga mu bikorwa bikurikira:",
-    s3Items: [
-      "Gukwirakwiza amakuru y'ibinyoma cyangwa abangamira abandi",
-      "Gutangaza cyangwa guhembera amagambo y'urwango n'amacakubiri",
-      "Gukora ibikorwa by'urugomo, iterabwoba cyangwa gutoteza abandi",
-      "Gutegura cyangwa gukwirakwiza ibintu bitemewe n'amategeko",
-      "Kwangiza, gusenya cyangwa kwinjira mu buryo butemewe mu miyoboro y'ikoranabuhanga y'urubuga",
-    ],
-    s4Title: "4. Umutekano n'Imikoreshereze y'Amakuru",
-    s4: "Uru rubuga rukoresha amakuru mu buryo bwubahiriza amahame y'umutekano n'ibanga. Birabujijwe gukoresha nabi, kwiba cyangwa gukwirakwiza amakuru y'abandi. Abarukoresha basabwa kubahiriza politiki y'ibanga n'imikoreshereze y'amakuru.",
-    s5Title: "5. Guhindura Amategeko",
-    s5: "Ubuyobozi bw'uru rubuga bufite uburenganzira bwo guhindura aya mategeko n'amabwiriza igihe bibaye ngombwa. Impinduka zigatangazwa ku rubuga, kandi gukomeza kurukoresha bisobanura kwemera ayo mavugurura.",
-    s6Title: "6. Guhagarika cyangwa Gukuraho Serivisi",
-    s6: "Igihe bibaye ngombwa kandi hakurikijwe amategeko, uru rubuga rushobora guhagarika cyangwa gukuraho konti cyangwa serivisi ku muntu utubahirije aya mategeko n'amabwiriza.",
-    s7Title: "7. Ibisobanuro rusange",
-    s7Intro: "Aya mategeko agomba gusobanurwa hakurikijwe amategeko agenga igihugu:",
-    s7Items: [
-      "Kurengera uburenganzira n'agaciro k'abantu",
-      "Kubahiriza amategeko n'amabwiriza ariho",
-      "Kurinda amahoro, umutekano n'ubwisanzure",
-      "Gutanga amakuru asobanutse",
-    ],
-    contactTitle: "📩 Kubaza cyangwa Gutanga Ibitekerezo",
-    contactText: "Kubaza ibisobanuro cyangwa gutanga ibitekerezo kuri aya mategeko, twandikire kuri:",
+    contactTitle: '📩 Kubaza cyangwa Gutanga Ibitekerezo',
+    contactBody: "Kubaza ibisobanuro cyangwa gutanga ibitekerezo bijyanye n'iyi politiki y'ibanga, twandikira:",
   },
 };
 
@@ -671,45 +717,68 @@ export const sw = {
       'mu-mahanga': 'Habari zote nje ya Afrika Mashariki',
     } as Record<string, string>,
   },
-  // Terms page
-  terms: {
-    title: "Masharti na Vigezo",
-    subtitle: "Kuanzia 2026",
-    s1Title: "1. Utangulizi",
-    s1: "Masharti na vigezo haya yanasimamia jinsi tovuti hii inavyofanya kazi na kutumika. Yanalenga kulinda haki za watumiaji, kuzingatia kanuni za mwenendo mzuri, na kulinda usalama wa habari. Kwa kutumia tovuti hii, unakubali kufuata masharti haya yote.",
-    s2Title: "2. Kwa kutumia tovuti hii unakubali yafuatayo:",
-    s2Items: [
-      "Kujiepusha na shughuli zinazokiuka sheria au mwenendo mzuri",
-      "Kutovunja au kudidimiza haki za wengine",
-      "Kuepuka lugha ya kashfa, madhara au ya kuchochea",
-      "Kuzingatia kanuni na miongozo inayosimamia tovuti hii",
-      "Kujiepusha na kutumia tovuti kwa shughuli zinazodhuru amani, umoja na uhuru",
+  // Privacy page
+  privacy: {
+    title: 'Sera ya Faragha',
+    subtitle: 'Kuanzia 2026',
+    sections: [
+      {
+        heading: '1. Utangulizi',
+        body: 'Tunaheshimu haki ya kila mtu ya faragha. Sera hii ya faragha inaeleza jinsi tunavyokusanya, kutumia, kuhifadhi na kulinda taarifa za kibinafsi za watumiaji wa huduma zetu, iwe zinatolewa kupitia tovuti yetu au njia nyingine, ikiwa ni pamoja na taarifa ambazo hazijahifadhiwa kwenye seva zetu.',
+      },
+      {
+        heading: '2. Taarifa Tunazokusanya',
+        intro: 'Tunaweza kukusanya taarifa zifuatazo:',
+        items: [
+          'Jina kamili',
+          'Anwani ya barua pepe',
+          'Nambari ya simu',
+          'Taarifa zinazohusiana na matumizi yako ya huduma zetu',
+          'Mapendeleo ya mtumiaji na taarifa nyingine zinazohusiana na matumizi ya tovuti',
+        ],
+      },
+      {
+        heading: '3. Jinsi Tunavyotumia Taarifa Zako',
+        intro: 'Taarifa tunazokusanya zinatumika kwa madhumuni yafuatayo:',
+        items: [
+          'Kutoa na kuboresha huduma zetu',
+          'Kurahisisha matumizi ya tovuti',
+          'Kuboresha mwingiliano na watumiaji',
+          'Kutuma taarifa kuhusu huduma, masasisho au mabadiliko',
+          'Kudumisha usalama na utendaji mzuri wa huduma',
+        ],
+      },
+      {
+        heading: '4. Kuhifadhi na Kulinda Taarifa',
+        intro: 'Taarifa za kibinafsi zinahifadhiwa kwa kuzingatia sheria na kanuni zinazosimamia usalama na faragha, kwa lengo la:',
+        items: [
+          'Kurahisisha matumizi ya huduma zetu',
+          'Kutoa huduma kwa njia iliyoboreshwa',
+          'Kuchambua na kuboresha utendaji wa huduma zetu',
+          'Kutimiza mahitaji ya kisheria',
+        ],
+      },
+      {
+        heading: '5. Haki za Mtumiaji',
+        intro: 'Chini ya sera hii, watumiaji wana haki zifuatazo:',
+        items: [
+          'Kufikia taarifa zao za kibinafsi tulizohifadhi',
+          'Kuomba usahihishaji wa taarifa zisizo sahihi',
+          'Kuomba ufutaji au kupunguza matumizi ya taarifa zao, inaporuhusuwa na sheria',
+          'Kuomba maelezo ya jinsi taarifa zao zinavyotumika',
+        ],
+      },
+      {
+        heading: '6. Usalama wa Taarifa',
+        body: 'Tunatekeleza hatua thabiti za kulinda taarifa za kibinafsi ili zisiharibike, zisibadilishwe au zisitumike vibaya. Inapohitajika, tunachukua hatua za kuzuia na kutatua uvunjaji wowote wa usalama.',
+      },
+      {
+        heading: '7. Mabadiliko ya Sera Hii',
+        body: 'Tuna haki ya kusasisha sera hii ya faragha inapohitajika. Mabadiliko yatachapishwa kwenye tovuti, na watumiaji wanaombwa kuangalia sera hii mara kwa mara.',
+      },
     ],
-    s3Title: "3. Mwenendo Uliokatazwa",
-    s3Intro: "Ni marufuku kutumia tovuti hii kwa shughuli zifuatazo:",
-    s3Items: [
-      "Kusambaza habari za uongo au zenye madhara kwa wengine",
-      "Kuchapisha au kukuza maneno ya chuki na ubaguzi",
-      "Kushiriki katika vurugu, vitisho au unyanyasaji",
-      "Kutayarisha au kusambaza maudhui yasiyoruhusiwa kisheria",
-      "Kuharibu, kuangamiza au kuingia bila ruhusa katika miundombinu ya kiufundi ya tovuti",
-    ],
-    s4Title: "4. Usalama na Matumizi ya Habari",
-    s4: "Tovuti hii inashughulikia habari kwa kuzingatia kanuni za usalama na faragha. Ni marufuku kutumia vibaya, kuiba au kusambaza habari za wengine. Watumiaji wanahitajika kuzingatia sera ya faragha na matumizi ya data.",
-    s5Title: "5. Mabadiliko ya Masharti",
-    s5: "Usimamizi wa tovuti hii una haki ya kubadilisha masharti na vigezo hivi inapohitajika. Mabadiliko yatachapishwa kwenye tovuti, na kuendelea kutumia tovuti kunamaanisha kukubali masasisho hayo.",
-    s6Title: "6. Kusimamisha au Kuondoa Huduma",
-    s6: "Inapohitajika na kwa kuzingatia sheria, tovuti hii inaweza kusimamisha au kuondoa akaunti au huduma kwa mtu ambaye hakuzingatia masharti na vigezo hivi.",
-    s7Title: "7. Masharti ya Jumla",
-    s7Intro: "Masharti haya lazima yafasiriwe kwa kuzingatia sheria ya nchi:",
-    s7Items: [
-      "Kulinda haki na utu wa watu",
-      "Kuzingatia sheria na kanuni zilizopo",
-      "Kudumisha amani, usalama na uhuru",
-      "Kutoa habari iliyo wazi",
-    ],
-    contactTitle: "📩 Uliza Swali au Toa Maoni",
-    contactText: "Kwa kuomba ufafanuzi au kutoa maoni kuhusu masharti haya, andika kwetu kwa:",
+    contactTitle: '📩 Maswali au Maoni',
+    contactBody: 'Kwa maswali au maoni kuhusu sera hii ya faragha, tuandikia:',
   },
 };
 
