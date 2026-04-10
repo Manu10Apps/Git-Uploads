@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { prisma } from '@/lib/prisma';
@@ -240,6 +241,14 @@ function toClientArticle(article: FallbackArticle) {
 
 const allowFallbackStorage = process.env.NODE_ENV !== 'production' || process.env.ALLOW_FALLBACK_STORAGE === 'true';
 
+function invalidateArticleCaches(articleSlug?: string) {
+  revalidateTag('articles');
+  revalidatePath('/');
+  if (articleSlug) {
+    revalidatePath(`/article/${articleSlug}`);
+  }
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -449,6 +458,8 @@ export async function PATCH(
       updatedAt: updatedArticle.updatedAt?.toISOString(),
     };
 
+    invalidateArticleCaches(updatedArticle.slug);
+
     return NextResponse.json(
       {
         success: true,
@@ -548,6 +559,8 @@ export async function PATCH(
         fallbackArticles[index] = updated;
         await writeFallbackArticles(fallbackArticles);
 
+        invalidateArticleCaches(updated.slug);
+
         return NextResponse.json(
           {
             success: true,
@@ -604,7 +617,10 @@ export async function DELETE(
     }
 
     // Delete the article
+    const deletedArticleSlug = article.slug;
     await prisma.article.delete({ where: { id } });
+
+    invalidateArticleCaches(deletedArticleSlug);
 
     return NextResponse.json(
       { success: true, message: 'Article deleted successfully' },
@@ -643,6 +659,8 @@ export async function DELETE(
         }
 
         await writeFallbackArticles(filtered);
+
+        invalidateArticleCaches();
 
         return NextResponse.json(
           {
