@@ -259,6 +259,42 @@ export const en = {
     contactTitle: '📩 Questions or Feedback',
     contactBody: 'To ask questions or provide feedback about this privacy policy, write to us:',
   },
+  // Terms & Conditions page
+  terms: {
+    title: 'Terms & Conditions',
+    subtitle: 'Effective from 2026',
+    s1Title: '1. Acceptance of Terms',
+    s1: 'By accessing or using our services, you agree to be bound by these Terms & Conditions. If you do not agree to any part of these terms, please do not use our services.',
+    s2Title: '2. Use of Services',
+    s2Items: [
+      'You must be at least 18 years old to use our services.',
+      'You agree not to misuse our services or help anyone else to do so.',
+      'You are responsible for keeping your account credentials secure.',
+      'We reserve the right to suspend or terminate accounts that violate these terms.',
+    ],
+    s3Title: '3. Intellectual Property',
+    s3Intro: 'All content published on this platform, including but not limited to:',
+    s3Items: [
+      'Articles, news stories, and editorials',
+      'Images, graphics, and multimedia',
+      'Logos, brand assets, and design elements',
+    ],
+    s4Title: '4. Disclaimer of Warranties',
+    s4: 'Our services are provided "as is" without any warranties of any kind, express or implied. We do not guarantee that our services will be uninterrupted, error-free, or free of viruses or other harmful components.',
+    s5Title: '5. Limitation of Liability',
+    s5: 'To the fullest extent permitted by law, Intambwe Media shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of or inability to use our services.',
+    s6Title: '6. Third-Party Links',
+    s6: 'Our platform may contain links to third-party websites. We are not responsible for the content, privacy policies, or practices of those websites. We encourage you to review the terms and privacy policies of any third-party sites you visit.',
+    s7Title: '7. Changes to Terms',
+    s7Intro: 'We reserve the right to modify these Terms & Conditions at any time. Changes will be effective immediately upon posting. Continued use of our services after any changes constitutes your acceptance of the new terms. Your continued use covers:',
+    s7Items: [
+      'All features and services currently available',
+      'Any new features or services we may add',
+      'Any modifications to existing content or functionality',
+    ],
+    contactTitle: '📩 Questions or Legal Inquiries',
+    contactText: 'For questions or legal inquiries about these Terms & Conditions, contact us:',
+  },
 };
 
 export const ky = {
@@ -522,6 +558,42 @@ export const ky = {
     contactTitle: '📩 Kubaza cyangwa Gutanga Ibitekerezo',
     contactBody: "Kubaza ibisobanuro cyangwa gutanga ibitekerezo bijyanye n'iyi politiki y'ibanga, twandikira:",
   },
+  // Terms & Conditions page
+  terms: {
+    title: "Amategeko n'Amabwiriza",
+    subtitle: 'Guhera muri 2026',
+    s1Title: "1. Kwemera Amategeko n'Amabwiriza",
+    s1: "Gukoreshwa kwa serivisi zacu bisimbuye ko wemera aya mategeko n'amabwiriza. Niba utemeye igice icyo aricyo cyose, nyamuneka ntukoreshe serivisi zacu.",
+    s2Title: '2. Gukoreshwa kwa Serivisi',
+    s2Items: [
+      'Ugomba kuba ufite nibura imyaka 18 kugira ngo ukoreshe serivisi zacu.',
+      'Wemeranya kutazivanga serivisi zacu cyangwa gufasha abandi kubikora.',
+      "Ufite inshingano yo kubika amakuru y'konti yawe mu buryo bwizewe.",
+      "Twifitiye uburenganzira bwo guhagarika cyangwa gusiba konti zirenganya aya mategeko.",
+    ],
+    s3Title: "3. Uburenganzira bw'Inzira",
+    s3Intro: "Ibikubiye byose byatangarijwe kuri iyi plateforme, harimo ariko bitagabanywaho:",
+    s3Items: [
+      "Inkuru, amakuru n'ibitekerezo by'ubwanditsi",
+      "Amashusho, ibishushanyo n'ibikoresho bya multimedia",
+      "Ibirango, ibikoresho by'ikigo n'ibya dizayin",
+    ],
+    s4Title: '4. Kweheza Inshingano',
+    s4: "Serivisi zacu zitangwa 'nk'uko ziri' nta guarantiya yayo, yaba yatangajwe cyangwa yumvikana. Ntitusezerana ko serivisi zacu zizakorana nta ntereko, nta makosa, cyangwa nta virusi n'ibindi bitera akaga.",
+    s5Title: '5. Kugabanya Inshingano',
+    s5: "Mu rwego rw'amategeko aremewe, Intambwe Media ntizabazwa ingaruka zo mu buryo butaziguye, ingaruka zidasanzwe, ingaruka zidasanzwe, cyangwa ingaruka z'ihano zivuka mu gukoreshwa kwawe cyangwa gutinya gukoreshwa serivisi zacu.",
+    s6Title: "6. Amanama y'Inzira ya Gatatu",
+    s6: "Iyi plateforme iraakama ishobora kugaragaza imanama ya rubuga rwa gatatu. Ntidufite inshingano ku birimwo, amabwiriza y'ibanga, cyangwa imikorere ya rubuga rwa gatatu. Tugushishikariza kugenzura amategeko n'amabwiriza y'ibanga ya rubuga rwa gatatu wasura.",
+    s7Title: "7. Impinduka ku Mategeko n'Amabwiriza",
+    s7Intro: "Twifitiye uburenganzira bwo guhindura aya Mategeko n'Amabwiriza igihe icyo aricyo cyose. Impinduka zizaba zifite agaciro nyuma yo gutangazwa. Gukomeza gukoreshwa kwa serivisi zacu nyuma y'impinduka zose byerekana ko wemeye amategeko mashya. Gukomeza gukoreshwa kwawe biciramo:",
+    s7Items: [
+      'Ibintu byose na serivisi biriho ubu',
+      'Ibintu bishya cyangwa serivisi dushobora kongera',
+      "Impinduka ku birimwo cyangwa imiterere y'imikoreshereze biriho",
+    ],
+    contactTitle: '📩 Ibibazo cyangwa Ibiganiro bya Amategeko',
+    contactText: "Kuri ibibazo cyangwa ibiganiro bya amategeko biriho Amategeko n'Amabwiriza, twandikira:",
+  },
 };
 
 export const sw = {
@@ -779,6 +851,42 @@ export const sw = {
     ],
     contactTitle: '📩 Maswali au Maoni',
     contactBody: 'Kwa maswali au maoni kuhusu sera hii ya faragha, tuandikia:',
+  },
+  // Terms & Conditions page
+  terms: {
+    title: 'Masharti na Hali',
+    subtitle: 'Kuanzia 2026',
+    s1Title: '1. Kukubali Masharti',
+    s1: 'Kwa kufikia au kutumia huduma zetu, unakubali kufungwa na Masharti na Hali haya. Kama hukubali sehemu yoyote ya masharti haya, tafadhali usitumie huduma zetu.',
+    s2Title: '2. Matumizi ya Huduma',
+    s2Items: [
+      'Lazima uwe na umri wa miaka 18 au zaidi kutumia huduma zetu.',
+      'Unakubali kutokutumia vibaya huduma zetu au kusaidia mtu yeyote kufanya hivyo.',
+      'Unawajibika kwa usalama wa taarifa za akaunti yako.',
+      'Tunajiwekea haki ya kusimamisha au kufuta akaunti zinazokiuka masharti haya.',
+    ],
+    s3Title: '3. Haki Miliki',
+    s3Intro: 'Maudhui yote yaliyochapishwa kwenye jukwaa hili, ikiwemo lakini si tu:',
+    s3Items: [
+      'Makala, habari na maoni ya uhariri',
+      'Picha, michoro na vipengele vya multimedia',
+      'Nembo, rasilimali za chapa na vipengele vya muundo',
+    ],
+    s4Title: '4. Kanusho la Dhamana',
+    s4: 'Huduma zetu zinatolewa "kama zilivyo" bila dhamana yoyote, ya wazi au inayoeleweka. Hatuhakikishi kwamba huduma zetu zitakuwa bila usumbufu, bila makosa, au bila virusi au vipengele vingine vya kudhuru.',
+    s5Title: '5. Ukomo wa Wajibu',
+    s5: 'Kwa kadri inavyoruhusiwa na sheria, Intambwe Media haitawajibika kwa uharibifu wowote wa moja kwa moja, wa nasibu, maalum, wa matokeo, au wa adhabu unaotokana na matumizi yako au kutoweza kutumia huduma zetu.',
+    s6Title: '6. Viungo vya Wahusika wa Tatu',
+    s6: 'Jukwaa letu linaweza kuwa na viungo vya tovuti za wahusika wa tatu. Hatuwajibiki kwa maudhui, sera za faragha, au mazoea ya tovuti hizo. Tunakuhimiza kupitia masharti na sera za faragha za tovuti yoyote ya wahusika wa tatu unayotembelea.',
+    s7Title: '7. Mabadiliko ya Masharti',
+    s7Intro: 'Tunajiwekea haki ya kubadilisha Masharti na Hali haya wakati wowote. Mabadiliko yatakuwa na nguvu mara baada ya kuchapishwa. Kuendelea kutumia huduma zetu baada ya mabadiliko yoyote kunajumuisha kukubali masharti mapya. Kuendelea kwako kunajumuisha:',
+    s7Items: [
+      'Vipengele vyote na huduma zinazopatikana kwa sasa',
+      'Vipengele vipya au huduma ambazo tunaweza kuongeza',
+      'Mabadiliko yoyote kwa maudhui au utendaji uliopo',
+    ],
+    contactTitle: '📩 Maswali au Maombi ya Kisheria',
+    contactText: 'Kwa maswali au maombi ya kisheria kuhusu Masharti na Hali haya, wasiliana nasi:',
   },
 };
 
