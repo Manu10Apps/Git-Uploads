@@ -34,6 +34,7 @@ export default async function Home() {
 
         <section className="py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2">Kwamamaza</p>
             <div className="lg:hidden">
               {homepageTopAdverts.length > 0 ? (
                 homepageTopAdverts.slice(0, 1).map((advert) => (
@@ -116,6 +117,7 @@ export default async function Home() {
 
         <section className="lg:hidden py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2">Kwamamaza</p>
             {homepageBottomAdverts.length > 0 ? (
               homepageBottomAdverts.slice(0, 1).map((advert) => (
                 <a
