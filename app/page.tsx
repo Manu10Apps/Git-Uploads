@@ -32,82 +32,92 @@ export default async function Home() {
           />
         )}
 
-        {(homepageTopAdverts.length > 0 || homepageBottomAdverts.length > 0) && (
-          <section className="py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="lg:hidden">
-                {homepageTopAdverts.length > 0 ? (
-                  homepageTopAdverts.slice(0, 1).map((advert) => (
-                    <a
-                      key={`top-mobile-${advert.id}`}
-                      href={advert.url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block w-full group hover:opacity-90 transition-opacity"
-                    >
-                      <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                        <img
-                          src={advert.imageUrl}
-                          alt={advert.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    </a>
-                  ))
-                ) : null}
-              </div>
-
-              <div className="hidden lg:grid lg:grid-cols-2 gap-4">
-                {homepageTopAdverts.length > 0 ? (
-                  homepageTopAdverts.slice(0, 1).map((advert) => (
-                    <a
-                      key={`top-desktop-${advert.id}`}
-                      href={advert.url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block w-full group hover:opacity-90 transition-opacity"
-                    >
-                      <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                        <img
-                          src={advert.imageUrl}
-                          alt={advert.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    </a>
-                  ))
-                ) : null}
-
-                {homepageBottomAdverts.length > 0 ? (
-                  homepageBottomAdverts.slice(0, 1).map((advert) => (
-                    <a
-                      key={`bottom-desktop-${advert.id}`}
-                      href={advert.url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block w-full group hover:opacity-90 transition-opacity"
-                    >
-                      <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                        <img
-                          src={advert.imageUrl}
-                          alt={advert.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    </a>
-                  ))
-                ) : null}
-              </div>
+        <section className="py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="lg:hidden">
+              {homepageTopAdverts.length > 0 ? (
+                homepageTopAdverts.slice(0, 1).map((advert) => (
+                  <a
+                    key={`top-mobile-${advert.id}`}
+                    href={advert.url || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full group hover:opacity-90 transition-opacity"
+                  >
+                    <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                      <img
+                        src={advert.imageUrl}
+                        alt={advert.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  </a>
+                ))
+              ) : (
+                <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Ad Space</span>
+                </div>
+              )}
             </div>
-          </section>
-        )}
+
+            <div className="hidden lg:grid lg:grid-cols-2 gap-4">
+              {homepageTopAdverts.length > 0 ? (
+                homepageTopAdverts.slice(0, 1).map((advert) => (
+                  <a
+                    key={`top-desktop-${advert.id}`}
+                    href={advert.url || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full group hover:opacity-90 transition-opacity"
+                  >
+                    <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                      <img
+                        src={advert.imageUrl}
+                        alt={advert.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  </a>
+                ))
+              ) : (
+                <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Ad Space</span>
+                </div>
+              )}
+
+              {homepageBottomAdverts.length > 0 ? (
+                homepageBottomAdverts.slice(0, 1).map((advert) => (
+                  <a
+                    key={`bottom-desktop-${advert.id}`}
+                    href={advert.url || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full group hover:opacity-90 transition-opacity"
+                  >
+                    <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                      <img
+                        src={advert.imageUrl}
+                        alt={advert.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  </a>
+                ))
+              ) : (
+                <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Ad Space</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
 
         <DeferredHomePageFeed articles={articles} mostViewed={mostViewed} />
 
-        {homepageBottomAdverts.length > 0 && (
-          <section className="lg:hidden py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              {homepageBottomAdverts.slice(0, 1).map((advert) => (
+        <section className="lg:hidden py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {homepageBottomAdverts.length > 0 ? (
+              homepageBottomAdverts.slice(0, 1).map((advert) => (
                 <a
                   key={`bottom-mobile-${advert.id}`}
                   href={advert.url || '#'}
@@ -123,10 +133,14 @@ export default async function Home() {
                     />
                   </div>
                 </a>
-              ))}
-            </div>
-          </section>
-        )}
+              ))
+            ) : (
+              <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                <span className="text-neutral-400 dark:text-neutral-500 text-sm">Ad Space</span>
+              </div>
+            )}
+          </div>
+        </section>
 
         <NewsletterSignup />
       </main>

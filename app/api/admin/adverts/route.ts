@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 
 async function getAuthorizedAdmin(request: NextRequest) {
@@ -47,6 +48,11 @@ function toAdvertResponse(advert: any): AdvertResponse {
     createdAt: new Date(advert.createdAt).toISOString(),
     updatedAt: new Date(advert.updatedAt).toISOString(),
   };
+}
+
+function invalidateAdvertCaches() {
+  revalidateTag('adverts');
+  revalidatePath('/');
 }
 
 export async function GET(request: NextRequest) {
@@ -102,6 +108,8 @@ export async function POST(request: NextRequest) {
         isActive: true,
       },
     });
+
+    invalidateAdvertCaches();
 
     return NextResponse.json({
       success: true,
@@ -166,6 +174,8 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
+    invalidateAdvertCaches();
+
     return NextResponse.json({
       success: true,
       message: 'Advert updated successfully',
@@ -221,6 +231,8 @@ export async function DELETE(request: NextRequest) {
     await prisma.advert.delete({
       where: { id: parsedId },
     });
+
+    invalidateAdvertCaches();
 
     return NextResponse.json({
       success: true,

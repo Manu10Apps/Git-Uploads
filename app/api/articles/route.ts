@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { prisma } from '@/lib/prisma';
@@ -228,6 +229,14 @@ function generateUniqueSlug(title: string, usedSlugs: Set<string>) {
 
 const allowFallbackStorage = process.env.NODE_ENV !== 'production' || process.env.ALLOW_FALLBACK_STORAGE === 'true';
 
+function invalidateArticleCaches(articleSlug?: string) {
+  revalidateTag('articles');
+  revalidatePath('/');
+  if (articleSlug) {
+    revalidatePath(`/article/${articleSlug}`);
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get('slug');
@@ -419,7 +428,7 @@ export async function GET(request: NextRequest) {
       },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+          'Cache-Control': 'no-cache, must-revalidate',
         },
       }
     );
@@ -691,6 +700,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    invalidateArticleCaches(article.slug);
+
     return NextResponse.json(
       {
         success: true,
@@ -824,6 +835,8 @@ export async function POST(request: NextRequest) {
 
         fallbackArticles.push(fallbackArticle);
         await writeFallbackArticles(fallbackArticles);
+
+        invalidateArticleCaches(fallbackArticle.slug);
 
         return NextResponse.json(
           {
