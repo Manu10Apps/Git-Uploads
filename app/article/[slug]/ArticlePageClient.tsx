@@ -882,7 +882,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
 
           {/* Article Top Advertisement */}
           <div className="mb-6 sm:mb-8">
-            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2">Kwamamaza</p>
+            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">Kwamamaza</p>
             {articleTopAdverts.length > 0 ? (
               articleTopAdverts.slice(0, 1).map((advert: any) => (
                 <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block w-full group hover:opacity-90 transition-opacity">
@@ -919,7 +919,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
 
           {/* Article Bottom Advertisement */}
           <div className="mb-8 sm:mb-10">
-            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2">Kwamamaza</p>
+            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">Kwamamaza</p>
             {articleBottomAdverts.length > 0 ? (
               articleBottomAdverts.slice(0, 1).map((advert: any) => (
                 <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block w-full group hover:opacity-90 transition-opacity">
@@ -1299,7 +1299,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
 
               {/* Sidebar Advertisement */}
               <div className="mt-8">
-                <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2">Kwamamaza</p>
+                <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">Kwamamaza</p>
                 {sidebarAdverts.length > 0 ? (
                   sidebarAdverts.slice(0, 1).map((advert: any) => (
                     <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block group hover:opacity-90 transition-opacity">
