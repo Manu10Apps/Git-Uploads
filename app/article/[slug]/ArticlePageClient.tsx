@@ -1145,6 +1145,26 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
           </section>
 
           {/* Related Articles - Can be added later by fetching articles with same category */}
+
+          {/* Advert section below Most Viewed */}
+          <section className="py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">Kwamamaza</p>
+              <div className="lg:hidden">
+                <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
+                </div>
+              </div>
+              <div className="hidden lg:grid lg:grid-cols-2 gap-4">
+                <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
+                </div>
+                <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
+                </div>
+              </div>
+            </div>
+          </section>
           </article>
 
           {/* Sidebar - Recent Stories - 1/3 width on desktop */}
