@@ -759,12 +759,6 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               translationError={translationError}
               translationSource={translationSource}
             />
-            <div className="mb-6 sm:mb-8">
-              <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">{t.article.advertLabel}</p>
-              <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
-              </div>
-            </div>
             <div className="mb-3 sm:mb-4">
               <span className="inline-block px-2 sm:px-3 py-1 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-300 rounded-full text-xs sm:text-sm font-semibold capitalize">
                 {getCategoryLabel(article.category)}
