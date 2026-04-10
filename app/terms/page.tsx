@@ -8,6 +8,7 @@ import { getTranslation } from '@/lib/translations';
 export default function TermsPage() {
   const { language } = useAppStore();
   const t = getTranslation(language);
+  const tr = t.terms;
 
   return (
     <>
@@ -16,8 +17,8 @@ export default function TermsPage() {
         {/* Header Section */}
         <section className="bg-gradient-to-r from-primary-600 to-primary-500 text-white py-3">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-4xl font-bold mb-4">Amategeko n'Amabwiriza</h1>
-            <p className="text-lg text-primary-100"> Guhera muri 2026</p>
+            <h1 className="text-4xl font-bold mb-4">{tr.title}</h1>
+            <p className="text-lg text-primary-100">{tr.subtitle}</p>
           </div>
         </section>
 
@@ -25,75 +26,52 @@ export default function TermsPage() {
         <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="prose dark:prose-invert max-w-none space-y-8 text-neutral-700 dark:text-neutral-300">
             <div>
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">1. Intangiriro</h2>
-              <p>
-                Aya mategeko n'amabwiriza agena uko urubuga rukora n'uko rukoreshwa. Agamije kurinda uburenganzira bw'abarukoresha, kubahiriza amahame y'imyitwarire myiza no kubungabunga umutekano w'amakuru. Ukoresheje uru rubuga, uba wemeye gukurikiza aya mategeko yose.
-              </p>
+              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">{tr.s1Title}</h2>
+              <p>{tr.s1}</p>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">2. Ukoresha uru rubuga wemera ibi bikurikira:</h2>
+              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">{tr.s2Title}</h2>
               <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Kwirinda gukora ibikorwa binyuranyije n'amategeko cyangwa n'imyitwarire myiza</li>
-                <li>Kutangiza cyangwa gutesha agaciro uburenganzira bw'abandi</li>
-                <li>Kwirinda amagambo asebanya, abangamira cyangwa ateza amakimbirane</li>
-                <li>Kubahiriza amabwiriza n'amahame agenga uru rubuga</li>
-                <li>Kwirinda gukoresha urubuga mu bikorwa byangiza amahoro, ubumwe n'ubwisanzure</li>
+                {tr.s2Items.map((item, i) => <li key={i}>{item}</li>)}
               </ul>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">3. Imyitwarire Itemewe</h2>
-              <p className="mb-4">
-                Birabujijwe gukoresha uru rubuga mu bikorwa bikurikira:
-              </p>
+              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">{tr.s3Title}</h2>
+              <p className="mb-4">{tr.s3Intro}</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Gukwirakwiza amakuru y'ibinyoma cyangwa abangamira abandi</li>
-                <li>Gutangaza cyangwa guhembera amagambo y'urwango n'amacakubiri</li>
-                <li>Gukora ibikorwa by'urugomo, iterabwoba cyangwa gutoteza abandi</li>
-                <li>Gutegura cyangwa gukwirakwiza ibintu bitemewe n'amategeko</li>
-                <li>Kwangiza, gusenya cyangwa kwinjira mu buryo butemewe mu miyoboro y'ikoranabuhanga y'urubuga</li>
+                {tr.s3Items.map((item, i) => <li key={i}>{item}</li>)}
               </ul>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">4. Umutekano n'Imikoreshereze y'Amakuru</h2>
-              <p>
-                Uru rubuga rukoresha amakuru mu buryo bwubahiriza amahame y'umutekano n'ibanga. Birabujijwe gukoresha nabi, kwiba cyangwa gukwirakwiza amakuru y'abandi. Abarukoresha basabwa kubahiriza politiki y'ibanga n'imikoreshereze y'amakuru.
-              </p>
+              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">{tr.s4Title}</h2>
+              <p>{tr.s4}</p>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">5. Guhindura Amategeko</h2>
-              <p>
-                Ubuyobozi bw'uru rubuga bufite uburenganzira bwo guhindura aya mategeko n'amabwiriza igihe bibaye ngombwa. Impinduka zigatangazwa ku rubuga, kandi gukomeza kurukoresha bisobanura kwemera ayo mavugurura.
-              </p>
+              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">{tr.s5Title}</h2>
+              <p>{tr.s5}</p>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">6. Guhagarika cyangwa Gukuraho Serivisi</h2>
-              <p>
-                Igihe bibaye ngombwa kandi hakurikijwe amategeko, uru rubuga rushobora guhagarika cyangwa gukuraho konti cyangwa serivisi ku muntu utubahirije aya mategeko n'amabwiriza.
-              </p>
+              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">{tr.s6Title}</h2>
+              <p>{tr.s6}</p>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">7. Ibisobanuro rusange</h2>
-              <p className="mb-4">
-                Aya mategeko agomba gusobanurwa hakurikijwe amategeko agenga igihugu:
-              </p>
+              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">{tr.s7Title}</h2>
+              <p className="mb-4">{tr.s7Intro}</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Kurengera uburenganzira n'agaciro k'abantu</li>
-                <li>Kubahiriza amategeko n'amabwiriza ariho</li>
-                <li>Kurinda amahoro, umutekano n'ubwisanzure</li>
-                <li>Gutanga amakuru asobanutse</li>
+                {tr.s7Items.map((item, i) => <li key={i}>{item}</li>)}
               </ul>
             </div>
 
             <div className="bg-primary-50 dark:bg-neutral-800 p-6 rounded-lg">
-              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">📩 Kubaza cyangwa Gutanga Ibitekerezo</h3>
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">{tr.contactTitle}</h3>
               <p>
-                Kubaza ibisobanuro cyangwa gutanga ibitekerezo kuri aya mategeko, twandikire kuri: <br />
+                {tr.contactText} <br />
                 <span className="font-semibold">legal@intambwemedia.com</span>
               </p>
             </div>
@@ -104,4 +82,5 @@ export default function TermsPage() {
     </>
   );
 }
+
 
