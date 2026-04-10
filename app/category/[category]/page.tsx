@@ -18,39 +18,8 @@ export default function CategoryPage({ params: paramsPromise }: { params: Promis
   const [sortOption, setSortOption] = useState('latest');
   const articlesPerPage = 9;
 
-  const categoryTitles: Record<string, string> = {
-    amakuru: 'Amakuru',
-    politiki: 'Politiki',
-    ubuzima: 'Ubuzima',
-    uburezi: 'Uburezi',
-    ubukungu: 'Ubukungu',
-    siporo: 'Siporo',
-    ikoranabuhanga: 'Ikoranabuhanga',
-    imyidagaduro: 'Imyidagaduro',
-    ubutabera: 'Ubutabera',
-    ibidukikije: 'Ibidukikije',
-    iyobokamana: 'Siporo',
-    imyemerere: 'Imyemerere',
-    'afurika-yiburasirazuba': 'Afurika y\'Iburasirazuba',
-    'mu-mahanga': 'Mu Mahanga',
-  };
-
-  const categoryDescription: Record<string, string> = {
-    amakuru: 'Amakuru agezweho buri gihe na buri munsi',
-    politiki: 'Inkuru n\'ibiganiro kuri politiki z\'ibihugu n\'imicungire yabyo',
-    ubuzima: 'Inkuru, ibiganiro n\'ubushakashatsi ku muntu n\'imibereho ye',
-    uburezi: 'Inkuru zivuga ku burezi, uko amasomo atangwa n\'ireme ryayo mu kuzahura ubukungu',
-    ubukungu: 'Inkuru z\'ibikorwa bitandukanye biteza imbere ubukungu n\'imicungire yabwo',
-    siporo: 'Inkuru zivuga ku Imikino itandukanye',
-    ikoranabuhanga: 'Inkuru n\'ibiganiro by\'ikoranabuhanga n\'uruhare rwaryo mu iterambere',
-    imyidagaduro: 'Ibiganiro n\'inkuru, Imyidagaduro, Imyambarire n\'ibindi bireba ibyishimo by\'abantu',
-    ubutabera: 'Amakuru n\'ibiganiro birebana n\'uburenganzira bwa muntu n\'amategeko',
-    ibidukikije: 'Inkuru n\'ibiganiro birebana n\'ibidukikije, isi n\'Ibiyikorerwaho birimo Ubuhinzi n\'Ubworozi',
-    iyobokamana: 'Inkuru zivuga ku Imikino itandukanye',
-    imyemerere: 'Inkuru n\'ibiganiro birebana n\'imanudi n\'imyemerere y\'ikiristo',
-    'afurika-yiburasirazuba': 'Amakuru acukumbuye yerekeranye n\'Afurika y\'Iburasirazuba',
-    'mu-mahanga': 'Amakuru yose yo hanze ya Afurika y\'Iburasirazuba',
-  };
+  const categoryTitles: Record<string, string> = t.category.titles;
+  const categoryDescription: Record<string, string> = t.category.descriptions;
 
   // Fetch articles from API
   useEffect(() => {
@@ -183,20 +152,24 @@ export default function CategoryPage({ params: paramsPromise }: { params: Promis
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  Hagaragara {currentArticles.length} mu nkuru {articles.length}
-                  {totalPages > 1 && ` (Urupapuro ${currentPage} mu ${totalPages})`}
+                  {t.category.showing
+                    .replace('{current}', String(currentArticles.length))
+                    .replace('{total}', String(articles.length))}
+                  {totalPages > 1 && ' ' + t.category.pageOf
+                    .replace('{current}', String(currentPage))
+                    .replace('{total}', String(totalPages))}
                 </p>
               </div>
               <div className="flex items-center gap-2 sm:gap-3">
-                <label className="text-xs sm:text-sm font-medium whitespace-nowrap">Kurikiranya:</label>
+                <label className="text-xs sm:text-sm font-medium whitespace-nowrap">{t.category.sortBy}</label>
                 <select 
                   value={sortOption}
                   onChange={handleSortChange}
                   className="px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm cursor-pointer"
                 >
-                  <option value="latest">Iziheruka</option>
-                  <option value="popular">Izasomwe cyane</option>
-                  <option value="discussed">Izavuzweho cyane</option>
+                  <option value="latest">{t.category.latest}</option>
+                  <option value="popular">{t.category.popular}</option>
+                  <option value="discussed">{t.category.discussed}</option>
                 </select>
               </div>
             </div>
@@ -208,7 +181,7 @@ export default function CategoryPage({ params: paramsPromise }: { params: Promis
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {loading ? (
               <div className="text-center py-12">
-                <p className="text-neutral-600 dark:text-neutral-400">Inkuru ziri gufunguka...</p>
+                <p className="text-neutral-600 dark:text-neutral-400">{t.category.loading}</p>
               </div>
             ) : currentArticles.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -219,7 +192,7 @@ export default function CategoryPage({ params: paramsPromise }: { params: Promis
             ) : (
               <div className="text-center py-12">
                 <p className="text-neutral-600 dark:text-neutral-400">
-                  Nta nkuru zibonetse muri iki gice.
+                  {t.category.noArticles}
                 </p>
               </div>
             )}
