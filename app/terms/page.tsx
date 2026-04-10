@@ -6,8 +6,13 @@ import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 
 export default function TermsPage() {
-  const { language } = useAppStore();
-  const t = getTranslation(language);
+  const language = useAppStore((state) => state.language);
+  // Force re-render after Zustand hydrates from localStorage on the client
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+
+  const effectiveLanguage = mounted ? language : 'ky';
+  const t = getTranslation(effectiveLanguage);
   const tr = t.terms;
 
   return (
