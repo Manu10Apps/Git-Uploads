@@ -760,9 +760,9 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               translationSource={translationSource}
             />
             <div className="mb-6 sm:mb-8">
-              <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">Kwamamaza</p>
+              <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">{t.article.advertLabel}</p>
               <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
+                <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
               </div>
             </div>
             <div className="mb-3 sm:mb-4">
@@ -888,7 +888,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
 
           {/* Article Top Advertisement */}
           <div className="mb-6 sm:mb-8">
-            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">Kwamamaza</p>
+            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">{t.article.advertLabel}</p>
             {articleTopAdverts.length > 0 ? (
               articleTopAdverts.slice(0, 1).map((advert: any) => (
                 <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block w-full group hover:opacity-90 transition-opacity">
@@ -899,7 +899,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               ))
             ) : (
               <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
+                <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
               </div>
             )}
           </div>
@@ -925,7 +925,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
 
           {/* Article Bottom Advertisement */}
           <div className="mb-8 sm:mb-10">
-            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">Kwamamaza</p>
+            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">{t.article.advertLabel}</p>
             {articleBottomAdverts.length > 0 ? (
               articleBottomAdverts.slice(0, 1).map((advert: any) => (
                 <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block w-full group hover:opacity-90 transition-opacity">
@@ -936,7 +936,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               ))
             ) : (
               <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
+                <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
               </div>
             )}
           </div>
@@ -1149,18 +1149,18 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
           {/* Advert section below Most Viewed */}
           <section className="py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">Kwamamaza</p>
+              <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">{t.article.advertLabel}</p>
               <div className="lg:hidden">
                 <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
+                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
                 </div>
               </div>
               <div className="hidden lg:grid lg:grid-cols-2 gap-4">
                 <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
+                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
                 </div>
                 <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
-                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
+                  <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
                 </div>
               </div>
             </div>
@@ -1325,7 +1325,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
 
               {/* Sidebar Advertisement */}
               <div className="mt-8">
-                <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">Kwamamaza</p>
+                <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">{t.article.advertLabel}</p>
                 {sidebarAdverts.length > 0 ? (
                   sidebarAdverts.slice(0, 1).map((advert: any) => (
                     <a key={advert.id} href={advert.url || '#'} target="_blank" rel="noopener noreferrer" className="block group hover:opacity-90 transition-opacity">
@@ -1336,7 +1336,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                   ))
                 ) : (
                   <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden flex items-center justify-center border border-neutral-200 dark:border-neutral-700" style={{minHeight: '200px'}}>
-                    <span className="text-neutral-400 dark:text-neutral-500 text-sm">Aho Kwamamariza</span>
+                    <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
                   </div>
                 )}
               </div>
