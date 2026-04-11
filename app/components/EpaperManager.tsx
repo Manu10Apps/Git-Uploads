@@ -38,6 +38,8 @@ export function EpaperManager() {
   const [uploadIssueDate, setUploadIssueDate] = useState('');
   const [uploadDraft, setUploadDraft] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const xhrRef = React.useRef<XMLHttpRequest | null>(null);
 
   const getAuthHeader = (): HeadersInit => {
     const token = localStorage.getItem('adminToken');
@@ -74,61 +76,87 @@ export function EpaperManager() {
     fetchEditions();
   }, [fetchEditions]);
 
-  // Upload new edition
-  const handleUpload = async (e: React.FormEvent) => {
+  // Upload new edition via XMLHttpRequest (better timeout/progress for large files)
+  const handleUpload = (e: React.FormEvent) => {
     e.preventDefault();
     if (!uploadTitle || !uploadIssueDate) {
       setError('Title and issue date are required');
       return;
     }
     setUploading(true);
+    setUploadProgress(0);
     setError(null);
     setSuccessMessage(null);
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 90_000);
-    try {
-      const formData = new FormData();
-      formData.append('title', uploadTitle);
-      formData.append('issueDate', uploadIssueDate);
-      formData.append('isDraft', String(uploadDraft));
-      if (uploadFile) formData.append('file', uploadFile);
-      const response = await fetch('/api/epaper', {
-        method: 'POST',
-        headers: { ...getAuthHeader() },
-        body: formData,
-        signal: controller.signal,
-      });
-      let data: { success: boolean; error?: string; message?: string } | null = null;
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error(`Server returned ${response.status} ${response.statusText}`);
+
+    const formData = new FormData();
+    formData.append('title', uploadTitle);
+    formData.append('issueDate', uploadIssueDate);
+    formData.append('isDraft', String(uploadDraft));
+    if (uploadFile) formData.append('file', uploadFile);
+
+    const token = localStorage.getItem('adminToken');
+    const xhr = new XMLHttpRequest();
+    xhrRef.current = xhr;
+
+    xhr.upload.onprogress = (ev) => {
+      if (ev.lengthComputable) {
+        setUploadProgress(Math.round((ev.loaded / ev.total) * 100));
       }
-      if (response.status === 401) {
+    };
+
+    xhr.onload = () => {
+      xhrRef.current = null;
+      setUploading(false);
+      if (xhr.status === 401) {
         handleUnauthorized();
         return;
       }
-      if (data?.success) {
-        setSuccessMessage(uploadDraft ? 'Draft created!' : 'Edition uploaded successfully!');
-        setShowUploadModal(false);
-        setUploadFile(null);
-        setUploadTitle('');
-        setUploadIssueDate('');
-        setUploadDraft(false);
-        fetchEditions();
-      } else {
-        setError(data?.error || `Upload failed (HTTP ${response.status})`);
+      try {
+        const data = JSON.parse(xhr.responseText);
+        if (data?.success) {
+          setSuccessMessage(uploadDraft ? 'Draft created!' : 'Edition uploaded successfully!');
+          setShowUploadModal(false);
+          setUploadFile(null);
+          setUploadTitle('');
+          setUploadIssueDate('');
+          setUploadDraft(false);
+          setUploadProgress(0);
+          fetchEditions();
+        } else {
+          setError(data?.error || `Upload failed (HTTP ${xhr.status})`);
+        }
+      } catch {
+        setError(`Server error (HTTP ${xhr.status}). Please try again.`);
       }
-    } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        setError('Upload timed out. The file may be too large or the server is slow. Please try again.');
-      } else {
-        setError(err instanceof Error ? err.message : 'Upload failed — please try again.');
-      }
-    } finally {
-      clearTimeout(timeout);
+    };
+
+    xhr.onerror = () => {
+      xhrRef.current = null;
       setUploading(false);
-    }
+      setError('Network error — check your connection and try again.');
+    };
+
+    xhr.ontimeout = () => {
+      xhrRef.current = null;
+      setUploading(false);
+      setError('Upload timed out. Please try again.');
+    };
+
+    xhr.onabort = () => {
+      xhrRef.current = null;
+      setUploading(false);
+    };
+
+    xhr.open('POST', '/api/epaper');
+    xhr.timeout = 120_000; // 2 minutes
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    xhr.send(formData);
+  };
+
+  const handleCancelUpload = () => {
+    xhrRef.current?.abort();
+    setShowUploadModal(false);
+    setUploadProgress(0);
   };
 
   // Publish a draft
@@ -326,13 +354,23 @@ export function EpaperManager() {
               {error && (
                 <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
               )}
+              {uploading && uploadProgress > 0 && (
+                <div>
+                  <div className="flex justify-between text-xs text-neutral-500 dark:text-neutral-400 mb-1">
+                    <span>Uploading…</span><span>{uploadProgress}%</span>
+                  </div>
+                  <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
+                    <div className="bg-blue-600 h-2 rounded-full transition-all" style={{ width: `${uploadProgress}%` }} />
+                  </div>
+                </div>
+              )}
               <div className="flex gap-3 justify-end">
                 <button
                   type="button"
-                  onClick={() => setShowUploadModal(false)}
+                  onClick={handleCancelUpload}
                   className="px-4 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition"
                 >
-                  Cancel
+                  {uploading ? 'Cancel Upload' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
@@ -340,7 +378,7 @@ export function EpaperManager() {
                   className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium transition"
                 >
                   {uploading ? (
-                    <><span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white inline-block"></span> Uploading...</>
+                    <><span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white inline-block"></span> Uploading…</>
                   ) : (
                     <><Upload size={14} /> {uploadDraft ? 'Save Draft' : 'Upload & Publish'}</>
                   )}
