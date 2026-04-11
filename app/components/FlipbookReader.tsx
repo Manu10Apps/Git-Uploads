@@ -34,6 +34,8 @@ function getMaxSpread(total: number): number {
   return total <= 1 ? 0 : Math.ceil((total - 1) / 2);
 }
 
+const FLIP_DURATION_MS = 620;
+
 export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps) {
   // ── Refs ─────────────────────────────────────────────────────────────────────
   const pdfRef        = useRef<any>(null);
@@ -153,26 +155,49 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
     if (!soundEnabled) return;
     try {
       const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-      const dur = 0.14;
-      const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
-      const data = buf.getChannelData(0);
-      for (let i = 0; i < data.length; i++) {
-        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 1.8);
-      }
-      const src = ctx.createBufferSource();
-      src.buffer = buf;
-      const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass';
-      bp.frequency.value = 2600;
-      bp.Q.value = 0.5;
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.38, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
-      src.connect(bp);
-      bp.connect(gain);
-      gain.connect(ctx.destination);
-      src.start();
-      src.stop(ctx.currentTime + dur);
+      const makeRustle = (startOffset: number, dur: number, freq: number, peakGain: number) => {
+        const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 1.35);
+        }
+
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = freq;
+        bp.Q.value = 0.8;
+        const gain = ctx.createGain();
+
+        const t0 = ctx.currentTime + startOffset;
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(peakGain, t0 + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+
+        src.connect(bp);
+        bp.connect(gain);
+        gain.connect(ctx.destination);
+        src.start(t0);
+        src.stop(t0 + dur);
+      };
+
+      // Layered paper texture: two rustles + a subtle low thump
+      makeRustle(0, 0.13, 2400, 0.24);
+      makeRustle(0.045, 0.12, 1800, 0.18);
+
+      const thump = ctx.createOscillator();
+      const thumpGain = ctx.createGain();
+      thump.type = 'triangle';
+      thump.frequency.setValueAtTime(125, ctx.currentTime + 0.03);
+      thump.frequency.exponentialRampToValueAtTime(58, ctx.currentTime + 0.14);
+      thumpGain.gain.setValueAtTime(0.0001, ctx.currentTime + 0.03);
+      thumpGain.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 0.045);
+      thumpGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16);
+      thump.connect(thumpGain);
+      thumpGain.connect(ctx.destination);
+      thump.start(ctx.currentTime + 0.03);
+      thump.stop(ctx.currentTime + 0.17);
     } catch { /* unsupported */ }
   }, [soundEnabled]);
 
@@ -227,7 +252,7 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
       setSpreadIdx(to);
       setFlipDir(null);
       setFlipStage(0);
-    }, 540);
+    }, FLIP_DURATION_MS + 20);
   }, [isFlipping, spreadIdx, maxSpread, totalPages, renderScale, doRender]);
 
   // Direct jump (thumbnail / dot click) — no animation
@@ -280,8 +305,8 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
   const flipOnLeft   = flipDir === 'backward';
   const flipOrigin   = flipOnLeft ? 'right center' : 'left center';
   const flipRotation = flipStage === 1
-    ? `rotateY(${flipDir === 'forward' ? -180 : 180}deg)`
-    : 'rotateY(0deg)';
+    ? `rotateY(${flipDir === 'forward' ? -180 : 180}deg) rotateX(${flipDir === 'forward' ? -1.2 : 1.2}deg)`
+    : 'rotateY(0deg) rotateX(0deg)';
 
   // Page label
   const label = (() => {
@@ -515,7 +540,8 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
                 right: flipOnLeft ? ((!isMobile && bgLeftPage) ? '50%' : '0%') : '0%',
                 transformOrigin: flipOrigin,
                 transform: flipRotation,
-                transition: flipStage === 1 ? 'transform 0.52s cubic-bezier(0.4,0,0.2,1)' : 'none',
+                transition: flipStage === 1 ? `transform ${FLIP_DURATION_MS}ms cubic-bezier(0.22, 0.61, 0.36, 1), filter ${FLIP_DURATION_MS}ms cubic-bezier(0.22, 0.61, 0.36, 1)` : 'none',
+                filter: flipStage === 1 ? 'drop-shadow(0 8px 20px rgba(0,0,0,0.25))' : 'drop-shadow(0 2px 6px rgba(0,0,0,0.16))',
                 transformStyle: 'preserve-3d',
                 zIndex: 40,
               }}
@@ -538,8 +564,18 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
                   style={{
                     position: 'absolute', inset: 0, pointerEvents: 'none',
                     background: flipDir === 'forward'
-                      ? 'linear-gradient(to right, transparent 65%, rgba(0,0,0,0.08))'
-                      : 'linear-gradient(to left,  transparent 65%, rgba(0,0,0,0.08))',
+                      ? 'linear-gradient(to right, transparent 58%, rgba(0,0,0,0.16))'
+                      : 'linear-gradient(to left,  transparent 58%, rgba(0,0,0,0.16))',
+                  }}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    pointerEvents: 'none',
+                    background: flipDir === 'forward'
+                      ? 'linear-gradient(to left, rgba(255,255,255,0.18), transparent 38%)'
+                      : 'linear-gradient(to right, rgba(255,255,255,0.18), transparent 38%)',
                   }}
                 />
               </div>
