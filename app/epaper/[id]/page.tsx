@@ -39,8 +39,8 @@ export default async function EpaperEditionPage({ params }: RouteParams) {
     notFound();
   }
 
-  // Drafts without a PDF are not publicly viewable
-  if (!edition.pdfUrl) {
+  // Drafts and editions without a PDF are not publicly viewable
+  if (!edition.pdfUrl || edition.status !== 'published') {
     notFound();
   }
   const [previousEdition, nextEdition] = await Promise.all([
