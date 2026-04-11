@@ -5,13 +5,28 @@ import { prisma } from './prisma';
  */
 export async function getCurrentEpaperEdition() {
   try {
-    return await prisma.epaperEdition.findFirst({
+    // First try the edition explicitly marked as current
+    const current = await prisma.epaperEdition.findFirst({
       where: {
         isCurrent: true,
         isArchived: false,
         status: 'published',
         pdfUrl: { not: null },
       },
+      include: {
+        admin: { select: { id: true, name: true } },
+      },
+    });
+    if (current) return current;
+
+    // Fall back to the most recently published edition
+    return await prisma.epaperEdition.findFirst({
+      where: {
+        isArchived: false,
+        status: 'published',
+        pdfUrl: { not: null },
+      },
+      orderBy: { issueDate: 'desc' },
       include: {
         admin: { select: { id: true, name: true } },
       },
