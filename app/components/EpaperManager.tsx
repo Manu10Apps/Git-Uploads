@@ -236,9 +236,7 @@ export function EpaperManager() {
     try {
       const response = await fetch(`/api/epaper/${id}?hard=false`, {
         method: 'DELETE',
-        headers: {
-          ...getAuthHeader(),
-        },
+        headers: { ...getAuthHeader() },
       });
       const data = await response.json();
       if (data.success) {
@@ -249,6 +247,25 @@ export function EpaperManager() {
       }
     } catch (err) {
       setError('Failed to archive edition');
+    }
+  };
+
+  const handleUnarchive = async (id: number) => {
+    try {
+      const response = await fetch(`/api/epaper/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+        body: JSON.stringify({ isArchived: false }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setSuccessMessage('Edition unarchived.');
+        fetchEditions();
+      } else {
+        setError(data.error || 'Failed to unarchive');
+      }
+    } catch {
+      setError('Failed to unarchive edition');
     }
   };
 
@@ -597,7 +614,15 @@ export function EpaperManager() {
                     </button>
                   )}
 
-                  {!edition.isArchived && (
+                  {edition.isArchived ? (
+                    <button
+                      onClick={() => handleUnarchive(edition.id)}
+                      className="flex items-center gap-1 px-3 py-1 text-sm bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 rounded hover:bg-teal-200 dark:hover:bg-teal-900/60 transition"
+                    >
+                      <Archive size={14} />
+                      Unarchive
+                    </button>
+                  ) : (
                     <button
                       onClick={() => handleArchive(edition.id)}
                       className="flex items-center gap-1 px-3 py-1 text-sm bg-neutral-100 dark:bg-neutral-700 rounded hover:bg-neutral-200 dark:hover:bg-neutral-600 transition"

@@ -29,15 +29,15 @@ function getAdminIdFromRequest(req: NextRequest): number | null {
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
-    const archived = searchParams.get('archived') === 'true';
-    const current = searchParams.get('current') === 'true';
+    const archivedParam = searchParams.get('archived');
+    const currentParam = searchParams.get('current');
     const status = searchParams.get('status'); // 'draft' | 'published' | null (all)
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
     const where: any = {};
-    if (archived !== undefined) where.isArchived = archived;
-    if (current !== undefined) where.isCurrent = current;
+    if (archivedParam !== null) where.isArchived = archivedParam === 'true';
+    if (currentParam !== null) where.isCurrent = currentParam === 'true';
     if (status) where.status = status;
 
     const [editions, total] = await Promise.all([
@@ -57,6 +57,8 @@ export async function GET(req: NextRequest) {
           status: true,
           notes: true,
           isCurrent: true,
+          isArchived: true,
+          archivedAt: true,
           createdAt: true,
           admin: { select: { id: true, name: true, email: true } },
         },
