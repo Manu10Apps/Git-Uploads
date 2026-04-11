@@ -6,6 +6,9 @@ import { existsSync } from 'fs';
 import { verifyToken } from '@/lib/auth';
 import { getUploadsDir } from '@/lib/upload-config';
 
+export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
+
 const MAX_PDF_SIZE_BYTES = 25 * 1024 * 1024;
 
 interface RouteContext {

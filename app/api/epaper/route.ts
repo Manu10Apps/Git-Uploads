@@ -7,6 +7,10 @@ import { verifyToken } from '@/lib/auth';
 import { getUploadsDir } from '@/lib/upload-config';
 
 export const maxDuration = 60; // Allow up to 60s for PDF uploads on Vercel
+export const dynamic = 'force-dynamic';
+
+// Raise the Next.js body-size limit for multipart PDF uploads (default is 4MB)
+export const fetchCache = 'force-no-store';
 
 const MAX_PDF_SIZE_BYTES = 25 * 1024 * 1024;
 

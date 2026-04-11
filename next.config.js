@@ -7,6 +7,9 @@ const nextConfig = {
   outputFileTracingRoot: path.join(__dirname),
   experimental: {
     optimizePackageImports: ['lucide-react'],
+    serverActions: {
+      bodySizeLimit: '26mb',
+    },
   },
   images: {
     remotePatterns: [
