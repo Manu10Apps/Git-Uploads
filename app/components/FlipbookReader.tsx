@@ -298,8 +298,8 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
   const thumb = (n: number)         => thumbCache.current.get(n);
 
   const Spinner = () => (
-    <div className="absolute inset-0 flex items-center justify-center bg-neutral-100">
-      <div className="w-8 h-8 border-2 border-neutral-300 border-t-transparent rounded-full animate-spin" />
+    <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+      <div className="w-8 h-8 border-2 border-gray-300 border-t-red-500 rounded-full animate-spin" />
     </div>
   );
 
@@ -307,17 +307,17 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-96 bg-neutral-900 rounded-2xl">
-        <div className="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-neutral-400 text-sm">Loading E-Paper…</p>
+      <div className="flex flex-col items-center justify-center min-h-96 bg-gray-50 rounded-xl border border-gray-200">
+        <div className="w-14 h-14 border-4 border-gray-200 border-t-red-600 rounded-full animate-spin mb-4" />
+        <p className="text-gray-500 text-sm font-medium">Loading E-Paper…</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-96 bg-red-950/20 rounded-2xl border border-red-800">
-        <p className="text-red-400 font-medium">{error}</p>
+      <div className="flex items-center justify-center min-h-96 bg-red-50 rounded-xl border border-red-200">
+        <p className="text-red-600 font-medium">{error}</p>
       </div>
     );
   }
@@ -326,7 +326,7 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
   return (
     <div
       ref={containerRef}
-      className="flex flex-col w-full bg-neutral-950 rounded-2xl overflow-hidden select-none"
+      className="flex flex-col w-full bg-white rounded-xl border border-gray-200 shadow-xl overflow-hidden select-none"
       onTouchStart={e => { touchStartX.current = e.touches[0].clientX; }}
       onTouchEnd={e => {
         if (touchStartX.current == null) return;
@@ -336,52 +336,54 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
       }}
     >
       {/* ── Top control bar ─────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-3 py-2.5 bg-neutral-900 border-b border-neutral-800 shrink-0 gap-2">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-white border-b border-gray-200 shrink-0 gap-2">
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-white truncate leading-tight">{title}</p>
-          <p className="text-xs text-neutral-500 truncate">{issueDate}</p>
+          <p className="text-sm font-bold text-gray-800 truncate leading-tight">{title}</p>
+          <p className="text-xs text-gray-400 truncate">{issueDate}</p>
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
           <button
             onClick={() => setSoundEnabled(v => !v)}
             title={soundEnabled ? 'Mute sound' : 'Enable sound'}
-            className={`p-1.5 rounded-lg transition-colors ${soundEnabled ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-800'}`}
+            className={`p-1.5 rounded-lg transition-colors ${soundEnabled ? 'text-gray-500 hover:bg-gray-100' : 'text-gray-300 hover:bg-gray-100'}`}
           >
             {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
           </button>
           <button
             onClick={() => setAutoPlay(v => !v)}
             title={autoPlay ? 'Pause slideshow' : 'Auto-play slideshow'}
-            className={`p-1.5 rounded-lg transition-colors ${autoPlay ? 'bg-[#f61f00] text-white' : 'text-neutral-400 hover:bg-neutral-800'}`}
+            className={`p-1.5 rounded-lg transition-colors ${autoPlay ? 'bg-red-600 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
           >
             {autoPlay ? <Pause size={14} /> : <Play size={14} />}
           </button>
           <button
             onClick={() => { setShowThumbs(v => !v); }}
             title="All pages"
-            className={`p-1.5 rounded-lg transition-colors ${showThumbs ? 'bg-[#f61f00] text-white' : 'hover:bg-neutral-800 text-neutral-400'}`}
+            className={`p-1.5 rounded-lg transition-colors ${showThumbs ? 'bg-red-600 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
           >
             <Grid size={14} />
           </button>
+          <div className="w-px h-5 bg-gray-200 mx-1" />
           <button
             onClick={() => setRenderScale(s => Math.max(s - 0.2, 0.7))}
-            className="p-1.5 rounded-lg hover:bg-neutral-800 text-neutral-400 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
             title="Zoom out"
           >
             <ZoomOut size={14} />
           </button>
-          <span className="text-xs text-neutral-600 w-8 text-center tabular-nums">{Math.round(renderScale * 100)}%</span>
+          <span className="text-xs text-gray-400 w-8 text-center tabular-nums">{Math.round(renderScale * 100)}%</span>
           <button
             onClick={() => setRenderScale(s => Math.min(s + 0.2, 2.5))}
-            className="p-1.5 rounded-lg hover:bg-neutral-800 text-neutral-400 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
             title="Zoom in"
           >
             <ZoomIn size={14} />
           </button>
+          <div className="w-px h-5 bg-gray-200 mx-1" />
           <a
             href={pdfUrl}
             download
-            className="p-1.5 rounded-lg hover:bg-neutral-800 text-neutral-400 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
             title="Download PDF"
           >
             <Download size={14} />
@@ -391,14 +393,14 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
               if (navigator.share) await navigator.share({ title, url: window.location.href }).catch(() => {});
               else await navigator.clipboard.writeText(window.location.href).catch(() => {});
             }}
-            className="p-1.5 rounded-lg hover:bg-neutral-800 text-neutral-400 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
             title="Share"
           >
             <Share2 size={14} />
           </button>
           <button
             onClick={toggleFullscreen}
-            className="p-1.5 rounded-lg hover:bg-neutral-800 text-neutral-400 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
             title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
           >
             {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
@@ -408,7 +410,7 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
 
       {/* ── Thumbnail drawer ─────────────────────────────────────────────────── */}
       {showThumbs && (
-        <div className="bg-neutral-900 border-b border-neutral-800 px-3 py-2.5 overflow-x-auto shrink-0">
+        <div className="bg-gray-50 border-b border-gray-200 px-3 py-2.5 overflow-x-auto shrink-0">
           <div className="flex gap-2 pb-1">
             {Array.from({ length: totalPages }, (_, i) => {
               const p  = i + 1;
@@ -418,12 +420,12 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
                 <button
                   key={p}
                   onClick={() => jumpTo(s)}
-                  className={`shrink-0 rounded overflow-hidden border-2 transition-all ${active ? 'border-red-500' : 'border-transparent hover:border-neutral-600'}`}
+                  className={`shrink-0 rounded overflow-hidden border-2 transition-all ${active ? 'border-red-500 shadow-sm' : 'border-gray-200 hover:border-gray-400'}`}
                   style={{ width: 50, height: 66 }}
                 >
                   {thumb(p)
                     ? <img src={thumb(p)} alt={`Pg ${p}`} className="w-full h-full object-cover" />
-                    : <div className="w-full h-full bg-neutral-700 flex items-center justify-center text-xs text-neutral-500">{p}</div>
+                    : <div className="w-full h-full bg-gray-100 flex items-center justify-center text-xs text-gray-400 font-medium">{p}</div>
                   }
                 </button>
               );
@@ -434,26 +436,26 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
 
       {/* ── Book viewer ──────────────────────────────────────────────────────── */}
       <div
-        className="flex-1 flex items-center justify-center bg-[#1c1008] px-2 py-4 overflow-hidden min-h-64"
+        className="flex-1 flex items-center justify-center bg-[#ddd8cc] px-4 py-6 overflow-hidden min-h-64"
         style={{ perspective: '2200px' }}
       >
         {/* Prev arrow */}
         <button
           onClick={() => navigate('backward')}
           disabled={spreadIdx === 0 || isFlipping}
-          className="shrink-0 p-2 rounded-full bg-black/50 hover:bg-black/80 disabled:opacity-20 disabled:cursor-not-allowed text-white transition-all mr-2 z-10"
+          className="shrink-0 p-2.5 rounded-full bg-white shadow-md hover:shadow-lg disabled:opacity-25 disabled:cursor-not-allowed text-gray-600 hover:text-gray-900 transition-all mr-3 z-10"
         >
-          <ChevronLeft size={22} />
+          <ChevronLeft size={20} />
         </button>
 
         {/* ── The book ───────────────────────────────────────────────────────── */}
         <div
           className="relative flex items-stretch"
           style={{
-            maxHeight: '70vh',
+            maxHeight: '72vh',
             transformStyle: 'preserve-3d',
-            boxShadow: '0 28px 80px rgba(0,0,0,0.9)',
-            position: 'relative',
+            boxShadow: '0 12px 48px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.14)',
+            borderRadius: 4,
           }}
         >
           {/* Left page (hidden on mobile or when no left page) */}
@@ -462,15 +464,15 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
               <div
                 className="overflow-hidden bg-white"
                 style={{
-                  maxHeight: '70vh',
+                  maxHeight: '72vh',
                   maxWidth: '38vw',
                   minWidth: 80,
-                  boxShadow: 'inset -10px 0 20px rgba(0,0,0,0.13)',
+                  boxShadow: 'inset -8px 0 16px rgba(0,0,0,0.07)',
                   borderRadius: '4px 0 0 4px',
                 }}
               >
                 {img(bgLeftPage)
-                  ? <img src={img(bgLeftPage)!} alt={`p${bgLeftPage}`} className="block max-h-full w-auto" style={{ maxHeight: '70vh' }} />
+                  ? <img src={img(bgLeftPage)!} alt={`p${bgLeftPage}`} className="block max-h-full w-auto" style={{ maxHeight: '72vh' }} />
                   : <div className="h-full w-48 relative"><Spinner /></div>
                 }
               </div>
@@ -478,8 +480,8 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
               <div
                 className="shrink-0 self-stretch"
                 style={{
-                  width: 16,
-                  background: 'linear-gradient(to right,#0d0905 0%,#4a3a28 28%,#7a6048 50%,#4a3a28 72%,#0d0905 100%)',
+                  width: 12,
+                  background: 'linear-gradient(to right,#b0a898 0%,#e2ddd5 30%,#f0ece4 50%,#e2ddd5 70%,#b0a898 100%)',
                 }}
               />
             </>
@@ -489,16 +491,16 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
           <div
             className="overflow-hidden bg-white"
             style={{
-              maxHeight: '70vh',
-              maxWidth: (isMobile || !bgLeftPage) ? '88vw' : '38vw',
+              maxHeight: '72vh',
+              maxWidth: (isMobile || !bgLeftPage) ? '90vw' : '38vw',
               minWidth: 120,
-              boxShadow: '8px 0 26px rgba(0,0,0,0.5)',
+              boxShadow: (!isMobile && bgLeftPage) ? '6px 0 20px rgba(0,0,0,0.18)' : '0 4px 24px rgba(0,0,0,0.18)',
               borderRadius: (!isMobile && bgLeftPage) ? '0 4px 4px 0' : '4px',
             }}
           >
             {bgRightPage && (
               img(bgRightPage)
-                ? <img src={img(bgRightPage)!} alt={`p${bgRightPage}`} className="block max-h-full w-auto" style={{ maxHeight: '70vh' }} />
+                ? <img src={img(bgRightPage)!} alt={`p${bgRightPage}`} className="block max-h-full w-auto" style={{ maxHeight: '72vh' }} />
                 : <div className="h-full w-48 relative"><Spinner /></div>
             )}
           </div>
@@ -510,8 +512,6 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
                 position: 'absolute',
                 top: 0,
                 bottom: 0,
-                // On desktop 2-page mode, flip occupies the half being turned.
-                // On mobile / cover page, it occupies the full book.
                 left: !flipOnLeft ? ((!isMobile && bgLeftPage) ? '50%' : '0%') : '0%',
                 right: flipOnLeft ? ((!isMobile && bgLeftPage) ? '50%' : '0%') : '0%',
                 transformOrigin: flipOrigin,
@@ -521,7 +521,7 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
                 zIndex: 40,
               }}
             >
-              {/* Front face — current page being turned */}
+              {/* Front face */}
               <div
                 style={{
                   position: 'absolute',
@@ -535,18 +535,17 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
                   ? <img src={img(flipFront)!} alt="" className="block max-h-full w-auto" style={{ maxHeight: '100%' }} />
                   : <Spinner />
                 }
-                {/* Shadow cast towards the spine */}
                 <div
                   style={{
                     position: 'absolute', inset: 0, pointerEvents: 'none',
                     background: flipDir === 'forward'
-                      ? 'linear-gradient(to right, transparent 70%, rgba(0,0,0,0.15))'
-                      : 'linear-gradient(to left,  transparent 70%, rgba(0,0,0,0.15))',
+                      ? 'linear-gradient(to right, transparent 65%, rgba(0,0,0,0.08))'
+                      : 'linear-gradient(to left,  transparent 65%, rgba(0,0,0,0.08))',
                   }}
                 />
               </div>
 
-              {/* Back face — next page revealed beneath */}
+              {/* Back face */}
               <div
                 style={{
                   position: 'absolute',
@@ -570,33 +569,33 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
         <button
           onClick={() => navigate('forward')}
           disabled={spreadIdx >= maxSpread || isFlipping}
-          className="shrink-0 p-2 rounded-full bg-black/50 hover:bg-black/80 disabled:opacity-20 disabled:cursor-not-allowed text-white transition-all ml-2 z-10"
+          className="shrink-0 p-2.5 rounded-full bg-white shadow-md hover:shadow-lg disabled:opacity-25 disabled:cursor-not-allowed text-gray-600 hover:text-gray-900 transition-all ml-3 z-10"
         >
-          <ChevronRight size={22} />
+          <ChevronRight size={20} />
         </button>
       </div>
 
       {/* ── Bottom bar ───────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-3 py-2 bg-neutral-900 border-t border-neutral-800 shrink-0">
-        <span className="text-xs text-neutral-500 w-24">{label}</span>
+      <div className="flex items-center justify-between px-4 py-2.5 bg-white border-t border-gray-200 shrink-0">
+        <span className="text-xs text-gray-400 w-24 font-medium">{label}</span>
 
-        {/* Dot pagination */}
+        {/* Dot / page pagination */}
         <div className="flex items-center gap-1.5 overflow-x-auto px-1">
           {Array.from({ length: Math.min(maxSpread + 1, 15) }, (_, i) => (
             <button
               key={i}
               onClick={() => jumpTo(i)}
               className={`shrink-0 rounded-full transition-all duration-200 ${
-                i === spreadIdx ? 'w-3 h-3 bg-red-500 scale-110' : 'w-2 h-2 bg-neutral-700 hover:bg-neutral-500'
+                i === spreadIdx ? 'w-3 h-3 bg-red-500 scale-110' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'
               }`}
             />
           ))}
           {maxSpread + 1 > 15 && (
-            <span className="text-xs text-neutral-700 ml-1">+{maxSpread + 1 - 15}</span>
+            <span className="text-xs text-gray-400 ml-1">+{maxSpread + 1 - 15}</span>
           )}
         </div>
 
-        <span className="text-xs text-neutral-500 text-right w-24">
+        <span className="text-xs text-gray-400 text-right w-24 font-medium">
           {spreadIdx + 1} / {maxSpread + 1}
         </span>
       </div>
