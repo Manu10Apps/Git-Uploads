@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import Image from 'next/image';
-import { Download, Trash2, Star, Archive, AlertCircle, FileText, Send, RefreshCw, Pencil, Upload, X } from 'lucide-react';
+import { Download, Trash2, Star, Archive, AlertCircle, FileText, Send, RefreshCw, Pencil, Upload, X, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { formatFileSize, formatIssueDate } from '@/lib/epaper-client';
 
@@ -249,6 +249,27 @@ export function EpaperManager() {
       }
     } catch (err) {
       setError('Failed to archive edition');
+    }
+  };
+
+  // Unpublish (revert published → draft)
+  const handleUnpublish = async (id: number) => {
+    if (!confirm('Unpublish this edition? It will become a draft and disappear from the public site.')) return;
+    try {
+      const response = await fetch(`/api/epaper/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+        body: JSON.stringify({ status: 'draft' }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setSuccessMessage('Edition unpublished (reverted to draft).');
+        fetchEditions();
+      } else {
+        setError(data.error || 'Failed to unpublish');
+      }
+    } catch {
+      setError('Failed to unpublish edition');
     }
   };
 
@@ -563,6 +584,16 @@ export function EpaperManager() {
                     >
                       <Star size={14} />
                       Mark as Current
+                    </button>
+                  )}
+
+                  {edition.status === 'published' && !edition.isArchived && (
+                    <button
+                      onClick={() => handleUnpublish(edition.id)}
+                      className="flex items-center gap-1 px-3 py-1 text-sm bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 rounded hover:bg-orange-200 dark:hover:bg-orange-900/60 transition"
+                    >
+                      <EyeOff size={14} />
+                      Unpublish
                     </button>
                   )}
 
