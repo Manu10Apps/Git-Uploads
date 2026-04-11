@@ -116,15 +116,12 @@ export default async function EpaperPage() {
                       Download PDF
                     </Link>
                     )}
-                    <button
-                      onClick={() => {
-                        // Scroll to reader
-                        document.getElementById('epaper-reader')?.scrollIntoView({ behavior: 'smooth' });
-                      }}
+                    <a
+                      href="#epaper-reader"
                       className="px-6 py-2 border border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950 transition font-medium"
                     >
                       Read Online
-                    </button>
+                    </a>
                   </div>
                 </div>
               </div>

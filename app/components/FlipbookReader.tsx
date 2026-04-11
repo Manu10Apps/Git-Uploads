@@ -5,6 +5,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 import {
   ChevronLeft, ChevronRight, ZoomIn, ZoomOut,
   Download, Share2, Grid, Maximize2, Minimize2,
+  Play, Pause, Volume2, VolumeX,
 } from 'lucide-react';
 
 if (typeof window !== 'undefined') {
@@ -62,6 +63,11 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
   const [flipStage, setFlipStage] = useState<0 | 1>(0); // 0 = at 0°, 1 = rotate to ±180°
   const isFlipping = flipDir !== null;
   const maxSpread  = getMaxSpread(totalPages);
+
+  // Auto-play & sound
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [autoPlay,     setAutoPlay    ] = useState(false);
+  const autoPlayRef = useRef<ReturnType<typeof setInterval>>();
 
   // ── Detect mobile ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -143,6 +149,56 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
     for (let p = 1; p <= totalPages; p++) doThumb(p);
   }, [showThumbs, totalPages, doThumb]);
 
+  // ── Page-turn sound (synthesised paper rustle via Web Audio API) ────────────
+  const playFlipSound = useCallback(() => {
+    if (!soundEnabled) return;
+    try {
+      const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      const dur = 0.14;
+      const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 1.8);
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 2600;
+      bp.Q.value = 0.5;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.38, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+      src.connect(bp);
+      bp.connect(gain);
+      gain.connect(ctx.destination);
+      src.start();
+      src.stop(ctx.currentTime + dur);
+    } catch { /* unsupported */ }
+  }, [soundEnabled]);
+
+  // ── Auto-play slideshow ──────────────────────────────────────────────────────
+  useEffect(() => {
+    clearInterval(autoPlayRef.current);
+    if (!autoPlay) return;
+    autoPlayRef.current = setInterval(() => {
+      setSpreadIdx(prev => {
+        const next = prev + 1;
+        if (next > getMaxSpread(totalPages)) {
+          setAutoPlay(false);
+          return prev;
+        }
+        return next;
+      });
+    }, 4000);
+    return () => clearInterval(autoPlayRef.current);
+  }, [autoPlay, totalPages]);
+
+  // Stop auto-play when user manually navigates
+  const stopAutoPlay = useCallback(() => {
+    if (autoPlay) setAutoPlay(false);
+  }, [autoPlay]);
+
   // ── Navigate with 3-D page-flip animation ───────────────────────────────────
   const navigate = useCallback((dir: 'forward' | 'backward') => {
     if (isFlipping) return;
@@ -151,6 +207,9 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
       ? Math.min(from + 1, maxSpread)
       : Math.max(from - 1, 0);
     if (to === from) return;
+
+    stopAutoPlay();
+    playFlipSound();
 
     // Pre-render target spread
     const [tl, tr] = getSpreadPages(to, totalPages);
@@ -174,12 +233,13 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
 
   // Direct jump (thumbnail / dot click) — no animation
   const jumpTo = useCallback((s: number) => {
+    stopAutoPlay();
     clearTimeout(flipTimer.current);
     setFlipDir(null);
     setFlipStage(0);
     setSpreadIdx(s);
     setShowThumbs(false);
-  }, []);
+  }, [stopAutoPlay]);
 
   // ── Keyboard ─────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -282,6 +342,20 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
           <p className="text-xs text-neutral-500 truncate">{issueDate}</p>
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
+          <button
+            onClick={() => setSoundEnabled(v => !v)}
+            title={soundEnabled ? 'Mute sound' : 'Enable sound'}
+            className={`p-1.5 rounded-lg transition-colors ${soundEnabled ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-800'}`}
+          >
+            {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
+          </button>
+          <button
+            onClick={() => setAutoPlay(v => !v)}
+            title={autoPlay ? 'Pause slideshow' : 'Auto-play slideshow'}
+            className={`p-1.5 rounded-lg transition-colors ${autoPlay ? 'bg-[#f61f00] text-white' : 'text-neutral-400 hover:bg-neutral-800'}`}
+          >
+            {autoPlay ? <Pause size={14} /> : <Play size={14} />}
+          </button>
           <button
             onClick={() => { setShowThumbs(v => !v); }}
             title="All pages"
