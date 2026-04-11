@@ -3,9 +3,10 @@ import { prisma } from '@/lib/prisma';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
+import { verifyToken } from '@/lib/auth';
+import { getUploadsDir } from '@/lib/upload-config';
 
 export const maxDuration = 60; // Allow up to 60s for PDF uploads on Vercel
-import { verifyToken } from '@/lib/auth';
 
 const MAX_PDF_SIZE_BYTES = 25 * 1024 * 1024;
 
@@ -156,19 +157,35 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Save PDF file to public/uploads/epaper
-      const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'epaper');
-      if (!existsSync(uploadsDir)) {
-        await mkdir(uploadsDir, { recursive: true });
+      // Save PDF file to the configured uploads directory (respects UPLOAD_DIR env var)
+      const uploadsDir = path.join(getUploadsDir(), 'epaper');
+      try {
+        if (!existsSync(uploadsDir)) {
+          await mkdir(uploadsDir, { recursive: true });
+        }
+      } catch (mkdirErr) {
+        console.error('Failed to create epaper uploads directory:', mkdirErr);
+        return NextResponse.json(
+          { success: false, error: 'Server storage not available. Contact administrator.' },
+          { status: 500 }
+        );
       }
 
-      const fileName = `${new Date(issueDate).getTime()}-${title.replace(/\s+/g, '-').toLowerCase()}.pdf`;
+      const fileName = `${new Date(issueDate).getTime()}-${title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
       const filePath = path.join(uploadsDir, fileName);
-      const buffer = await file.arrayBuffer();
-      await writeFile(filePath, Buffer.from(buffer));
+      try {
+        const buffer = await file.arrayBuffer();
+        await writeFile(filePath, Buffer.from(buffer));
+        fileSize = buffer.byteLength;
+      } catch (writeErr) {
+        console.error('Failed to write PDF file:', writeErr);
+        return NextResponse.json(
+          { success: false, error: 'Failed to save PDF file. Check server storage permissions.' },
+          { status: 500 }
+        );
+      }
 
       fileUrl = `/uploads/epaper/${fileName}`;
-      fileSize = buffer.byteLength;
     }
 
     const status = isDraft ? 'draft' : 'published';
