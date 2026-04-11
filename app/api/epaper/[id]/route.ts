@@ -165,7 +165,7 @@ export async function PUT(req: NextRequest, context: RouteContext) {
 
     // JSON body — metadata update (mark as current, title, cover, publish status)
     const body = await req.json();
-    const { title, coverImage, isCurrent, status, issueDate, pageCount, notes } = body;
+    const { title, coverImage, isCurrent, status, issueDate, pageCount, notes, isArchived } = body;
 
     // Publishing a draft via JSON (no PDF change)
     if (status === 'published') {
@@ -195,6 +195,7 @@ export async function PUT(req: NextRequest, context: RouteContext) {
         ...(title && { title }),
         ...(coverImage !== undefined && { coverImage: coverImage || null }),
         ...(isCurrent !== undefined && { isCurrent }),
+        ...(isArchived !== undefined && { isArchived, archivedAt: isArchived ? new Date() : null }),
         ...(status && { status }),
         ...(issueDate && { issueDate: new Date(issueDate) }),
         ...(pageCount !== undefined && { pageCount: Number(pageCount) }),
