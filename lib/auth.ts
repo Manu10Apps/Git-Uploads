@@ -24,10 +24,9 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return bcrypt.compare(password, hash);
 }
 
-// Phase 2: Reduced JWT expiry (from 7d to 4h)
 export function generateToken(adminId: number): string {
   return jwt.sign({ adminId }, getJwtSecret(), {
-    expiresIn: '4h',  // Changed from '7d' to 4 hours
+    expiresIn: '24h',
   });
 }
 

@@ -44,6 +44,12 @@ export function EpaperManager() {
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
+  const handleUnauthorized = () => {
+    localStorage.removeItem('adminAuth');
+    localStorage.removeItem('adminToken');
+    window.location.href = '/admin/login';
+  };
+
   // Fetch editions
   const fetchEditions = useCallback(async () => {
     try {
@@ -97,6 +103,10 @@ export function EpaperManager() {
         data = await response.json();
       } catch {
         throw new Error(`Server returned ${response.status} ${response.statusText}`);
+      }
+      if (response.status === 401) {
+        handleUnauthorized();
+        return;
       }
       if (data?.success) {
         setSuccessMessage(uploadDraft ? 'Draft created!' : 'Edition uploaded successfully!');
