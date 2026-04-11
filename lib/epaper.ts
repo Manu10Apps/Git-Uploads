@@ -9,6 +9,8 @@ export async function getCurrentEpaperEdition() {
       where: {
         isCurrent: true,
         isArchived: false,
+        status: 'published',
+        pdfUrl: { not: null },
       },
       include: {
         admin: { select: { id: true, name: true } },
@@ -30,7 +32,7 @@ export async function getCurrentEpaperEdition() {
 export async function getActiveEpaperEditions(limit = 10) {
   try {
     return await prisma.epaperEdition.findMany({
-      where: { isArchived: false },
+      where: { isArchived: false, status: 'published', pdfUrl: { not: null } },
       orderBy: { issueDate: 'desc' },
       take: limit,
       include: {

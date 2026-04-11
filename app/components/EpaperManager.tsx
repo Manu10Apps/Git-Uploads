@@ -30,6 +30,7 @@ export function EpaperManager() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [filterArchived, setFilterArchived] = useState(false);
   const [showDrafts, setShowDrafts] = useState(true);
+  const [showPublished, setShowPublished] = useState(true);
 
   // Upload modal state
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -422,6 +423,15 @@ export function EpaperManager() {
           />
           <span className="text-sm text-neutral-700 dark:text-neutral-300">Show Drafts</span>
         </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={showPublished}
+            onChange={(e) => setShowPublished(e.target.checked)}
+            className="w-4 h-4 rounded"
+          />
+          <span className="text-sm text-neutral-700 dark:text-neutral-300">Show Published</span>
+        </label>
         <button
           onClick={fetchEditions}
           className="flex items-center gap-1 px-3 py-1 text-sm bg-neutral-100 dark:bg-neutral-700 rounded hover:bg-neutral-200 dark:hover:bg-neutral-600 transition"
@@ -440,7 +450,11 @@ export function EpaperManager() {
       ) : editions.length > 0 ? (
         <div className="space-y-4">
           {editions
-            .filter((ed) => showDrafts || ed.status !== 'draft')
+            .filter((ed) => {
+              if (ed.status === 'draft' && !showDrafts) return false;
+              if (ed.status === 'published' && !showPublished) return false;
+              return true;
+            })
             .map((edition) => (
             <div
               key={edition.id}
