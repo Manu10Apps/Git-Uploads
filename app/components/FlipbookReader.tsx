@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
+import { PDFDocument } from 'pdf-lib';
 import {
   ChevronLeft, ChevronRight, ZoomIn, ZoomOut,
   Download, Share2, Grid, Maximize2, Minimize2,
@@ -34,8 +35,8 @@ function getMaxSpread(total: number): number {
   return total <= 1 ? 0 : Math.ceil((total - 1) / 2);
 }
 
-const FLIP_DURATION_MS = 620;
-const AUTOPLAY_INTERVAL_MS = 7000;
+const FLIP_DURATION_MS = 900;
+const AUTOPLAY_INTERVAL_MS = 10000;
 
 export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps) {
   // ── Refs ─────────────────────────────────────────────────────────────────────
@@ -46,6 +47,7 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
   const flipTimer     = useRef<ReturnType<typeof setTimeout>>();
   const touchStartX   = useRef<number | null>(null);
   const containerRef  = useRef<HTMLDivElement>(null);
+  const downloadPanelRef = useRef<HTMLDivElement>(null);
 
   // ── State ─────────────────────────────────────────────────────────────────────
   const [totalPages,   setTotalPages  ] = useState(0);
@@ -57,6 +59,10 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
   const [showThumbs,   setShowThumbs  ] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isMobile,     setIsMobile    ] = useState(false);
+  const [showDownloadPanel, setShowDownloadPanel] = useState(false);
+  const [downloadFormat, setDownloadFormat] = useState<'pdf' | 'jpg'>('pdf');
+  const [selectedPages, setSelectedPages] = useState<number[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
 
   // flip animation ── flipDir: null = idle, 'forward'/'backward' = animating
   const [flipDir,   setFlipDir  ] = useState<'forward' | 'backward' | null>(null);
@@ -309,6 +315,7 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
   const dispSpread             = isFlipping ? flipFrom : spreadIdx;
   const [dispLeft, dispRight]  = getSpreadPages(dispSpread, totalPages);
   const [nextLeft, nextRight]  = isFlipping ? getSpreadPages(flipTo, totalPages) : [null, null];
+  const currentSpreadPages = [dispLeft, dispRight].filter((p): p is number => p != null);
 
   // Background pages visible beneath the flip element
   const bgLeftPage  = isFlipping && flipDir === 'backward' ? nextLeft  : dispLeft;
@@ -318,12 +325,107 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
   const flipFront = isFlipping ? (flipDir === 'forward' ? dispRight  : dispLeft  ) : null;
   const flipBack  = isFlipping ? (flipDir === 'forward' ? nextLeft   : nextRight ) : null;
 
+  useEffect(() => {
+    if (!showDownloadPanel) return;
+    const onMouseDown = (e: MouseEvent) => {
+      if (!downloadPanelRef.current?.contains(e.target as Node)) {
+        setShowDownloadPanel(false);
+      }
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    return () => document.removeEventListener('mousedown', onMouseDown);
+  }, [showDownloadPanel]);
+
+  const safeTitle = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'epaper';
+
+  const dataUrlToBytes = async (dataUrl: string): Promise<Uint8Array> => {
+    const res = await fetch(dataUrl);
+    const buffer = await res.arrayBuffer();
+    return new Uint8Array(buffer);
+  };
+
+  const getExportImageDataUrl = useCallback(async (pageNum: number): Promise<string> => {
+    const cached = pageCache.current.get(pageNum);
+    if (cached) return cached;
+    if (!pdfRef.current) throw new Error('PDF not loaded');
+
+    const page = await pdfRef.current.getPage(pageNum);
+    const viewport = page.getViewport({ scale: Math.max(renderScale, 1.8) });
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+    await page.render({ canvasContext: canvas.getContext('2d')!, viewport }).promise;
+    return canvas.toDataURL('image/jpeg', 0.9);
+  }, [renderScale]);
+
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const togglePageSelection = (pageNum: number) => {
+    setSelectedPages(prev => prev.includes(pageNum)
+      ? prev.filter(p => p !== pageNum)
+      : [...prev, pageNum].sort((a, b) => a - b));
+  };
+
+  const exportSelectedPages = async () => {
+    if (selectedPages.length === 0 || isExporting) return;
+    setIsExporting(true);
+    try {
+      const orderedPages = [...selectedPages].sort((a, b) => a - b);
+      const images = await Promise.all(orderedPages.map(p => getExportImageDataUrl(p)));
+
+      if (downloadFormat === 'pdf') {
+        const outDoc = await PDFDocument.create();
+        for (const imgData of images) {
+          const bytes = await dataUrlToBytes(imgData);
+          const embedded = await outDoc.embedJpg(bytes);
+          const page = outDoc.addPage([embedded.width, embedded.height]);
+          page.drawImage(embedded, {
+            x: 0,
+            y: 0,
+            width: embedded.width,
+            height: embedded.height,
+          });
+        }
+        const pdfBytes = await outDoc.save();
+        const label = orderedPages.length === 1
+          ? `p${orderedPages[0]}`
+          : `p${orderedPages[0]}-p${orderedPages[orderedPages.length - 1]}`;
+        downloadBlob(new Blob([pdfBytes], { type: 'application/pdf' }), `${safeTitle}-${label}.pdf`);
+      } else {
+        images.forEach((imgData, idx) => {
+          const bytesPromise = dataUrlToBytes(imgData);
+          bytesPromise.then(bytes => {
+            const pageNum = orderedPages[idx];
+            downloadBlob(new Blob([bytes], { type: 'image/jpeg' }), `${safeTitle}-p${pageNum}.jpg`);
+          });
+        });
+      }
+      setShowDownloadPanel(false);
+    } catch {
+      setError('Export failed. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   // Flip element spans the right half when going forward, left half when backward
   const flipOnLeft   = flipDir === 'backward';
   const flipOrigin   = flipOnLeft ? 'right center' : 'left center';
   const flipRotation = flipStage === 1
-    ? `rotateY(${flipDir === 'forward' ? -180 : 180}deg) rotateX(${flipDir === 'forward' ? -1.2 : 1.2}deg)`
-    : 'rotateY(0deg) rotateX(0deg)';
+    ? `rotateY(${flipDir === 'forward' ? -180 : 180}deg)`
+    : 'rotateY(0deg)';
 
   // Page label
   const label = (() => {
@@ -421,14 +523,94 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
             <ZoomIn size={14} />
           </button>
           <div className="w-px h-5 bg-gray-200 mx-1" />
-          <a
-            href={pdfUrl}
-            download
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
-            title="Download PDF"
-          >
-            <Download size={14} />
-          </a>
+          <div className="relative" ref={downloadPanelRef}>
+            <button
+              onClick={() => {
+                setSelectedPages(currentSpreadPages.length > 0 ? currentSpreadPages : [1]);
+                setShowDownloadPanel(v => !v);
+              }}
+              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
+              title="Download selected pages"
+            >
+              <Download size={14} />
+            </button>
+            {showDownloadPanel && (
+              <div className="absolute right-0 top-9 z-50 w-72 rounded-xl border border-gray-200 bg-white shadow-2xl p-3">
+                <p className="text-xs font-semibold text-gray-700 mb-2">Download pages</p>
+
+                <div className="mb-2">
+                  <p className="text-[11px] text-gray-500 mb-1">Format</p>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => setDownloadFormat('pdf')}
+                      className={`px-2 py-1 rounded-md text-xs font-medium ${downloadFormat === 'pdf' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    >
+                      PDF
+                    </button>
+                    <button
+                      onClick={() => setDownloadFormat('jpg')}
+                      className={`px-2 py-1 rounded-md text-xs font-medium ${downloadFormat === 'jpg' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    >
+                      JPG
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-[11px] text-gray-500">Select pages</p>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => setSelectedPages(Array.from({ length: totalPages }, (_, i) => i + 1))}
+                      className="px-1.5 py-0.5 text-[11px] rounded bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    >
+                      All
+                    </button>
+                    <button
+                      onClick={() => setSelectedPages(currentSpreadPages.length > 0 ? currentSpreadPages : [1])}
+                      className="px-1.5 py-0.5 text-[11px] rounded bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    >
+                      Current
+                    </button>
+                    <button
+                      onClick={() => setSelectedPages([])}
+                      className="px-1.5 py-0.5 text-[11px] rounded bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <div className="max-h-40 overflow-y-auto rounded-md border border-gray-100 p-2 grid grid-cols-4 gap-1.5">
+                  {Array.from({ length: totalPages }, (_, i) => {
+                    const p = i + 1;
+                    const checked = selectedPages.includes(p);
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => togglePageSelection(p)}
+                        className={`h-7 rounded-md text-xs font-medium border transition-colors ${checked ? 'bg-red-50 border-red-500 text-red-700' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'}`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <p className="mt-2 text-[11px] text-gray-500">
+                  {selectedPages.length} page{selectedPages.length === 1 ? '' : 's'} selected
+                  {downloadFormat === 'jpg' && selectedPages.length > 1 ? ' (downloads as separate JPG files)' : ''}
+                </p>
+
+                <button
+                  onClick={exportSelectedPages}
+                  disabled={selectedPages.length === 0 || isExporting}
+                  className="mt-2 w-full h-8 rounded-md bg-red-600 text-white text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-red-700 transition-colors"
+                >
+                  {isExporting ? 'Preparing...' : `Download ${downloadFormat.toUpperCase()}`}
+                </button>
+              </div>
+            )}
+          </div>
           <button
             onClick={async () => {
               if (navigator.share) await navigator.share({ title, url: window.location.href }).catch(() => {});
@@ -479,13 +661,6 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
       <div
         className="flex-1 flex items-center justify-center bg-[#ddd8cc] px-4 py-6 overflow-hidden min-h-64"
         style={{ perspective: '2200px' }}
-        onClick={(e) => {
-          if (isFlipping) return;
-          const rect = e.currentTarget.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const isLeftHalf = x < rect.width / 2;
-          navigate(isLeftHalf ? 'backward' : 'forward');
-        }}
       >
         {/* Prev arrow */}
         <button
@@ -565,7 +740,7 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
                 transformOrigin: flipOrigin,
                 transform: flipRotation,
                 transition: flipStage === 1 ? `transform ${FLIP_DURATION_MS}ms cubic-bezier(0.22, 0.61, 0.36, 1), filter ${FLIP_DURATION_MS}ms cubic-bezier(0.22, 0.61, 0.36, 1)` : 'none',
-                filter: flipStage === 1 ? 'drop-shadow(0 8px 20px rgba(0,0,0,0.25))' : 'drop-shadow(0 2px 6px rgba(0,0,0,0.16))',
+                filter: flipStage === 1 ? 'drop-shadow(0 8px 20px rgba(0,0,0,0.25))' : 'none',
                 transformStyle: 'preserve-3d',
                 zIndex: 40,
               }}
@@ -590,16 +765,6 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
                     background: flipDir === 'forward'
                       ? 'linear-gradient(to right, transparent 58%, rgba(0,0,0,0.16))'
                       : 'linear-gradient(to left,  transparent 58%, rgba(0,0,0,0.16))',
-                  }}
-                />
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    pointerEvents: 'none',
-                    background: flipDir === 'forward'
-                      ? 'linear-gradient(to left, rgba(255,255,255,0.18), transparent 38%)'
-                      : 'linear-gradient(to right, rgba(255,255,255,0.18), transparent 38%)',
                   }}
                 />
               </div>
