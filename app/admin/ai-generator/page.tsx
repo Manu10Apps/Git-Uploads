@@ -54,9 +54,13 @@ export default function AIGeneratorPage() {
     setIsGenerating(true);
     setMessage(null);
     try {
+      const adminToken = localStorage.getItem('adminToken');
       const res = await fetch('/api/ai-generator', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {}),
+        },
         body: JSON.stringify({
           title: form.title.trim(),
           topic: form.topic.trim(),
