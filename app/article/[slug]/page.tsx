@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import { normalizeArticleImageUrl } from '@/lib/utils';
-import { resolveOgImageUrl, validateImageUrl } from '@/lib/social-media-metadata';
+import { resolveOgImageUrl, validateImageUrl, getOgImageType } from '@/lib/social-media-metadata';
 import ArticlePageClient from './ArticlePageClient';
 
 const SITE_URL = 'https://intambwemedia.com';
@@ -88,6 +88,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 
   // CRITICAL: Ensure image URL is absolute and valid for social media crawlers
   const imageUrl = resolveAbsoluteImageUrl(article.image);
+  const imageMimeType = getOgImageType(imageUrl);
   const articleUrl = validLang
     ? `${SITE_URL}/article/${slug}?lang=${validLang}`
     : `${SITE_URL}/article/${slug}`;
@@ -114,7 +115,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
           width: 1200,
           height: 630,
           alt: title,
-          type: 'image/jpeg',
+          type: imageMimeType,
         },
       ],
       publishedTime: article.publishedAt?.toISOString(),
@@ -127,7 +128,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
       creator: '@intambwemedias',
       title,
       description: truncatedDescription,
-      images: [imageUrl],
+      image: imageUrl,
     },
     alternates: {
       canonical: articleUrl,

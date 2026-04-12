@@ -1,10 +1,28 @@
 /**
  * Social Media Metadata Utilities
  * Ensures proper OG/Twitter tags for article sharing
+ * Maximizes thumbnail display on Facebook, Twitter, LinkedIn, WhatsApp, etc.
  */
 
 const SITE_URL = 'https://intambwemedia.com';
 const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
+const FALLBACK_IMAGES = [
+  `${SITE_URL}/logo.png`,           // Branded logo - always available
+];
+
+/**
+ * Detects MIME type from URL or filename
+ */
+function getImageMimeType(url: string): string {
+  const pathname = url.toLowerCase();
+  if (pathname.endsWith('.webp')) return 'image/webp';
+  if (pathname.endsWith('.avif')) return 'image/avif';
+  if (pathname.endsWith('.gif')) return 'image/gif';
+  if (pathname.endsWith('.png')) return 'image/png';
+  if (pathname.endsWith('.jpg') || pathname.endsWith('.jpeg')) return 'image/jpeg';
+  // Default to JPEG as most compatible
+  return 'image/jpeg';
+}
 
 /**
  * Validates if an image URL is likely accessible and suitable for OG/Twitter
@@ -78,45 +96,76 @@ export function resolveOgImageUrl(
       return absoluteUrl;
     }
   } catch (error) {
-    console.warn('Error resolving OG image URL:', error);
+    // Silent fallback - don't log to avoid console noise
   }
   
-  // If anything fails, fall back to logo
+  // If anything fails, fall back to logo (guaranteed to exist)
   return DEFAULT_OG_IMAGE;
 }
 
 /**
+ * Gets image MIME type for OG image metadata
+ */
+export function getOgImageType(url: string): string {
+  return getImageMimeType(url);
+}
+
+/**
  * Ensures article metadata is complete and valid for social sharing
+ * Maximizes compatibility across all social platforms
  */
 export function ensureMetadataCompleteness(
   metadata: Record<string, any>,
   ogImage: string
 ): void {
-  // Verify OpenGraph metadata exists
+  // Verify OpenGraph metadata exists with MULTIPLE image options for fallback
   if (!metadata.openGraph) {
     metadata.openGraph = {};
   }
   
+  // CRITICAL: Always include og:image with proper metadata
+  // Social platforms use first image, so order matters
   if (!metadata.openGraph.images || metadata.openGraph.images.length === 0) {
-    metadata.openGraph.images = [{
-      url: ogImage,
-      width: 1200,
-      height: 630,
-      alt: metadata.title || 'Intambwe Media Article',
-    }];
+    const mimeType = getImageMimeType(ogImage);
+    const images = [
+      {
+        url: ogImage,
+        width: 1200,
+        height: 630,
+        alt: metadata.title || 'Intambwe Media Article',
+        type: mimeType,
+      },
+    ];
+    
+    // Add fallback images (logo) if primary image is different
+    FALLBACK_IMAGES.forEach(fallbackImg => {
+      if (fallbackImg !== ogImage) {
+        images.push({
+          url: fallbackImg,
+          width: 1200,
+          height: 630,
+          alt: 'Intambwe Media',
+          type: getImageMimeType(fallbackImg),
+        });
+      }
+    });
+    
+    metadata.openGraph.images = images;
   }
   
   // Verify Twitter Card metadata exists
+  // Twitter requires BOTH og:image AND twitter:image for reliable display
   if (!metadata.twitter) {
     metadata.twitter = {};
   }
   
-  if (!metadata.twitter.images || !Array.isArray(metadata.twitter.images)) {
-    metadata.twitter.images = [ogImage];
-  }
-  
-  // Ensure card type is set
+  // Twitter Card: summary_large_image REQUIRES image
   if (!metadata.twitter.card) {
     metadata.twitter.card = 'summary_large_image';
+  }
+  
+  // CRITICAL: Twitter must have image field (not images) for summary_large_image
+  if (!metadata.twitter.image) {
+    metadata.twitter.image = ogImage;
   }
 }
