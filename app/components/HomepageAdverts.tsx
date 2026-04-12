@@ -88,8 +88,8 @@ export function HomepageAdverts({
             )}
           </div>
 
-          {/* Desktop: top ad + bottom ad side by side */}
-          <div className="hidden lg:grid lg:grid-cols-2 gap-4">
+          {/* Tablet & Desktop: top ad + bottom ad side by side - visible on md+ */}
+          <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-4">
             {topAdverts.length > 0 ? (
               topAdverts.slice(0, 1).map((advert) => (
                 <a
