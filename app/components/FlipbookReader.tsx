@@ -477,12 +477,13 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
       }}
     >
       {/* ── Top control bar ─────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-white border-b border-gray-200 shrink-0 gap-2">
-        <div className="min-w-0 flex-1">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-3 sm:px-4 py-2.5 bg-white border-b border-gray-200 shrink-0 gap-2">
+        <div className="min-w-0 w-full sm:flex-1">
           <p className="text-sm font-bold text-gray-800 truncate leading-tight">{title}</p>
           <p className="text-xs text-gray-400 truncate">{issueDate}</p>
         </div>
-        <div className="flex items-center gap-0.5 shrink-0">
+        <div className="w-full sm:w-auto overflow-x-auto">
+          <div className="flex items-center gap-0.5 shrink-0 min-w-max sm:min-w-0">
           <button
             onClick={() => setSoundEnabled(v => !v)}
             title={soundEnabled ? 'Mute sound' : 'Enable sound'}
@@ -512,7 +513,7 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
           >
             <ZoomOut size={14} />
           </button>
-          <span className="text-xs text-gray-400 w-8 text-center tabular-nums">{Math.round(renderScale * 100)}%</span>
+          <span className="text-xs text-gray-400 w-8 text-center tabular-nums hidden sm:inline">{Math.round(renderScale * 100)}%</span>
           <button
             onClick={() => setRenderScale(s => Math.min(s + 0.2, 2.5))}
             className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
@@ -533,7 +534,7 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
               <Download size={14} />
             </button>
             {showDownloadPanel && (
-              <div className="absolute right-0 top-9 z-50 w-72 rounded-xl border border-gray-200 bg-white shadow-2xl p-3">
+              <div className="absolute right-0 top-9 z-50 w-[calc(100vw-2rem)] max-w-72 rounded-xl border border-gray-200 bg-white shadow-2xl p-3">
                 <p className="text-xs font-semibold text-gray-700 mb-2">Download pages</p>
 
                 <div className="mb-2">
@@ -626,6 +627,7 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
           >
             {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
           </button>
+          </div>
         </div>
       </div>
 
@@ -657,16 +659,16 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
 
       {/* ── Book viewer ──────────────────────────────────────────────────────── */}
       <div
-        className="flex-1 flex items-center justify-center bg-[#ddd8cc] px-4 py-6 overflow-hidden min-h-64"
+        className="relative flex-1 flex items-center justify-center bg-[#ddd8cc] px-2 sm:px-4 py-4 sm:py-6 overflow-hidden min-h-64"
         style={{ perspective: '2200px' }}
       >
         {/* Prev arrow */}
         <button
           onClick={() => navigate('backward')}
           disabled={spreadIdx === 0 || isFlipping}
-          className="shrink-0 p-2.5 rounded-full bg-white shadow-md hover:shadow-lg disabled:opacity-25 disabled:cursor-not-allowed text-gray-600 hover:text-gray-900 transition-all mr-3 z-10"
+          className={`shrink-0 rounded-full bg-white shadow-md hover:shadow-lg disabled:opacity-25 disabled:cursor-not-allowed text-gray-600 hover:text-gray-900 transition-all z-20 ${isMobile ? 'absolute left-2 top-1/2 -translate-y-1/2 p-2' : 'p-2.5 mr-3'}`}
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={isMobile ? 18 : 20} />
         </button>
 
         {/* ── The book ───────────────────────────────────────────────────────── */}
@@ -791,15 +793,15 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
         <button
           onClick={() => navigate('forward')}
           disabled={spreadIdx >= maxSpread || isFlipping}
-          className="shrink-0 p-2.5 rounded-full bg-white shadow-md hover:shadow-lg disabled:opacity-25 disabled:cursor-not-allowed text-gray-600 hover:text-gray-900 transition-all ml-3 z-10"
+          className={`shrink-0 rounded-full bg-white shadow-md hover:shadow-lg disabled:opacity-25 disabled:cursor-not-allowed text-gray-600 hover:text-gray-900 transition-all z-20 ${isMobile ? 'absolute right-2 top-1/2 -translate-y-1/2 p-2' : 'p-2.5 ml-3'}`}
         >
-          <ChevronRight size={20} />
+          <ChevronRight size={isMobile ? 18 : 20} />
         </button>
       </div>
 
       {/* ── Bottom bar ───────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-white border-t border-gray-200 shrink-0">
-        <span className="text-xs text-gray-400 w-24 font-medium">{label}</span>
+      <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 bg-white border-t border-gray-200 shrink-0 gap-2">
+        <span className="text-xs text-gray-400 w-16 sm:w-24 font-medium truncate">{label}</span>
 
         {/* Dot / page pagination */}
         <div className="flex items-center gap-1.5 overflow-x-auto px-1">
@@ -817,7 +819,7 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
           )}
         </div>
 
-        <span className="text-xs text-gray-400 text-right w-24 font-medium">
+        <span className="text-xs text-gray-400 text-right w-16 sm:w-24 font-medium">
           {spreadIdx + 1} / {maxSpread + 1}
         </span>
       </div>
