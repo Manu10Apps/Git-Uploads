@@ -19,6 +19,7 @@ export default function AIGeneratorPage() {
   const [isForbidden, setIsForbidden] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [retryCountdown, setRetryCountdown] = useState(0);
 
   const [form, setForm] = useState({
     title: '',
@@ -50,6 +51,10 @@ export default function AIGeneratorPage() {
       setMessage({ type: 'error', text: 'Please fill in title and topic' });
       return;
     }
+    if (retryCountdown > 0) {
+      setMessage({ type: 'error', text: `Rate limited. Please wait ${retryCountdown}s before trying again.` });
+      return;
+    }
 
     setIsGenerating(true);
     setMessage(null);
@@ -72,6 +77,16 @@ export default function AIGeneratorPage() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (res.status === 429 && data.retryAfterSecs) {
+          const secs = Number(data.retryAfterSecs);
+          setRetryCountdown(secs);
+          const interval = setInterval(() => {
+            setRetryCountdown((prev) => {
+              if (prev <= 1) { clearInterval(interval); return 0; }
+              return prev - 1;
+            });
+          }, 1000);
+        }
         setMessage({ type: 'error', text: data.error || 'Failed to generate article.' });
         return;
       }
@@ -242,13 +257,18 @@ export default function AIGeneratorPage() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isGenerating}
+                  disabled={isGenerating || retryCountdown > 0}
                   className="w-full px-6 py-3 bg-red-700 hover:bg-red-800 disabled:bg-neutral-400 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   {isGenerating ? (
                     <>
                       <Loader className="w-5 h-5 animate-spin" />
                       Generating...
+                    </>
+                  ) : retryCountdown > 0 ? (
+                    <>
+                      <Loader className="w-5 h-5 animate-spin" />
+                      Rate limited — retry in {retryCountdown}s
                     </>
                   ) : (
                     <>
