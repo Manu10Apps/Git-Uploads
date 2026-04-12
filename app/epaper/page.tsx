@@ -1,5 +1,4 @@
 import React from 'react';
-import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getCurrentEpaperEdition, getActiveEpaperEditions } from '@/lib/epaper';
@@ -10,39 +9,9 @@ import { Calendar, Archive } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-const SITE_URL = 'https://intambwemedia.com';
-const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
-
-export const metadata: Metadata = {
+export const metadata = {
   title: 'E-Paper - Weekly Digital Edition | Intambwe Media',
-  description: 'Read the latest weekly digital edition of Intambwe Media newspaper covering news from East Africa.',
-  openGraph: {
-    type: 'website',
-    locale: 'ky_RW',
-    url: `${SITE_URL}/epaper`,
-    siteName: 'Intambwe Media',
-    title: 'E-Paper - Weekly Digital Edition | Intambwe Media',
-    description: 'Read the latest weekly digital edition of Intambwe Media newspaper covering news from East Africa.',
-    images: [
-      {
-        url: DEFAULT_OG_IMAGE,
-        width: 1200,
-        height: 630,
-        alt: 'Intambwe Media E-Paper',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    site: '@intambwemedias',
-    creator: '@intambwemedias',
-    title: 'E-Paper - Weekly Digital Edition | Intambwe Media',
-    description: 'Read the latest weekly digital edition of Intambwe Media newspaper covering news from East Africa.',
-    images: [DEFAULT_OG_IMAGE],
-  },
-  alternates: {
-    canonical: `${SITE_URL}/epaper`,
-  },
+  description: 'Read the latest weekly digital edition of Intambwe Media newspaper.',
 };
 
 export default async function EpaperPage() {
