@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import { normalizeArticleImageUrl } from '@/lib/utils';
+import { resolveOgImageUrl, validateImageUrl } from '@/lib/social-media-metadata';
 import ArticlePageClient from './ArticlePageClient';
 
 const SITE_URL = 'https://intambwemedia.com';
@@ -44,15 +45,12 @@ async function getArticleBySlug(slug: string) {
   }
 }
 
+/**
+ * Resolves article image to absolute URL suitable for social media sharing
+ * Uses new validation to ensure images are publicly accessible
+ */
 function resolveAbsoluteImageUrl(image: string | null | undefined): string {
-  const normalized = normalizeArticleImageUrl(image);
-  if (!normalized) return DEFAULT_OG_IMAGE;
-
-  // Already absolute
-  if (/^https?:\/\//i.test(normalized)) return normalized;
-
-  // Relative path → absolute
-  return `${SITE_URL}${normalized.startsWith('/') ? '' : '/'}${normalized}`;
+  return resolveOgImageUrl(image, normalizeArticleImageUrl);
 }
 
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
@@ -64,6 +62,14 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     return {
       title: 'Inkuru Ntiyabonetse | Intambwe Media',
       description: 'Inkuru ushaka ntiyabonetse.',
+      openGraph: {
+        images: [{
+          url: DEFAULT_OG_IMAGE,
+          width: 1200,
+          height: 630,
+          alt: 'Intambwe Media',
+        }],
+      },
     };
   }
 
@@ -80,14 +86,20 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     }
   }
 
+  // CRITICAL: Ensure image URL is absolute and valid for social media crawlers
   const imageUrl = resolveAbsoluteImageUrl(article.image);
   const articleUrl = validLang
     ? `${SITE_URL}/article/${slug}?lang=${validLang}`
     : `${SITE_URL}/article/${slug}`;
 
+  // Ensure description is not too long for social media
+  const truncatedDescription = description
+    ? description.substring(0, 160).replace(/\s+$/, '')
+    : 'Amakuru Agezweho | Igihe Cyose';
+
   return {
     title: `${title} | Intambwe Media`,
-    description,
+    description: truncatedDescription,
     authors: [{ name: article.author }],
     openGraph: {
       type: 'article',
@@ -95,24 +107,26 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
       url: articleUrl,
       siteName: 'Intambwe Media',
       title,
-      description,
+      description: truncatedDescription,
       images: [
         {
           url: imageUrl,
           width: 1200,
           height: 630,
           alt: title,
+          type: 'image/jpeg',
         },
       ],
       publishedTime: article.publishedAt?.toISOString(),
       authors: [article.author],
+      section: article.category?.name || 'News',
     },
     twitter: {
       card: 'summary_large_image',
       site: '@intambwemedias',
       creator: '@intambwemedias',
       title,
-      description,
+      description: truncatedDescription,
       images: [imageUrl],
     },
     alternates: {
@@ -127,7 +141,67 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   };
 }
 
-export default async function ArticlePage({ params }: PageProps) {
+export default async function ArticlePage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  return <ArticlePageClient slug={slug} />;
+  const { lang } = await searchParams;
+  const article = await getArticleBySlug(slug);
+  
+  // Generate JSON-LD structured data for link previews
+  let jsonLdData: object | null = null;
+  if (article) {
+    const validLang = lang && ['en', 'sw'].includes(lang) ? lang : null;
+    let title = article.seoTitle || article.title;
+    let description = article.seoDescription || article.excerpt;
+    
+    if (validLang && article.id) {
+      const translation = await getTranslation(article.id, validLang);
+      if (translation) {
+        title = translation.title || title;
+        description = translation.excerpt || description;
+      }
+    }
+    
+    const imageUrl = resolveAbsoluteImageUrl(article.image);
+    const articleUrl = validLang
+      ? `${SITE_URL}/article/${slug}?lang=${validLang}`
+      : `${SITE_URL}/article/${slug}`;
+    
+    jsonLdData = {
+      '@context': 'https://schema.org',
+      '@type': 'NewsArticle',
+      headline: title,
+      description: description,
+      image: [imageUrl],
+      datePublished: article.publishedAt?.toISOString() || new Date().toISOString(),
+      dateModified: article.publishedAt?.toISOString() || new Date().toISOString(),
+      author: {
+        '@type': 'Person',
+        name: article.author,
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Intambwe Media',
+        logo: {
+          '@type': 'ImageObject',
+          url: `${SITE_URL}/logo.png`,
+        },
+      },
+      mainEntityOfPage: {
+        '@type': 'WebPage',
+        '@id': articleUrl,
+      },
+    };
+  }
+
+  return (
+    <>
+      {jsonLdData && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
+        />
+      )}
+      <ArticlePageClient slug={slug} />
+    </>
+  );
 }

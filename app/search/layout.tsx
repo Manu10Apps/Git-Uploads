@@ -1,41 +1,11 @@
 import type { Metadata } from 'next';
 
-const SITE_URL = 'https://intambwemedia.com';
-const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
-
-const title = 'Search Results | Intambwe Media';
-const description = 'Search for news articles, investigations, and breaking news from Intambwe Media.';
-
 export const metadata: Metadata = {
-  title,
-  description,
+  title: 'Search Results | Intambwe Media',
+  description: 'Search for news articles, investigations, and breaking news from Intambwe Media.',
   robots: {
     index: false,
     follow: true,
-  },
-  openGraph: {
-    type: 'website',
-    locale: 'ky_RW',
-    url: `${SITE_URL}/search`,
-    siteName: 'Intambwe Media',
-    title,
-    description,
-    images: [
-      {
-        url: DEFAULT_OG_IMAGE,
-        width: 1200,
-        height: 630,
-        alt: 'Intambwe Media - Search',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    site: '@intambwemedias',
-    creator: '@intambwemedias',
-    title,
-    description,
-    images: [DEFAULT_OG_IMAGE],
   },
 };
 
