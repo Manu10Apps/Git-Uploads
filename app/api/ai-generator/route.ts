@@ -28,6 +28,9 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfterSecs: number 
   return { allowed: true, retryAfterSecs: 0 };
 }
 
+// Max ms we're willing to wait inside a serverless function before giving up
+const MAX_RETRY_WAIT_MS = 8_000;
+
 async function createCompletionWithRetry(
   client: OpenAI,
   params: Parameters<OpenAI['chat']['completions']['create']>[0],
@@ -40,9 +43,17 @@ async function createCompletionWithRetry(
     } catch (err: any) {
       lastError = err;
       if (err?.status === 429) {
-        // Honour Retry-After header if present, otherwise use exponential backoff
-        const retryAfter = Number(err?.headers?.['retry-after'] ?? 0);
-        const waitMs = retryAfter > 0 ? retryAfter * 1000 : Math.pow(2, attempt + 1) * 1000;
+        const retryAfterSecs = Number(err?.headers?.['retry-after'] ?? 0);
+        const waitMs = retryAfterSecs > 0 ? retryAfterSecs * 1000 : Math.pow(2, attempt + 1) * 1000;
+        // If the required wait exceeds what a serverless function can safely hold,
+        // surface the retry-after time to the caller immediately instead of hanging.
+        if (waitMs > MAX_RETRY_WAIT_MS) {
+          const surfacedSecs = retryAfterSecs > 0 ? retryAfterSecs : Math.ceil(waitMs / 1000);
+          const e: any = new Error('openai_rate_limited');
+          e.status = 429;
+          e.retryAfterSecs = surfacedSecs;
+          throw e;
+        }
         if (attempt < maxRetries - 1) {
           await sleep(waitMs);
           continue;
@@ -151,9 +162,12 @@ Requirements:
       return NextResponse.json({ error: 'Invalid OpenAI API key.' }, { status: 502 });
     }
     if (err?.status === 429) {
-      const retryAfter = Number(err?.headers?.['retry-after'] ?? 60);
+      const retryAfter = err?.retryAfterSecs ?? Number(err?.headers?.['retry-after'] ?? 60);
       return NextResponse.json(
-        { error: `AI service is temporarily busy. Please try again in ${retryAfter}s.` },
+        {
+          error: `OpenAI rate limit reached. Please wait ${retryAfter}s before trying again.`,
+          retryAfterSecs: retryAfter,
+        },
         { status: 429, headers: { 'Retry-After': String(retryAfter) } },
       );
     }
