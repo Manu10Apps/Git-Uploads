@@ -35,6 +35,7 @@ function getMaxSpread(total: number): number {
 }
 
 const FLIP_DURATION_MS = 620;
+const AUTOPLAY_INTERVAL_MS = 7000;
 
 export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps) {
   // ── Refs ─────────────────────────────────────────────────────────────────────
@@ -72,7 +73,7 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
 
   // ── Detect mobile ────────────────────────────────────────────────────────────
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
+    const check = () => setIsMobile(window.innerWidth < 640);
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
@@ -206,17 +207,33 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
     clearInterval(autoPlayRef.current);
     if (!autoPlay) return;
     autoPlayRef.current = setInterval(() => {
+      if (isFlipping) return;
       setSpreadIdx(prev => {
         const next = prev + 1;
         if (next > getMaxSpread(totalPages)) {
           setAutoPlay(false);
           return prev;
         }
-        return next;
+
+        // Keep autoplay active while still using flip sound + animation.
+        playFlipSound();
+        setFlipFrom(prev);
+        setFlipTo(next);
+        setFlipDir('forward');
+        setFlipStage(0);
+        requestAnimationFrame(() => requestAnimationFrame(() => setFlipStage(1)));
+        clearTimeout(flipTimer.current);
+        flipTimer.current = setTimeout(() => {
+          setSpreadIdx(next);
+          setFlipDir(null);
+          setFlipStage(0);
+        }, FLIP_DURATION_MS + 20);
+
+        return prev;
       });
-    }, 4000);
+    }, AUTOPLAY_INTERVAL_MS);
     return () => clearInterval(autoPlayRef.current);
-  }, [autoPlay, totalPages]);
+  }, [autoPlay, totalPages, isFlipping, playFlipSound]);
 
   // Stop auto-play when user manually navigates
   const stopAutoPlay = useCallback(() => {
@@ -462,6 +479,13 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
       <div
         className="flex-1 flex items-center justify-center bg-[#ddd8cc] px-4 py-6 overflow-hidden min-h-64"
         style={{ perspective: '2200px' }}
+        onClick={(e) => {
+          if (isFlipping) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const isLeftHalf = x < rect.width / 2;
+          navigate(isLeftHalf ? 'backward' : 'forward');
+        }}
       >
         {/* Prev arrow */}
         <button
