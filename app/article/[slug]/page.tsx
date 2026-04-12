@@ -128,7 +128,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
       creator: '@intambwemedias',
       title,
       description: truncatedDescription,
-      image: imageUrl,
+      images: [imageUrl],
     },
     alternates: {
       canonical: articleUrl,
