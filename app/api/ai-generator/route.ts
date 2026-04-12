@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import type { ChatCompletion } from 'openai/resources/chat/completions';
+import { verifyToken } from '@/lib/auth';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -54,20 +55,27 @@ async function createCompletionWithRetry(
 }
 
 export async function POST(req: NextRequest) {
-  // Rate limiting
-  const ip =
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    req.headers.get('x-real-ip') ||
-    'unknown';
-  const rateCheck = checkRateLimit(ip);
-  if (!rateCheck.allowed) {
-    return NextResponse.json(
-      { error: `Too many requests. Please wait ${rateCheck.retryAfterSecs}s before trying again.` },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(rateCheck.retryAfterSecs) },
-      },
-    );
+  // Skip rate limiting for authenticated admins
+  const authHeader = req.headers.get('authorization');
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const isAuthenticatedAdmin = token ? verifyToken(token) !== null : false;
+
+  if (!isAuthenticatedAdmin) {
+    // Rate limiting for unauthenticated requests
+    const ip =
+      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      req.headers.get('x-real-ip') ||
+      'unknown';
+    const rateCheck = checkRateLimit(ip);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: `Too many requests. Please wait ${rateCheck.retryAfterSecs}s before trying again.` },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(rateCheck.retryAfterSecs) },
+        },
+      );
+    }
   }
 
   if (!process.env.OPENAI_API_KEY) {
