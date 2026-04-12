@@ -92,21 +92,21 @@ ${JSON.stringify({ title: article.title, excerpt: article.excerpt, content: arti
   const jsonStr = codeBlockMatch ? codeBlockMatch[1].trim() : responseText;
   const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    console.error('[puter-translate] No JSON found in response:', responseText.slice(0, 500));
-    throw new Error('Failed to parse translation response');
+    // Silent error - don't log to console
+    throw new Error('Translation service temporarily unavailable');
   }
 
   let parsed: PuterTranslationResult;
   try {
     parsed = JSON.parse(jsonMatch[0]) as PuterTranslationResult;
   } catch (parseErr) {
-    console.error('[puter-translate] JSON parse error:', parseErr, jsonMatch[0].slice(0, 500));
-    throw new Error('Failed to parse translation JSON');
+    // Silent error - don't log to console
+    throw new Error('Translation service temporarily unavailable');
   }
 
   if (!parsed.title || !parsed.content) {
-    console.error('[puter-translate] Incomplete response:', parsed);
-    throw new Error('Incomplete translation response');
+    // Silent error - don't log to console
+    throw new Error('Translation service temporarily unavailable');
   }
 
   // Ensure excerpt has a value
