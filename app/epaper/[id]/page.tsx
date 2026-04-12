@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { formatIssueDate } from '@/lib/epaper-client';
@@ -8,23 +9,66 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
+const SITE_URL = 'https://intambwemedia.com';
+const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
+
 interface RouteParams {
   params: Promise<{
     id: string;
   }>;
 }
 
-export async function generateMetadata({ params }: RouteParams) {
+export async function generateMetadata({ params }: RouteParams): Promise<Metadata> {
   const resolvedParams = await params;
   const edition = await prisma.epaperEdition.findUnique({
     where: { id: parseInt(resolvedParams.id) },
   });
 
-  if (!edition) return { title: 'Edition not found' };
+  if (!edition) {
+    return {
+      title: 'Edition not found',
+      description: 'The requested E-Paper edition could not be found.',
+    };
+  }
+
+  const imageUrl = edition.coverImage && /^https?:\/\//i.test(edition.coverImage) 
+    ? edition.coverImage 
+    : DEFAULT_OG_IMAGE;
+  
+  const editionUrl = `${SITE_URL}/epaper/${edition.id}`;
+  const description = `Read the E-Paper edition from ${formatIssueDate(edition.issueDate)}. ${edition.pageCount > 0 ? `${edition.pageCount} pages.` : ''}`;
 
   return {
     title: `${edition.title} | Intambwe Media E-Paper`,
-    description: `Read the E-Paper edition from ${formatIssueDate(edition.issueDate)}`,
+    description,
+    openGraph: {
+      type: 'article',
+      locale: 'ky_RW',
+      url: editionUrl,
+      siteName: 'Intambwe Media',
+      title: edition.title,
+      description,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: edition.title,
+        },
+      ],
+      publishedTime: edition.createdAt?.toISOString(),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      site: '@intambwemedias',
+      creator: '@intambwemedias',
+      title: edition.title,
+      description,
+      images: [imageUrl],
+    },
+    alternates: {
+      canonical: editionUrl,
+    },
   };
 }
 
