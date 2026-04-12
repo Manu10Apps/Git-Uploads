@@ -341,10 +341,9 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '') || 'epaper';
 
-  const dataUrlToBytes = async (dataUrl: string): Promise<Uint8Array> => {
+  const dataUrlToArrayBuffer = async (dataUrl: string): Promise<ArrayBuffer> => {
     const res = await fetch(dataUrl);
-    const buffer = await res.arrayBuffer();
-    return new Uint8Array(buffer);
+    return await res.arrayBuffer();
   };
 
   const getExportImageDataUrl = useCallback(async (pageNum: number): Promise<string> => {
@@ -388,8 +387,8 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
       if (downloadFormat === 'pdf') {
         const outDoc = await PDFDocument.create();
         for (const imgData of images) {
-          const bytes = await dataUrlToBytes(imgData);
-          const embedded = await outDoc.embedJpg(bytes);
+          const imageBuffer = await dataUrlToArrayBuffer(imgData);
+          const embedded = await outDoc.embedJpg(imageBuffer);
           const page = outDoc.addPage([embedded.width, embedded.height]);
           page.drawImage(embedded, {
             x: 0,
@@ -402,15 +401,14 @@ export function FlipbookReader({ pdfUrl, title, issueDate }: FlipbookReaderProps
         const label = orderedPages.length === 1
           ? `p${orderedPages[0]}`
           : `p${orderedPages[0]}-p${orderedPages[orderedPages.length - 1]}`;
-        downloadBlob(new Blob([pdfBytes], { type: 'application/pdf' }), `${safeTitle}-${label}.pdf`);
+        const pdfArrayBuffer = pdfBytes.buffer.slice(pdfBytes.byteOffset, pdfBytes.byteOffset + pdfBytes.byteLength) as ArrayBuffer;
+        downloadBlob(new Blob([pdfArrayBuffer], { type: 'application/pdf' }), `${safeTitle}-${label}.pdf`);
       } else {
-        images.forEach((imgData, idx) => {
-          const bytesPromise = dataUrlToBytes(imgData);
-          bytesPromise.then(bytes => {
-            const pageNum = orderedPages[idx];
-            downloadBlob(new Blob([bytes], { type: 'image/jpeg' }), `${safeTitle}-p${pageNum}.jpg`);
-          });
-        });
+        for (let idx = 0; idx < images.length; idx++) {
+          const pageNum = orderedPages[idx];
+          const jpgArrayBuffer = await dataUrlToArrayBuffer(images[idx]);
+          downloadBlob(new Blob([jpgArrayBuffer], { type: 'image/jpeg' }), `${safeTitle}-p${pageNum}.jpg`);
+        }
       }
       setShowDownloadPanel(false);
     } catch {
