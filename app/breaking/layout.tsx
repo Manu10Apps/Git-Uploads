@@ -3,20 +3,16 @@ import type { Metadata } from 'next';
 const SITE_URL = 'https://intambwemedia.com';
 const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
 
-const title = 'Search Results | Intambwe Media';
-const description = 'Search for news articles, investigations, and breaking news from Intambwe Media.';
+const title = 'Breaking News | Intambwe Media';
+const description = 'Latest breaking news stories from East Africa';
 
 export const metadata: Metadata = {
   title,
   description,
-  robots: {
-    index: false,
-    follow: true,
-  },
   openGraph: {
     type: 'website',
     locale: 'ky_RW',
-    url: `${SITE_URL}/search`,
+    url: `${SITE_URL}/breaking`,
     siteName: 'Intambwe Media',
     title,
     description,
@@ -25,7 +21,7 @@ export const metadata: Metadata = {
         url: DEFAULT_OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: 'Intambwe Media - Search',
+        alt: 'Intambwe Media - Breaking News',
       },
     ],
   },
@@ -37,12 +33,11 @@ export const metadata: Metadata = {
     description,
     images: [DEFAULT_OG_IMAGE],
   },
+  alternates: {
+    canonical: `${SITE_URL}/breaking`,
+  },
 };
 
-export default function SearchLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function BreakingLayout({ children }: { children: React.ReactNode }) {
   return children;
 }
