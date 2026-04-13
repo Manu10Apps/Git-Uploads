@@ -1143,7 +1143,6 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
           {/* Advert section below Most Viewed */}
           <section className="py-4 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-3 text-center">{t.article.advertLabel}</p>
               {/* Mobile: Full width single ad */}
               <div className="md:hidden">
                 <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-64 flex items-center justify-center border border-neutral-200 dark:border-neutral-700 shadow-sm">
