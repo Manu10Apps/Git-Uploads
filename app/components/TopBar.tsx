@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
+import { hasLiveYouTubeVideo } from '@/lib/utils';
 
 // Hoisted outside the component — created once, not on every fetchWeatherData call.
 const WEATHER_CONDITIONS: Record<number, { condition: string; conditionKy: string; conditionSw: string; icon: string }> = {
@@ -117,6 +118,7 @@ export function TopBar() {
   }));
   const [previousRates, setPreviousRates] = useState<{ [key: string]: number }>({});
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number; city: string; country: string; timezone: string }>({ ...DEFAULT_LOCATION, country: 'Rwanda' });
+  const [isLiveVideoActive, setIsLiveVideoActive] = useState(false);
 
   // Detect user's location
   const detectLocation = async () => {
@@ -302,6 +304,26 @@ export function TopBar() {
     deferredDetectLocation();
   }, []);
 
+  // Check for live video status
+  useEffect(() => {
+    const checkLiveVideo = async () => {
+      console.log('[TopBar] Checking for live videos...');
+      const isLive = await hasLiveYouTubeVideo();
+      console.log('[TopBar] Live check result:', isLive);
+      setIsLiveVideoActive(isLive);
+    };
+
+    // Check immediately on mount
+    void checkLiveVideo();
+
+    // Check every 30 seconds for live video status changes
+    const intervalId = setInterval(() => {
+      void checkLiveVideo();
+    }, 30000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   // Update data whenever location changes.
   // Defer the very first call so it doesn't fire during initial hydration
   // and add to TBT — the fallback data is already displayed.
@@ -367,7 +389,7 @@ export function TopBar() {
     <div className="min-h-[40px] bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-950 dark:to-neutral-900 border-b border-neutral-700 dark:border-neutral-800 text-white/90 text-xs">
       <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2">
         {/* Mobile layout - Simplified */}
-        <div className="lg:hidden grid grid-cols-[auto_1fr_auto] items-center gap-2 min-w-0">
+        <div className="lg:hidden grid grid-cols-[auto_1fr_auto_auto] items-center gap-2 min-w-0">
           {/* Simplified Date */}
           <div className="flex items-center gap-1 flex-shrink-0 max-[380px]:hidden">
             <span className="text-neutral-400">📅</span>
@@ -380,6 +402,19 @@ export function TopBar() {
             <span className="text-white/80 text-xs flex-shrink-0">{data.weather.temp}°C</span>
             <span className="text-neutral-400 text-xs truncate hidden sm:inline">{weatherConditionText}</span>
           </div>
+
+          {/* Live indicator - Visible on mobile/tablet */}
+          {isLiveVideoActive && (
+            <div className="flex items-center gap-1 flex-shrink-0 border-l border-neutral-600 pl-2">
+              <div className="flex items-center gap-1">
+                <div className="relative w-2 h-2">
+                  <div className="absolute inset-0 bg-red-600 rounded-full animate-pulse" />
+                  <div className="absolute inset-0 bg-red-500 rounded-full blur-sm" />
+                </div>
+                <span className="text-red-600 font-bold text-xs">LIVE</span>
+              </div>
+            </div>
+          )}
 
           {/* USD Only */}
           <div className="flex items-center gap-1 flex-shrink-0 border-l border-neutral-600 pl-2">
@@ -412,6 +447,17 @@ export function TopBar() {
               {data.location.city}, {data.location.country}
             </span>
           </div>
+
+          {/* Live indicator - Desktop */}
+          {isLiveVideoActive && (
+            <div className="flex items-center gap-2 whitespace-nowrap border-l border-neutral-600 pl-4">
+              <div className="relative w-3 h-3">
+                <div className="absolute inset-0 bg-red-600 rounded-full animate-pulse" />
+                <div className="absolute inset-0 bg-red-500 rounded-full blur-sm opacity-70" />
+              </div>
+              <span className="text-red-600 font-bold text-sm">LIVE</span>
+            </div>
+          )}
 
           {/* Currency Exchanges */}
           <div className="flex items-center gap-3 border-l border-neutral-600 pl-4 ml-auto">
