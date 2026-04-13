@@ -247,13 +247,13 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
   };
 
   const getCategoryLabel = (category?: string | null) => {
-    if (!category) return 'GENERAL';
+    if (!category) return 'General';
     const slug = category.trim().toLowerCase();
     const navKey = slugToNavKey[slug];
     if (navKey && (t.nav as Record<string, string>)[navKey]) {
-      return (t.nav as Record<string, string>)[navKey].toUpperCase();
+      return (t.nav as Record<string, string>)[navKey];
     }
-    return category.toUpperCase();
+    return category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
   };
 
   return (

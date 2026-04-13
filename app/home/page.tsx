@@ -92,11 +92,11 @@ export default function HomePage() {
   };
 
   const getCategoryLabel = (category?: string | null) => {
-    if (!category) return 'GENERAL';
+    if (!category) return 'General';
     const slug = category.trim().toLowerCase();
     const navKey = slugToNavKey[slug];
     if (navKey && (t.nav as Record<string, string>)[navKey]) {
-      return (t.nav as Record<string, string>)[navKey].toUpperCase();
+      return (t.nav as Record<string, string>)[navKey];
     }
     return formatCategoryLabel(category);
   };
