@@ -16,6 +16,7 @@ import { ThemeProvider } from '@/app/components/ThemeProvider';
 import { TopBar } from '@/app/components/TopBar';
 import { AnalyticsProvider } from '@/app/components/AnalyticsProvider';
 import { HreflangTags } from '@/app/components/HreflangTags';
+import { OrganizationSchema } from '@/app/components/OrganizationSchema';
 import { getMaintenanceSettings, shouldBypassMaintenance } from '@/lib/maintenance';
 
 export const metadata: Metadata = {
@@ -111,28 +112,7 @@ export default async function RootLayout({
         <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
         <HreflangTags />
         {showMaintenance && <meta name="robots" content="noindex, nofollow" />}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'NewsMediaOrganization',
-              name: 'Intambwe Media',
-              url: 'https://intambwemedia.com',
-              logo: 'https://intambwemedia.com/logo.png',
-              description: 'Amakuru Agezweho | Igihe Cyose',
-              sameAs: [
-                'https://twitter.com/intambwemedias',
-                'https://facebook.com/intambwemedia',
-                'https://youtube.com/@intambwemedia',
-              ],
-              contactPoint: {
-                '@type': 'ContactPoint',
-                contactType: 'Editorial',
-              },
-            }),
-          }}
-        />
+        <OrganizationSchema />
         <Script
           src="https://analytics.intambwemedia.com/script.js"
           data-website-id="9bd85831-989a-43aa-9ae5-65a111782549"
