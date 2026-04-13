@@ -104,6 +104,14 @@ export function resolveOgImageUrl(
   } catch (error) {
     // Log the error for debugging
     console.error(`[OG:IMAGE] Unexpected error resolving "${image}":`, error instanceof Error ? error.message : error);
+  }
+
+  // Default fallback if all else fails
+  return DEFAULT_OG_IMAGE;
+}
+
+/**
+ * Get MIME type for image (for og:image:type meta tag)
  */
 export function getOgImageType(url: string): string {
   return getImageMimeType(url);
