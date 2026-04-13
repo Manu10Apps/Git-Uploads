@@ -455,8 +455,8 @@ export function TopBar() {
       <style>{LIVE_ANIMATIONS}</style>
       <div className="min-h-[40px] bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-950 dark:to-neutral-900 border-b border-neutral-700 dark:border-neutral-800 text-white/90 text-xs">
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2">
-        {/* Mobile layout - Simplified */}
-        <div className="lg:hidden grid grid-cols-[auto_1fr_auto_auto] items-center gap-2 min-w-0">
+          {/* Mobile layout - Simplified */}
+          <div className="lg:hidden grid grid-cols-[auto_1fr_auto_auto] items-center gap-2 min-w-0">
           {/* Simplified Date */}
           <div className="flex items-center gap-1 flex-shrink-0 max-[380px]:hidden">
             <span className="text-neutral-400">📅</span>
