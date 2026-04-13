@@ -255,8 +255,11 @@ export function normalizeArticleImageUrl(imageUrl?: string | null): string | nul
     return embeddedUploadPath;
   }
 
-  if (/^[^/]+\.(avif|bmp|gif|jpe?g|png|svg|webp)$/i.test(normalizedSlashes)) {
-    return `/uploads/${normalizedSlashes}`;
+  // CRITICAL FIX: Handle simple filename format (e.g., "article-123-xyz.jpeg")
+  // This is the most common storage format from image uploads
+  if (/^[^/\\]+\.(avif|bmp|gif|jpe?g|png|svg|webp)$/i.test(normalizedSlashes)) {
+    const resolved = `/uploads/${normalizedSlashes}`;
+    return resolved;
   }
 
   if (/^[\w.-]+\.[a-z]{2,}(\/|$)/i.test(normalizedSlashes)) {
