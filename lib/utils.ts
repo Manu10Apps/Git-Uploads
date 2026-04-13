@@ -328,3 +328,34 @@ export function convertYouTubeTimeToKinyarwanda(timeText: string | undefined): s
 
   return timeText;
 }
+
+/**
+ * Checks if there are any live YouTube videos available
+ * Returns true if at least one video has [LIVE] marker in publishedAt field
+ */
+export async function hasLiveYouTubeVideo(): Promise<boolean> {
+  try {
+    const response = await fetch('/api/youtube/latest', {
+      signal: AbortSignal.timeout(8000),
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      console.warn('[LIVE] API response not ok:', response.status);
+      return false;
+    }
+
+    const result = (await response.json()) as { success?: boolean; data?: Array<{ publishedAt?: string; title?: string }> };
+    const videos = result.data || [];
+
+    console.log('[LIVE] YouTube videos fetched:', videos.length, 'videos');
+    console.log('[LIVE] Video details:', videos.map((v) => ({ title: v.title, publishedAt: v.publishedAt })));
+
+    const hasLive = Array.isArray(videos) && videos.some((video) => video.publishedAt?.startsWith('[LIVE]'));
+    console.log('[LIVE] Has live video:', hasLive);
+    return hasLive;
+  } catch (error) {
+    console.error('[LIVE] Error checking live video status:', error);
+    return false;
+  }
+}
