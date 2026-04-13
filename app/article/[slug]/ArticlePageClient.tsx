@@ -1146,13 +1146,13 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-3 text-center">{t.article.advertLabel}</p>
               {/* Mobile: Full width single ad */}
               <div className="md:hidden">
-                <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700 shadow-sm">
+                <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-64 flex items-center justify-center border border-neutral-200 dark:border-neutral-700 shadow-sm">
                   <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
                 </div>
               </div>
               {/* Tablet & Desktop: Two-column grid ad layout */}
               <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-64 flex items-center justify-center border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-shadow">
                   <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
                 </div>
               </div>

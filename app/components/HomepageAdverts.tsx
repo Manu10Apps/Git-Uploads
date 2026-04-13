@@ -43,7 +43,7 @@ export function HomepageAdverts({
               </a>
             ))
           ) : (
-            <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+            <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-64 flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
               <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
             </div>
           )}
@@ -82,7 +82,7 @@ export function HomepageAdverts({
                 </a>
               ))
             ) : (
-              <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-64 flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
                 <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
               </div>
             )}
@@ -109,7 +109,7 @@ export function HomepageAdverts({
                 </a>
               ))
             ) : (
-              <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+              <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-64 flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
                 <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
               </div>
             )}
@@ -133,7 +133,7 @@ export function HomepageAdverts({
                 </a>
               ))
             ) : (
-              <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+              <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-64 flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
                 <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
               </div>
             )}
