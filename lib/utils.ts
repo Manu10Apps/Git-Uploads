@@ -330,10 +330,11 @@ export function convertYouTubeTimeToKinyarwanda(timeText: string | undefined): s
 }
 
 /**
- * Checks if there are any live YouTube videos available
- * Returns true if at least one video has [LIVE] marker in publishedAt field
+ * Gets the URL of the first live YouTube video available
+ * Returns the URL string if a live video exists, null otherwise
+ * Live videos are identified by the [LIVE] marker in publishedAt field
  */
-export async function hasLiveYouTubeVideo(): Promise<boolean> {
+export async function getLiveYouTubeVideoUrl(): Promise<string | null> {
   try {
     const response = await fetch('/api/youtube/latest', {
       signal: AbortSignal.timeout(8000),
@@ -342,20 +343,26 @@ export async function hasLiveYouTubeVideo(): Promise<boolean> {
 
     if (!response.ok) {
       console.warn('[LIVE] API response not ok:', response.status);
-      return false;
+      return null;
     }
 
-    const result = (await response.json()) as { success?: boolean; data?: Array<{ publishedAt?: string; title?: string }> };
+    const result = (await response.json()) as { success?: boolean; data?: Array<{ publishedAt?: string; title?: string; url?: string }> };
     const videos = result.data || [];
 
     console.log('[LIVE] YouTube videos fetched:', videos.length, 'videos');
     console.log('[LIVE] Video details:', videos.map((v) => ({ title: v.title, publishedAt: v.publishedAt })));
 
-    const hasLive = Array.isArray(videos) && videos.some((video) => video.publishedAt?.startsWith('[LIVE]'));
-    console.log('[LIVE] Has live video:', hasLive);
-    return hasLive;
+    const liveVideo = videos.find((video) => video.publishedAt?.startsWith('[LIVE]'));
+
+    if (liveVideo?.url) {
+      console.log('[LIVE] Found live video:', liveVideo.title, '- URL:', liveVideo.url);
+      return liveVideo.url;
+    }
+
+    console.log('[LIVE] No live videos found');
+    return null;
   } catch (error) {
     console.error('[LIVE] Error checking live video status:', error);
-    return false;
+    return null;
   }
 }

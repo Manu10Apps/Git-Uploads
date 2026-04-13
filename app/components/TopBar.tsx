@@ -4,7 +4,66 @@ import React, { useEffect, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
-import { hasLiveYouTubeVideo } from '@/lib/utils';
+import { getLiveYouTubeVideoUrl } from '@/lib/utils';
+
+// Custom live indicator animations
+const LIVE_ANIMATIONS = `
+  @keyframes liveGlow {
+    0%, 100% {
+      box-shadow: 0 0 5px rgba(220, 38, 38, 0.5), 0 0 10px rgba(239, 68, 68, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 10px rgba(220, 38, 38, 0.8), 0 0 20px rgba(239, 68, 68, 0.6), 0 0 30px rgba(220, 38, 38, 0.4);
+    }
+  }
+  
+  @keyframes livePulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.2);
+    }
+  }
+  
+  @keyframes liveRing {
+    0% {
+      transform: scale(0.8);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1.6);
+      opacity: 0;
+    }
+  }
+  
+  @keyframes livePulseText {
+    0%, 100% {
+      text-shadow: 0 0 5px rgba(220, 38, 38, 0.5);
+    }
+    50% {
+      text-shadow: 0 0 10px rgba(220, 38, 38, 0.9), 0 0 15px rgba(239, 68, 68, 0.6);
+    }
+  }
+  
+  .live-indicator {
+    animation: liveGlow 1.5s ease-in-out infinite;
+  }
+  
+  .live-dot {
+    animation: livePulse 1.5s ease-in-out infinite;
+  }
+  
+  .live-ring {
+    animation: liveRing 1.5s ease-in-out infinite;
+  }
+  
+  .live-text {
+    animation: livePulseText 1.5s ease-in-out infinite;
+  }
+`;
 
 // Hoisted outside the component — created once, not on every fetchWeatherData call.
 const WEATHER_CONDITIONS: Record<number, { condition: string; conditionKy: string; conditionSw: string; icon: string }> = {
@@ -118,7 +177,7 @@ export function TopBar() {
   }));
   const [previousRates, setPreviousRates] = useState<{ [key: string]: number }>({});
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number; city: string; country: string; timezone: string }>({ ...DEFAULT_LOCATION, country: 'Rwanda' });
-  const [isLiveVideoActive, setIsLiveVideoActive] = useState(false);
+  const [liveVideoUrl, setLiveVideoUrl] = useState<string | null>(null);
 
   // Detect user's location
   const detectLocation = async () => {
@@ -308,9 +367,9 @@ export function TopBar() {
   useEffect(() => {
     const checkLiveVideo = async () => {
       console.log('[TopBar] Checking for live videos...');
-      const isLive = await hasLiveYouTubeVideo();
-      console.log('[TopBar] Live check result:', isLive);
-      setIsLiveVideoActive(isLive);
+      const url = await getLiveYouTubeVideoUrl();
+      console.log('[TopBar] Live video URL:', url);
+      setLiveVideoUrl(url);
     };
 
     // Check immediately on mount
@@ -323,6 +382,12 @@ export function TopBar() {
 
     return () => clearInterval(intervalId);
   }, []);
+
+  const handleLiveClick = () => {
+    if (liveVideoUrl) {
+      window.open(liveVideoUrl, '_blank');
+    }
+  };
 
   // Update data whenever location changes.
   // Defer the very first call so it doesn't fire during initial hydration
@@ -386,8 +451,10 @@ export function TopBar() {
       : data.weather.conditionKy;
 
   return (
-    <div className="min-h-[40px] bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-950 dark:to-neutral-900 border-b border-neutral-700 dark:border-neutral-800 text-white/90 text-xs">
-      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2">
+    <>
+      <style>{LIVE_ANIMATIONS}</style>
+      <div className="min-h-[40px] bg-gradient-to-r from-neutral-900 to-neutral-800 dark:from-neutral-950 dark:to-neutral-900 border-b border-neutral-700 dark:border-neutral-800 text-white/90 text-xs">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2">
         {/* Mobile layout - Simplified */}
         <div className="lg:hidden grid grid-cols-[auto_1fr_auto_auto] items-center gap-2 min-w-0">
           {/* Simplified Date */}
@@ -404,16 +471,25 @@ export function TopBar() {
           </div>
 
           {/* Live indicator - Visible on mobile/tablet */}
-          {isLiveVideoActive && (
-            <div className="flex items-center gap-1 flex-shrink-0 border-l border-neutral-600 pl-2">
-              <div className="flex items-center gap-1">
+          {liveVideoUrl && (
+            <button
+              onClick={handleLiveClick}
+              className="flex items-center gap-1 flex-shrink-0 border-l border-neutral-600 pl-2 cursor-pointer hover:opacity-90 transition-opacity active:opacity-70 rounded px-1.5 py-0.5"
+              title="Click to watch live"
+              aria-label="Watch live video"
+            >
+              <div className="flex items-center gap-1 live-indicator rounded px-1">
                 <div className="relative w-2 h-2">
-                  <div className="absolute inset-0 bg-red-600 rounded-full animate-pulse" />
-                  <div className="absolute inset-0 bg-red-500 rounded-full blur-sm" />
+                  {/* Outer pulsing ring */}
+                  <div className="absolute inset-0 bg-red-600 rounded-full live-ring" />
+                  {/* Main pulsing dot */}
+                  <div className="absolute inset-0 bg-red-600 rounded-full live-dot" style={{ boxShadow: '0 0 6px rgba(220, 38, 38, 0.9), inset 0 0 3px rgba(255, 255, 255, 0.4)' }} />
+                  {/* Inner glow */}
+                  <div className="absolute inset-1 bg-red-400 rounded-full opacity-50 blur-sm" />
                 </div>
-                <span className="text-red-600 font-bold text-xs">LIVE</span>
+                <span className="text-red-600 font-bold text-xs live-text">LIVE</span>
               </div>
-            </div>
+            </button>
           )}
 
           {/* USD Only */}
@@ -449,14 +525,23 @@ export function TopBar() {
           </div>
 
           {/* Live indicator - Desktop */}
-          {isLiveVideoActive && (
-            <div className="flex items-center gap-2 whitespace-nowrap border-l border-neutral-600 pl-4">
-              <div className="relative w-3 h-3">
-                <div className="absolute inset-0 bg-red-600 rounded-full animate-pulse" />
-                <div className="absolute inset-0 bg-red-500 rounded-full blur-sm opacity-70" />
+          {liveVideoUrl && (
+            <button
+              onClick={handleLiveClick}
+              className="flex items-center gap-2.5 whitespace-nowrap border-l border-neutral-600 pl-4 cursor-pointer hover:opacity-90 transition-opacity active:opacity-70 rounded px-2 py-1"
+              title="Click to watch live"
+              aria-label="Watch live video"
+            >
+              <div className="relative w-3 h-3 live-indicator rounded-full">
+                {/* Outer pulsing ring */}
+                <div className="absolute inset-0 bg-red-600 rounded-full live-ring" />
+                {/* Main pulsing dot */}
+                <div className="absolute inset-0 bg-red-600 rounded-full live-dot" style={{ boxShadow: '0 0 10px rgba(220, 38, 38, 1), inset 0 0 4px rgba(255, 255, 255, 0.5)' }} />
+                {/* Inner bright glow */}
+                <div className="absolute inset-1 bg-red-400 rounded-full opacity-60 blur-sm" />
               </div>
-              <span className="text-red-600 font-bold text-sm">LIVE</span>
-            </div>
+              <span className="text-red-600 font-bold text-sm live-text">LIVE</span>
+            </button>
           )}
 
           {/* Currency Exchanges */}
@@ -473,7 +558,7 @@ export function TopBar() {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
