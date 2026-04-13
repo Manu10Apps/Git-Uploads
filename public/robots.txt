@@ -1,20 +1,35 @@
-# Robots.txt for Intambwe Media
+# Robots.txt for Intambwe Media - East African News Platform
 User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /api/
+Disallow: /_next/
 Disallow: /search?
 Allow: /search
+Disallow: *.json$
 
-# Specific rules for search engines
+# Google Bot - prioritized crawling
 User-agent: Googlebot
 Allow: /
-
-User-agent: Bingbot
+Crawl-delay: 0
+User-agent: Googlebot-Image
 Allow: /
 
-# Sitemap
-Sitemap: https://amakuru.news/sitemap.xml
-
-# Crawl delay
+# Bing Bot
+User-agent: Bingbot
 Crawl-delay: 1
+
+# Other search engines
+User-agent: Slurp
+Crawl-delay: 1
+
+# Disallow bad bots
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+# Sitemaps - Primary domain only
+Sitemap: https://intambwemedia.com/sitemap.xml
+Sitemap: https://intambwemedia.com/news-sitemap.xml

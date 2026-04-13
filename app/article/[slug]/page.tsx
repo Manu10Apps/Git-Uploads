@@ -102,6 +102,20 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     title: `${title} | Intambwe Media`,
     description: truncatedDescription,
     authors: [{ name: article.author }],
+    creator: article.author,
+    keywords: [article.category?.name || 'News', 'East Africa', 'Rwanda', 'Kenya', 'Tanzania', 'Journalism', 'Breaking News'],
+    robots: {
+      index: true,
+      follow: true,
+      nocache: false,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-snippet': -1,
+        'max-image-preview': 'large',
+        'max-video-preview': -1,
+      },
+    },
     openGraph: {
       type: 'article',
       locale: validLang === 'en' ? 'en_US' : validLang === 'sw' ? 'sw_KE' : 'ky_RW',
@@ -119,8 +133,10 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
         },
       ],
       publishedTime: article.publishedAt?.toISOString(),
+      modifiedTime: article.publishedAt?.toISOString(),
       authors: [article.author],
       section: article.category?.name || 'News',
+      tags: [article.category?.name || 'News', 'East Africa', 'Breaking News'],
     },
     twitter: {
       card: 'summary_large_image',
