@@ -10,6 +10,8 @@ export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
 const MAX_PDF_SIZE_BYTES = 25 * 1024 * 1024;
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB for cover images
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 interface RouteContext {
   params: Promise<{
@@ -78,12 +80,17 @@ export async function PUT(req: NextRequest, context: RouteContext) {
 
     const contentType = req.headers.get('content-type') || '';
 
-    // Support multipart/form-data for publishing a draft with PDF upload
+    // Support multipart/form-data for publishing a draft with PDF upload or updating cover image
     if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
       const file = formData.get('file') as File | null;
+      const coverImageFile = formData.get('coverImage') as File | null;
       const title = formData.get('title') as string | null;
-      const coverImage = formData.get('coverImage') as string | null;
+      const issueDate = formData.get('issueDate') as string | null;
+      const pageCount = formData.get('pageCount') as string | null;
+      const notes = formData.get('notes') as string | null;
+      const status = formData.get('status') as string | null;
+      const isCurrent = formData.get('isCurrent') === 'true';
       const publish = formData.get('publish') === 'true';
 
       const existing = await prisma.epaperEdition.findUnique({ where: { id } });
@@ -144,13 +151,66 @@ export async function PUT(req: NextRequest, context: RouteContext) {
         );
       }
 
+      let coverImageUrl: string | null = null;
+
+      if (coverImageFile) {
+        // Validate file is an image
+        if (!ALLOWED_IMAGE_TYPES.includes(coverImageFile.type)) {
+          return NextResponse.json(
+            { success: false, error: 'Only JPEG, PNG, and WebP images are allowed for cover' },
+            { status: 400 }
+          );
+        }
+
+        if (coverImageFile.size > MAX_IMAGE_SIZE_BYTES) {
+          return NextResponse.json(
+            { success: false, error: 'Cover image exceeds 5MB limit. Please upload a smaller file.' },
+            { status: 413 }
+          );
+        }
+
+        // Save cover image to the configured uploads directory
+        const uploadsDir = path.join(getUploadsDir(), 'epaper', 'covers');
+        try {
+          if (!existsSync(uploadsDir)) {
+            await mkdir(uploadsDir, { recursive: true });
+          }
+        } catch (mkdirErr) {
+          console.error('Failed to create epaper covers directory:', mkdirErr);
+          return NextResponse.json(
+            { success: false, error: 'Server storage not available. Contact administrator.' },
+            { status: 500 }
+          );
+        }
+
+        const extension = coverImageFile.type.split('/')[1];
+        const fileName = `${new Date(existing.issueDate).getTime()}-${(title || existing.title).replace(/[^a-z0-9]/gi, '-').toLowerCase()}.${extension}`;
+        const filePath = path.join(uploadsDir, fileName);
+        try {
+          const buffer = await coverImageFile.arrayBuffer();
+          await writeFile(filePath, Buffer.from(buffer));
+          coverImageUrl = `/uploads/epaper/covers/${fileName}`;
+        } catch (writeErr) {
+          console.error('Failed to write cover image file:', writeErr);
+          return NextResponse.json(
+            { success: false, error: 'Failed to save cover image. Check server storage permissions.' },
+            { status: 500 }
+          );
+        }
+      }
+
       const edition = await prisma.epaperEdition.update({
         where: { id },
         data: {
           ...(title && { title }),
-          ...(coverImage && { coverImage }),
+          ...(issueDate && { issueDate: new Date(issueDate) }),
+          ...(coverImageUrl && { coverImage: coverImageUrl }),
           ...(fileUrl && { pdfUrl: fileUrl }),
           ...(fileSize && { fileSize }),
+          ...(pageCount !== null && { pageCount: Number(pageCount) }),
+          ...(notes && { notes }),
+          ...(status && { status }),
+          ...(isCurrent !== undefined && { isCurrent }),
           ...(publish && { status: 'published' }),
         },
         include: { admin: { select: { id: true, name: true, email: true } } },

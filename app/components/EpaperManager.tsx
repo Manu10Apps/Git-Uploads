@@ -35,6 +35,7 @@ export function EpaperManager() {
   // Upload modal state
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadCoverImageFile, setUploadCoverImageFile] = useState<File | null>(null);
   const [uploadTitle, setUploadTitle] = useState('');
   const [uploadIssueDate, setUploadIssueDate] = useState('');
   const [uploadDraft, setUploadDraft] = useState(false);
@@ -94,6 +95,7 @@ export function EpaperManager() {
     formData.append('issueDate', uploadIssueDate);
     formData.append('isDraft', String(uploadDraft));
     if (uploadFile) formData.append('file', uploadFile);
+    if (uploadCoverImageFile) formData.append('coverImage', uploadCoverImageFile);
 
     const token = localStorage.getItem('adminToken');
     const xhr = new XMLHttpRequest();
@@ -118,6 +120,7 @@ export function EpaperManager() {
           setSuccessMessage(uploadDraft ? 'Draft created!' : 'Edition uploaded successfully!');
           setShowUploadModal(false);
           setUploadFile(null);
+          setUploadCoverImageFile(null);
           setUploadTitle('');
           setUploadIssueDate('');
           setUploadDraft(false);
@@ -379,6 +382,20 @@ export function EpaperManager() {
                 />
                 {uploadFile && (
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">{uploadFile.name} ({formatFileSize(uploadFile.size)})</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                  Cover Image (Optional)
+                </label>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => setUploadCoverImageFile(e.target.files?.[0] ?? null)}
+                  className="w-full text-sm text-neutral-700 dark:text-neutral-300 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-green-50 file:text-green-700 dark:file:bg-green-900/40 dark:file:text-green-300 hover:file:bg-green-100"
+                />
+                {uploadCoverImageFile && (
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">{uploadCoverImageFile.name} ({formatFileSize(uploadCoverImageFile.size)})</p>
                 )}
               </div>
               <label className="flex items-center gap-2">
