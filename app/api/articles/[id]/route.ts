@@ -341,6 +341,20 @@ export async function PATCH(
         : null;
 
     const nextStatus = body.status || article.status;
+    
+    // CRITICAL FIX: Validate featured image when publishing
+    // If trying to publish/update to published, article MUST have a featured image
+    if ((nextStatus === 'published' || body.status === 'published') && !imageToStore && !article.image) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Featured image is required for published articles. This ensures thumbnails display correctly on social media (Facebook, Twitter, LinkedIn, WhatsApp, etc.).',
+          code: 'MISSING_FEATURED_IMAGE_ON_PUBLISH',
+        },
+        { status: 400 }
+      );
+    }
+    
     const nextPublishedAt =
       body.publishedAt !== undefined
         ? (body.publishedAt ? new Date(body.publishedAt) : null)

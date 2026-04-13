@@ -562,6 +562,19 @@ export async function POST(request: NextRequest) {
       ? (normalizeArticleImageUrl(String(image)) ?? null)
       : null;
 
+    // CRITICAL FIX: Validate featured image for social media sharing
+    // Articles must have a featured image to display thumbnails on social platforms
+    if (!imageToStore) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Featured image is required for article publishing. This ensures thumbnails display correctly on social media (Facebook, Twitter, LinkedIn, WhatsApp, etc.).',
+          code: 'MISSING_FEATURED_IMAGE',
+        },
+        { status: 400 }
+      );
+    }
+
     // Validate required fields
     if (!title || !title.trim()) {
       return NextResponse.json(

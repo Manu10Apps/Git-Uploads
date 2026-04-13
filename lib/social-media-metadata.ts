@@ -67,7 +67,9 @@ export function resolveOgImageUrl(
   image: string | null | undefined,
   normalizeFunc: (img: string | null | undefined) => string | null
 ): string {
+  // CRITICAL: Validate that image is actually provided
   if (!image) {
+    console.warn('[OG:IMAGE] No featured image provided, using fallback logo.png');
     return DEFAULT_OG_IMAGE;
   }
   
@@ -75,9 +77,10 @@ export function resolveOgImageUrl(
     // First normalize the path
     const normalized = normalizeFunc(image);
     if (!normalized) {
+      console.warn(`[OG:IMAGE] Failed to normalize image path: "${image}" → null, using fallback`);
       return DEFAULT_OG_IMAGE;
     }
-    
+
     let absoluteUrl: string;
     
     // If already absolute URL, use it
@@ -93,18 +96,14 @@ export function resolveOgImageUrl(
     
     // Validate the resolved URL
     if (validateImageUrl(absoluteUrl)) {
+      console.log(`[OG:IMAGE] ✅ Successfully resolved: "${image}" → "${absoluteUrl}"`);
       return absoluteUrl;
+    } else {
+      console.warn(`[OG:IMAGE] Validation failed for resolved URL: "${absoluteUrl}", using fallback`);
     }
   } catch (error) {
-    // Silent fallback - don't log to avoid console noise
-  }
-  
-  // If anything fails, fall back to logo (guaranteed to exist)
-  return DEFAULT_OG_IMAGE;
-}
-
-/**
- * Gets image MIME type for OG image metadata
+    // Log the error for debugging
+    console.error(`[OG:IMAGE] Unexpected error resolving "${image}":`, error instanceof Error ? error.message : error);
  */
 export function getOgImageType(url: string): string {
   return getImageMimeType(url);
