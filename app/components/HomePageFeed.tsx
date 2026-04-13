@@ -394,7 +394,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
             <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-2 text-center">{t.article.advertLabel}</p>
             {/* Mobile: Full width single ad */}
             <div className="md:hidden">
-              <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-64 flex items-center justify-center border border-neutral-200 dark:border-neutral-700 shadow-sm">
+              <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-[74px] flex items-center justify-center border border-neutral-200 dark:border-neutral-700 shadow-sm">
                 <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
               </div>
             </div>
