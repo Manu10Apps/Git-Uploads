@@ -400,10 +400,10 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
             </div>
             {/* Tablet & Desktop: Two-column grid ad layout */}
             <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-[74px] flex items-center justify-center border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-shadow">
                 <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
               </div>
-              <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-[74px] flex items-center justify-center border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-shadow">
                 <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
               </div>
             </div>

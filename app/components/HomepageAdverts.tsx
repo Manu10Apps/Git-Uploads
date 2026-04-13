@@ -99,7 +99,7 @@ export function HomepageAdverts({
                   rel="noopener noreferrer"
                   className="block w-full group hover:opacity-90 transition-opacity"
                 >
-                  <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-[74px] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                  <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
                     <img
                       src={advert.imageUrl}
                       alt={advert.title}
@@ -123,7 +123,7 @@ export function HomepageAdverts({
                   rel="noopener noreferrer"
                   className="block w-full group hover:opacity-90 transition-opacity"
                 >
-                  <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden h-[74px] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
+                  <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden aspect-[728/90] flex items-center justify-center border border-neutral-200 dark:border-neutral-700">
                     <img
                       src={advert.imageUrl}
                       alt={advert.title}
