@@ -13,6 +13,8 @@ export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
 const MAX_PDF_SIZE_BYTES = 25 * 1024 * 1024;
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB for cover images
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 function getAdminIdFromRequest(req: NextRequest): number | null {
   const authHeader = req.headers.get('authorization');
@@ -99,9 +101,9 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
+    const coverImageFile = formData.get('coverImage') as File | null;
     const title = formData.get('title') as string;
     const issueDate = formData.get('issueDate') as string;
-    const coverImage = formData.get('coverImage') as string;
     const isDraft = formData.get('isDraft') === 'true';
 
     if (!title || !issueDate) {
@@ -194,6 +196,55 @@ export async function POST(req: NextRequest) {
       fileUrl = `/uploads/epaper/${fileName}`;
     }
 
+    let coverImageUrl: string | null = null;
+
+    if (coverImageFile) {
+      // Validate file is an image
+      if (!ALLOWED_IMAGE_TYPES.includes(coverImageFile.type)) {
+        return NextResponse.json(
+          { success: false, error: 'Only JPEG, PNG, and WebP images are allowed for cover' },
+          { status: 400 }
+        );
+      }
+
+      if (coverImageFile.size > MAX_IMAGE_SIZE_BYTES) {
+        return NextResponse.json(
+          { success: false, error: 'Cover image exceeds 5MB limit. Please upload a smaller file.' },
+          { status: 413 }
+        );
+      }
+
+      // Save cover image to the configured uploads directory
+      const uploadsDir = path.join(getUploadsDir(), 'epaper', 'covers');
+      try {
+        if (!existsSync(uploadsDir)) {
+          await mkdir(uploadsDir, { recursive: true });
+        }
+      } catch (mkdirErr) {
+        console.error('Failed to create epaper covers directory:', mkdirErr);
+        return NextResponse.json(
+          { success: false, error: 'Server storage not available. Contact administrator.' },
+          { status: 500 }
+        );
+      }
+
+      const extension = coverImageFile.type.split('/')[1];
+      const fileName = `${new Date(issueDate).getTime()}-${title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.${extension}`;
+      const filePath = path.join(uploadsDir, fileName);
+      try {
+        const buffer = await coverImageFile.arrayBuffer();
+        await writeFile(filePath, Buffer.from(buffer));
+      } catch (writeErr) {
+        console.error('Failed to write cover image file:', writeErr);
+        return NextResponse.json(
+          { success: false, error: 'Failed to save cover image. Check server storage permissions.' },
+          { status: 500 }
+        );
+      }
+
+      coverImageUrl = `/uploads/epaper/covers/${fileName}`;
+    }
+
     const status = isDraft ? 'draft' : 'published';
 
     // Create database record
@@ -201,7 +252,7 @@ export async function POST(req: NextRequest) {
       data: {
         title,
         issueDate: new Date(issueDate),
-        coverImage: coverImage || null,
+        coverImage: coverImageUrl || null,
         pdfUrl: fileUrl,
         fileSize,
         pageCount: 0,

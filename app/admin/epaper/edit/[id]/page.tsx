@@ -35,6 +35,7 @@ export default function EditEpaperPage() {
   const [title, setTitle] = useState('');
   const [issueDate, setIssueDate] = useState('');
   const [coverImage, setCoverImage] = useState('');
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState(0);
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState('draft');
@@ -90,29 +91,57 @@ export default function EditEpaperPage() {
     setSuccessMessage(null);
 
     try {
-      const response = await fetch(`/api/epaper/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...getAuthHeader(),
-        },
-        body: JSON.stringify({
-          title,
-          issueDate,
-          coverImage: coverImage || null,
-          pageCount,
-          notes: notes || null,
-          status,
-          isCurrent,
-        }),
-      });
+      if (coverImageFile) {
+        // Use multipart form data when uploading a cover image file
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('issueDate', issueDate);
+        formData.append('coverImage', coverImageFile);
+        formData.append('pageCount', String(pageCount));
+        formData.append('notes', notes || '');
+        formData.append('status', status);
+        formData.append('isCurrent', String(isCurrent));
 
-      const data = await response.json();
-      if (data.success) {
-        setSuccessMessage('Edition updated successfully!');
-        setTimeout(() => router.push('/admin/epaper'), 1200);
+        const response = await fetch(`/api/epaper/${id}`, {
+          method: 'PUT',
+          headers: { ...getAuthHeader() },
+          body: formData,
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          setSuccessMessage('Edition updated successfully!');
+          setCoverImageFile(null); // Clear the file after successful upload
+          setTimeout(() => router.push('/admin/epaper'), 1200);
+        } else {
+          setError(data.error || 'Failed to update edition');
+        }
       } else {
-        setError(data.error || 'Failed to update edition');
+        // Use JSON for metadata-only updates (no file upload)
+        const response = await fetch(`/api/epaper/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeader(),
+          },
+          body: JSON.stringify({
+            title,
+            issueDate,
+            ...(coverImage && { coverImage }), // Only include if provided
+            pageCount,
+            notes: notes || null,
+            status,
+            isCurrent,
+          }),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          setSuccessMessage('Edition updated successfully!');
+          setTimeout(() => router.push('/admin/epaper'), 1200);
+        } else {
+          setError(data.error || 'Failed to update edition');
+        }
       }
     } catch {
       setError('Failed to save changes');
@@ -196,18 +225,38 @@ export default function EditEpaperPage() {
           />
         </div>
 
-        {/* Cover Image URL */}
+        {/* Cover Image */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-            Cover Image URL
+            Cover Image
           </label>
+          {coverImage && !coverImageFile && (
+            <div className="mb-3 p-3 bg-neutral-100 dark:bg-neutral-700 rounded-lg">
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-2">Current cover image:</p>
+              <img src={coverImage} alt="Current cover" className="w-24 h-32 object-cover rounded" />
+              <button
+                type="button"
+                onClick={() => setCoverImage('')}
+                className="mt-2 text-xs px-2 py-1 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 rounded hover:bg-red-200"
+              >
+                Remove Cover Image
+              </button>
+            </div>
+          )}
           <input
-            type="url"
-            value={coverImage}
-            onChange={(e) => setCoverImage(e.target.value)}
-            placeholder="https://example.com/cover.jpg"
-            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={(e) => setCoverImageFile(e.target.files?.[0] ?? null)}
+            className="w-full text-sm text-neutral-700 dark:text-neutral-300 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-green-50 file:text-green-700 dark:file:bg-green-900/40 dark:file:text-green-300 hover:file:bg-green-100"
           />
+          {coverImageFile && (
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+              ✓ New image selected: {coverImageFile.name}
+            </p>
+          )}
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+            Supported formats: JPEG, PNG, WebP (max 5MB)
+          </p>
         </div>
 
         {/* Page Count */}
