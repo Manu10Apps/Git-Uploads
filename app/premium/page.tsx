@@ -113,7 +113,7 @@ export default function PremiumPage() {
                   : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-900 dark:text-white hover:bg-neutral-300 dark:hover:bg-neutral-600'
               }`}
             >
-              {lang === 'ky' ? 'Ky' : lang === 'en' ? 'En' : 'Sw'}
+              {lang === 'ky' ? 'RW' : lang === 'en' ? 'En' : 'Sw'}
             </button>
           ))}
         </div>
