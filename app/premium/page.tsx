@@ -113,7 +113,7 @@ export default function PremiumPage() {
                   : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-900 dark:text-white hover:bg-neutral-300 dark:hover:bg-neutral-600'
               }`}
             >
-              {lang === 'ky' ? 'RW' : lang === 'en' ? 'En' : 'Sw'}
+              {lang === 'ky' ? 'RW' : lang === 'en' ? 'EN' : 'SW'}
             </button>
           ))}
         </div>
@@ -121,15 +121,18 @@ export default function PremiumPage() {
 
       <div className="w-full max-w-md flex flex-col items-center">
         {/* Logo */}
-        <Link href="/" className="flex justify-center mb-8 hover:opacity-80 transition-opacity">
+        <Link href="/" className="flex flex-col items-center mb-8 hover:opacity-80 transition-opacity">
           <Image
             src="/logo.png"
             alt="Intambwe Media"
-            width={48}
-            height={48}
-            className="h-9 w-9 rounded-lg sm:h-12 sm:w-12"
+            width={80}
+            height={80}
+            className="h-16 w-16 rounded-lg sm:h-20 sm:w-20"
             priority
           />
+          <p className="text-center mt-3 text-sm font-semibold text-neutral-900 dark:text-white">
+            Intambwe Media
+          </p>
         </Link>
 
         {/* Payment Form */}
