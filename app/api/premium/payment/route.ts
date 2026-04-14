@@ -23,10 +23,9 @@ interface ESICIAPayload {
   redirecturl: string;
 }
 
-const RECEIVER_EMAIL = 'admin@intambwemedia.com';
+const RECEIVER_EMAIL = 'tophillzentertainment@gmail.com';
+const RECEIVER_PHONE = '0788823265';
 const ESICIA_API_KEY = process.env.ESICIA_API_KEY || '';
-const ESICIA_USERNAME = process.env.ESICIA_USERNAME || '';
-const ESICIA_PASSWORD = process.env.ESICIA_PASSWORD || '';
 const ESICIA_RETAILER_ID = process.env.ESICIA_RETAILER_ID || '';
 
 export async function POST(request: NextRequest) {
@@ -49,19 +48,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Normalize phone number to MSISDN format (256XXXXXXXXX)
-    const normalizedPhone = phoneNumber
+    // Normalize phone number - convert to full international format first
+    const fullPhone = phoneNumber
       .replace(/\s/g, '')
       .replace(/^0/, '256')
       .replace(/\+/, '');
 
     // Check if the number is MTN or Airtel
-    const isMTN = normalizedPhone.startsWith('250788') || normalizedPhone.startsWith('250789');
+    const isMTN = fullPhone.startsWith('250788') || fullPhone.startsWith('250789');
     const isAirtel =
-      normalizedPhone.startsWith('250703') ||
-      normalizedPhone.startsWith('250704') ||
-      normalizedPhone.startsWith('250705') ||
-      normalizedPhone.startsWith('250706');
+      fullPhone.startsWith('250703') ||
+      fullPhone.startsWith('250704') ||
+      fullPhone.startsWith('250705') ||
+      fullPhone.startsWith('250706');
 
     if (!isMTN && !isAirtel) {
       return NextResponse.json(
@@ -72,13 +71,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Convert to local MSISDN format (0xxxxxxxxx) for ESICIA API
+    const msisdnLocal = fullPhone.replace(/^256/, '0');
+
     // Generate unique transaction reference
     const txRef = `INTAMBWE-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
     // Prepare ESICIA payload
     const esiciaPayload: ESICIAPayload = {
       action: 'pay',
-      msisdn: normalizedPhone,
+      msisdn: msisdnLocal,
       email: RECEIVER_EMAIL,
       details: language === 'ky' 
         ? 'Ifatabuguzi - Intambwe Media'
@@ -91,7 +93,7 @@ export async function POST(request: NextRequest) {
       cname: 'Intambwe Media',
       cnumber: txRef,
       pmethod: 'momo',
-      retailerid: ESICIA_RETAILER_ID || 'INTAMBWE',
+      retailerid: ESICIA_RETAILER_ID || '02',
       returl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://intambwemedia.com'}/premium?tx_ref=${txRef}`,
       redirecturl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://intambwemedia.com'}/premium`,
     };
@@ -99,7 +101,7 @@ export async function POST(request: NextRequest) {
     // Process payment via ESICIA
     const paymentResult = await processESICIAPayment(
       esiciaPayload,
-      normalizedPhone,
+      msisdnLocal,
       amount
     );
 
@@ -113,7 +115,7 @@ export async function POST(request: NextRequest) {
     // Log successful payment initiation
     console.log(`✓ Payment Initiated via ESICIA:
       TX Ref: ${txRef}
-      Phone: ${normalizedPhone}
+      Phone: ${msisdnLocal}
       Amount: ${amount} RWF
       Checkout URL: ${paymentResult.checkoutUrl}`);
 
@@ -143,6 +145,7 @@ export async function POST(request: NextRequest) {
 /**
  * Process payment via ESICIA API
  * ESICIA Rwanda mobile money integration
+ * API Documentation: https://pay.esicia.com/
  */
 async function processESICIAPayment(
   payload: ESICIAPayload,
@@ -150,54 +153,55 @@ async function processESICIAPayment(
   amount: number
 ): Promise<{ success: boolean; message: string; checkoutUrl?: string }> {
   try {
-    if (!ESICIA_API_KEY || !ESICIA_USERNAME || !ESICIA_PASSWORD) {
-      console.warn('ESICIA credentials not configured.');
+    if (!ESICIA_API_KEY) {
+      console.warn('ESICIA API key not configured.');
       return {
         success: false,
         message: 'Payment system not configured. Please try again later.',
       };
     }
 
-    // Create Basic Auth header
-    const auth = Buffer.from(`${ESICIA_USERNAME}:${ESICIA_PASSWORD}`).toString('base64');
-
-    // Call ESICIA API
+    // Call ESICIA API with secret_key header (as per API documentation)
     const response = await fetch('https://pay.esicia.com/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Kpay-Key': ESICIA_API_KEY,
-        'Authorization': `Basic ${auth}`,
+        'secret_key': ESICIA_API_KEY,
       },
       body: JSON.stringify(payload),
     });
 
     const data = await response.json();
 
-    if (!response.ok) {
-      console.error('ESICIA API error:', data);
+    console.log('ESICIA Response:', {
+      status: response.status,
+      success: data.success,
+      reply: data.reply,
+      tid: data.tid,
+      refid: data.refid,
+      hasUrl: !!data.url,
+    });
+
+    // ESICIA returns success as 1 (integer) when successful
+    if (data.success === 1 && data.url) {
+      console.log(`✓ ESICIA Payment Initiated: TID=${data.tid}, RefID=${data.refid}`);
+      return {
+        success: true,
+        message: data.reply || 'Payment initiated',
+        checkoutUrl: data.url,
+      };
+    }
+
+    // Check for errors
+    if (data.success === 0 || !data.url) {
+      console.error('ESICIA Payment Error:', {
+        success: data.success,
+        reply: data.reply,
+        retcode: data.retcode,
+      });
       return {
         success: false,
-        message: data.reply || data.message || 'Payment processing failed',
-      };
-    }
-
-    // ESICIA returns success with checkout URL
-    if ((data.success === 1 || data.success === true) && data.url) {
-      console.log('✓ ESICIA Payment Processing:', data);
-      return {
-        success: true,
-        message: 'Payment initiated',
-        checkoutUrl: data.url,
-      };
-    }
-
-    // Handle partial success but with URL
-    if (data.url) {
-      return {
-        success: true,
-        message: 'Payment initiated',
-        checkoutUrl: data.url,
+        message: data.reply || 'Payment initiation failed',
       };
     }
 
@@ -206,7 +210,7 @@ async function processESICIAPayment(
       message: data.reply || 'Payment initiation failed',
     };
   } catch (error) {
-    console.error('ESICIA processing error:', error);
+    console.error('ESICIA API Error:', error);
     return {
       success: false,
       message: 'Failed to process payment. Please try again.',

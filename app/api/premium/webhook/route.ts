@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
-
-const ESICIA_API_KEY = process.env.ESICIA_API_KEY || '';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,19 +14,20 @@ export async function POST(request: NextRequest) {
 
     // Handle ESICIA payment webhook
     // ESICIA sends payment status notifications with transaction details
-    if (data.refid && (data.status === 'successful' || data.status === 'success')) {
+    if (data.refid && (data.status === 'successful' || data.status === 'success' || data.reply === 'CONFIRMED')) {
       const paymentData = data;
 
       console.log(`✓ Payment Webhook Verified (ESICIA):
         Reference: ${paymentData.refid}
         Amount: ${paymentData.amount} ${paymentData.currency || 'RWF'}
         Phone: ${paymentData.msisdn}
-        Status: ${paymentData.status}`);
+        Status: ${paymentData.status}
+        Reply: ${paymentData.reply}`);
 
       // TODO: Update payment status in database
       // await db.payments.update(
       //   { transactionId: paymentData.refid },
-      //   { status: 'verified', esiciaId: paymentData.id }
+      //   { status: 'verified', esiciaId: paymentData.tid }
       // );
 
       return NextResponse.json({ status: 'success', message: 'Payment verified' });
@@ -40,7 +38,7 @@ export async function POST(request: NextRequest) {
       console.log(`Payment Status Update (ESICIA):
         Reference: ${data.refid}
         Status: ${data.status}
-        Message: ${data.reply || data.message || 'No message'}`);
+        Reply: ${data.reply || 'No message'}`);
 
       return NextResponse.json({ status: 'success', message: 'Webhook processed' });
     }
