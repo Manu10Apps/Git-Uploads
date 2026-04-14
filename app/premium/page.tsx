@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 
@@ -121,7 +120,7 @@ export default function PremiumPage() {
 
       <div className="w-full max-w-md flex flex-col items-center">
         {/* Logo */}
-        <Link href="/" className="flex justify-center mb-8 hover:opacity-80 transition-opacity">
+        <div className="flex justify-center mb-8">
           <Image
             src="/Intambwe%20Linked%202025%20Skeleton%20KCC%20logo%20in%20Red%20OK.png"
             alt="Intambwe Media"
@@ -130,7 +129,7 @@ export default function PremiumPage() {
             priority
             unoptimized
           />
-        </Link>
+        </div>
 
         {/* Payment Form */}
         <form onSubmit={handlePayment} className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-6 sm:p-8 border border-neutral-200 dark:border-neutral-700">
@@ -162,7 +161,7 @@ export default function PremiumPage() {
                 {/* Custom Amount Input */}
                 <div className="mt-4">
                   <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2">
-                    {language === 'ky' ? 'Cyangwa andika ingano y\'icyuma cy\'agucira 2000 (RWF)' : 'Or enter custom amount above 2000 (RWF)'}
+                    {language === 'ky' ? 'Cyangwa Wandike Ingano y\'amafaranga arenga 2000 (RWF)' : 'Or enter custom amount above 2000 (RWF)'}
                   </label>
                   <input
                     type="number"
