@@ -93,10 +93,14 @@ export default function PremiumPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4 bg-red-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-2xl">IM</span>
-          </div>
-          <h2 className="text-sm font-semibold text-neutral-600 dark:text-neutral-400">Intambwe Media</h2>
+          <Image
+            src="/Intambwe Linked 2025 Skeleton KCC logo in Red OK.png"
+            alt="Intambwe Media"
+            width={80}
+            height={80}
+            className="mx-auto mb-4"
+            priority
+          />
         </div>
 
         {/* Payment Form */}
