@@ -398,11 +398,11 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     const fetchTopStories = async () => {
       try {
         setTopStoriesLoading(true);
-        const response = await fetch(`/api/articles?limit=8&summary=true&lang=${language}`);
+        const response = await fetch(`/api/articles?limit=5&summary=true&lang=${language}`);
         const result = await response.json();
         const articles = (result.data || []) as Article[];
         const filtered = articles.filter((item) => item.slug !== slug);
-        setTopStories(filtered.slice(0, 8));
+        setTopStories(filtered.slice(0, 5));
       } catch (error) {
         console.error('Failed to fetch top stories:', error);
         setTopStories([]);
@@ -1330,23 +1330,29 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                 </div>
               </section>
 
-              <section className="border-t border-neutral-200 dark:border-neutral-700 pt-12 mt-12">
-                <div className="mb-10">
-                  <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">INKURU NYAMUKURU</div>
+              <aside className="mt-12 pt-12 border-t border-neutral-200 dark:border-neutral-700">
+                <div className="mb-6">
+                  <h3 className="text-red-600 text-xs font-semibold tracking-widest">INKURU NYAMUKURU</h3>
                 </div>
                 {topStoriesLoading ? (
-                  <div className="space-y-4">
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((index) => (
-                      <div key={index} className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse"></div>
+                  <ol className="space-y-4">
+                    {[1, 2, 3, 4, 5].map((index) => (
+                      <li key={index} className="space-y-2">
+                        <div className="h-4 w-32 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse"></div>
+                        <div className="h-3 w-48 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse"></div>
+                      </li>
                     ))}
-                  </div>
+                  </ol>
                 ) : topStories.length > 0 ? (
-                  <ol className="space-y-3 list-decimal list-inside">
-                    {topStories.map((story, index) => (
-                      <li key={story.slug} className="text-sm">
+                  <ol className="space-y-4">
+                    {topStories.map((story) => (
+                      <li key={story.slug} className="border-l-2 border-red-600 pl-4">
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">
+                          {formatDate(story.publishedAt, language)}
+                        </div>
                         <button
                           onClick={() => router.push(`/article/${story.slug}`)}
-                          className="text-neutral-900 dark:text-white hover:text-red-600 dark:hover:text-red-600 transition-colors text-left font-medium line-clamp-2"
+                          className="text-sm font-semibold text-neutral-900 dark:text-white hover:text-red-600 dark:hover:text-red-600 transition-colors text-left line-clamp-2 leading-tight"
                         >
                           {story.title}
                         </button>
@@ -1356,7 +1362,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                 ) : (
                   <p className="text-xs text-neutral-500 dark:text-neutral-400">{t.article.noRelatedArticles}</p>
                 )}
-              </section>
+              </aside>
 
             </div>
 
