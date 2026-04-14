@@ -117,7 +117,7 @@ export default function PremiumPage() {
               {/* Amount Selection */}
               <div className="mb-8">
                 <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-4">
-                  {language === 'ky' ? 'Hitamo ingano y\'icyuma (RWF)' : 'Select Amount (RWF)'}
+                  {language === 'ky' ? 'Hitamo ingano y\'amafaranga (RWF)' : 'Select Amount (RWF)'}
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                   {amounts.map((amount) => (
@@ -162,7 +162,7 @@ export default function PremiumPage() {
               {/* Phone Number Input */}
               <div className="mb-8">
                 <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
-                  {language === 'ky' ? 'Nimiro y\'icyuma (MTN/Airtel)' : 'Phone Number (MTN/Airtel)'}
+                  {language === 'ky' ? 'Nimiro yawe (MTN/Airtel)' : 'Phone Number (MTN/Airtel)'}
                 </label>
                 <input
                   type="tel"
@@ -175,22 +175,22 @@ export default function PremiumPage() {
                 />
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                   {language === 'ky'
-                    ? 'Ushobora gufite *USSD prompt*. Andika ijambo ryobwigire nyuma yo gutangira.'
-                    : 'You\'ll receive a USSD prompt to confirm the payment.'}
+                    ? 'Komeza *USSD prompt*. Ukurikize Amabwiriza.'
+                    : 'You\'ll receive a USSD prompt to confirm the payment.'
                 </p>
               </div>
 
               {/* Display Selected Amount */}
               <div className="bg-white dark:bg-neutral-700 rounded-lg p-4 mb-8 border-l-4 border-red-600">
                 <div className="text-sm text-neutral-600 dark:text-neutral-400">
-                  {language === 'ky' ? 'Ingano yo kurema' : 'Amount to Pay'}
+                  {language === 'ky' ? 'Ingano y\'amafaranga wahisemo' : 'Amount to Pay'}
                 </div>
                 <div className="text-2xl font-bold text-neutral-900 dark:text-white">
                   {finalAmount.toLocaleString()} RWF
                 </div>
                 <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                   {language === 'ky'
-                    ? 'Kurere: Emmanuel Ndahayo (0788823265)'
+                    ? 'Amazina y\'Uwakira: Emmanuel Ndahayo (0788823265)'
                     : 'Receiver: Emmanuel Ndahayo (0788823265)'}
                 </div>
               </div>
@@ -225,15 +225,15 @@ export default function PremiumPage() {
                       ? 'Icyuma cyakozwe'
                       : 'Payment Sent'
                     : language === 'ky'
-                      ? 'Rema icyuma'
+                      ? 'Emeza Gukomeza'
                       : 'Pay Now'}
               </button>
 
               {/* Terms */}
               <p className="text-xs text-neutral-500 dark:text-neutral-400 text-center mt-4">
                 {language === 'ky'
-                  ? 'Mu gusobanura, wavuze ko wemeye amategeko y\'impigania ibyacuruza ya KPay n\'Intambwe Media.'
-                  : 'By proceeding, you agree to our terms and KPay\'s payment terms.'}
+                  ? 'Nuhitamo Gukomeza Uraba Uteye Inkunga E-Gazeti ya Intambwe Media'
+                  : 'By proceeding, you agree to our terms and KPay\'s payment terms.'
               </p>
             </form>
           </div>
