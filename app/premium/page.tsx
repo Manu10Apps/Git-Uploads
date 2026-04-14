@@ -123,11 +123,12 @@ export default function PremiumPage() {
         {/* Logo */}
         <Link href="/" className="flex justify-center mb-8 hover:opacity-80 transition-opacity">
           <Image
-            src="/Intambwe Linked 2025 Skeleton KCC logo in Red OK.png"
+            src="/Intambwe%20Linked%202025%20Skeleton%20KCC%20logo%20in%20Red%20OK.png"
             alt="Intambwe Media"
             width={100}
             height={100}
             priority
+            unoptimized
           />
         </Link>
 
