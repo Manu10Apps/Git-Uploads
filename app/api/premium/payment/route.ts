@@ -14,7 +14,7 @@ interface KPayPayload {
   currency: string;
 }
 
-const RECEIVER_PHONE = '0788823265';
+const RECEIVER_PHONE = '+250788823265';
 const RECEIVER_NAME = 'Emmanuel Ndahayo';
 const KPAY_API_KEY = process.env.KPAY_API_KEY || '';
 const KPAY_API_URL = process.env.KPAY_API_URL || 'https://api.kpay.rw';
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     if (!phoneNumber || !/^256\d{9}$/.test(phoneNumber.replace(/\D/g, '').replace(/^0/, '256'))) {
       return NextResponse.json(
-        { message: language === 'ky' ? 'Nimiro y\'icyuma ntabwo ari neza' : 'Invalid phone number' },
+        { message: language === 'ky' ? 'Shyiramo Nimero Nyayo' : 'Invalid phone number' },
         { status: 400 }
       );
     }

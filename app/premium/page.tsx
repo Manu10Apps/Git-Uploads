@@ -227,10 +227,10 @@ export default function PremiumPage() {
                 </div>
                 <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                   {currentLang === 'ky'
-                    ? 'Amazina y\'Uwakira: Emmanuel Ndahayo (0788823265)'
+                    ? 'Amazina y\'Uwakira: Emmanuel Ndahayo'
                     : currentLang === 'en'
-                    ? 'Receiver: Emmanuel Ndahayo (0788823265)'
-                    : 'Mpokeaji: Emmanuel Ndahayo (0788823265)'}
+                    ? 'Receiver: Emmanuel Ndahayo'
+                    : 'Mpokeaji: Emmanuel Ndahayo'}
                 </div>
               </div>
 
