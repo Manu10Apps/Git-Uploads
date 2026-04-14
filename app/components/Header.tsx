@@ -252,7 +252,7 @@ export function Header() {
                 className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90"
                 style={{ backgroundColor: '#e3001b' }}
               >
-                {language === 'ky' ? 'Ifatabuguzi' : 'Premium'}
+                {language === 'ky' ? 'Ifatabuguzi' : language === 'sw' ? 'Kuchangia' : 'Premium'}
               </Link>
             </div>
 
@@ -282,7 +282,7 @@ export function Header() {
                 style={{ backgroundColor: '#e3001b' }}
                 onClick={() => setIsMenuOpen(false)}
               >
-                {language === 'ky' ? 'Ifatabuguzi' : 'Premium'}
+                {language === 'ky' ? 'Ifatabuguzi' : language === 'sw' ? 'Kuchangia' : 'Premium'}
               </Link>
             </div>
             {NAV_CATEGORY_ITEMS.map((item) => {

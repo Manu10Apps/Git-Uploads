@@ -97,7 +97,7 @@ export default function PremiumPage() {
             {/* Header */}
             <div className="text-center mb-12">
               <h1 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white mb-4">
-                {language === 'ky' ? 'Ifatabuguzi' : 'Premium Support'}
+                {language === 'ky' ? 'Ifatabuguzi' : language === 'sw' ? 'Kuchangia' : 'Premium Support'}
               </h1>
               <p className="text-lg text-neutral-600 dark:text-neutral-400">
                 {language === 'ky'
