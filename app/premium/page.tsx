@@ -113,7 +113,7 @@ export default function PremiumPage() {
   return (
     <main className="min-h-screen bg-white dark:bg-neutral-900 flex flex-col items-center justify-between px-4 py-8">
       {/* Language Switcher */}
-      <div className="w-full flex justify-end mb-6">
+      <div className="w-full flex justify-center mb-6">
         <div className="flex gap-2">
           {(['ky', 'en', 'sw'] as const).map((lang) => (
             <button
