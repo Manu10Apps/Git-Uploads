@@ -101,13 +101,12 @@ export default function PremiumPage() {
     <main className="min-h-screen bg-white dark:bg-neutral-900 flex flex-col items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8">
+        <div className="flex justify-center mb-8">
           <Image
             src="/Intambwe Linked 2025 Skeleton KCC logo in Red OK.png"
             alt="Intambwe Media"
-            width={80}
-            height={80}
-            className="mx-auto mb-4"
+            width={100}
+            height={100}
             priority
           />
         </div>
@@ -176,7 +175,7 @@ export default function PremiumPage() {
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                   {language === 'ky'
                     ? 'Komeza *USSD prompt*. Ukurikize Amabwiriza.'
-                    : 'You\'ll receive a USSD prompt to confirm the payment.'
+                    : 'You\'ll receive a USSD prompt to confirm the payment.'}
                 </p>
               </div>
 
