@@ -207,6 +207,8 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const [mostViralLoading, setMostViralLoading] = useState(true);
   const [eastAfricaArticles, setEastAfricaArticles] = useState<Article[]>([]);
   const [eastAfricaLoading, setEastAfricaLoading] = useState(true);
+  const [topStories, setTopStories] = useState<Article[]>([]);
+  const [topStoriesLoading, setTopStoriesLoading] = useState(true);
   const [adverts, setAdverts] = useState<any[]>([]);
   const [shareUrl, setShareUrl] = useState('');
   const commentFormRef = React.useRef<HTMLFormElement | null>(null);
@@ -390,6 +392,26 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     };
 
     fetchEastAfricaArticles();
+  }, [slug, language]);
+
+  useEffect(() => {
+    const fetchTopStories = async () => {
+      try {
+        setTopStoriesLoading(true);
+        const response = await fetch(`/api/articles?limit=8&summary=true&lang=${language}`);
+        const result = await response.json();
+        const articles = (result.data || []) as Article[];
+        const filtered = articles.filter((item) => item.slug !== slug);
+        setTopStories(filtered.slice(0, 8));
+      } catch (error) {
+        console.error('Failed to fetch top stories:', error);
+        setTopStories([]);
+      } finally {
+        setTopStoriesLoading(false);
+      }
+    };
+
+    fetchTopStories();
   }, [slug, language]);
 
   useEffect(() => {
@@ -1306,6 +1328,34 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                     </article>
                   )}
                 </div>
+              </section>
+
+              <section className="border-t border-neutral-200 dark:border-neutral-700 pt-12 mt-12">
+                <div className="mb-10">
+                  <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">INKURU NYAMUKURU</div>
+                </div>
+                {topStoriesLoading ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((index) => (
+                      <div key={index} className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse"></div>
+                    ))}
+                  </div>
+                ) : topStories.length > 0 ? (
+                  <ol className="space-y-3 list-decimal list-inside">
+                    {topStories.map((story, index) => (
+                      <li key={story.slug} className="text-sm">
+                        <button
+                          onClick={() => router.push(`/article/${story.slug}`)}
+                          className="text-neutral-900 dark:text-white hover:text-red-600 dark:hover:text-red-600 transition-colors text-left font-medium line-clamp-2"
+                        >
+                          {story.title}
+                        </button>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">{t.article.noRelatedArticles}</p>
+                )}
               </section>
 
             </div>
