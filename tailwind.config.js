@@ -116,6 +116,7 @@ module.exports = {
           'Roboto',
           'sans-serif',
         ],
+        'sinbad-the-sailor': ['Sinbad', 'serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in',
