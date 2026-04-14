@@ -112,28 +112,6 @@ export default function PremiumPage() {
 
   return (
     <main className="min-h-screen bg-white dark:bg-neutral-900 flex flex-col items-center justify-between px-4 py-8">
-      {/* Language Switcher */}
-      <div className="w-full flex justify-center mb-6">
-        <div className="flex gap-2">
-          {(['ky', 'en', 'sw'] as const).map((lang) => (
-            <button
-              key={lang}
-              onClick={() => {
-                setLanguage(lang);
-                setCurrentLang(lang);
-              }}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                currentLang === lang
-                  ? 'bg-red-600 text-white'
-                  : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-900 dark:text-white hover:bg-neutral-300 dark:hover:bg-neutral-600'
-              }`}
-            >
-              {lang === 'ky' ? 'RW' : lang === 'en' ? 'EN' : 'SW'}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <div className="w-full max-w-md flex flex-col items-center">
         {/* Logo */}
         <Link href="/" className="flex flex-col items-center mb-8 hover:opacity-80 transition-opacity">
@@ -145,9 +123,28 @@ export default function PremiumPage() {
             className="h-16 w-16 rounded-lg sm:h-20 sm:w-20"
             priority
           />
-          <p className="text-center mt-3 text-2xl font-semibold font-sinbad-the-sailor text-neutral-900 dark:text-white">
+          <p className="text-center mt-3 text-4xl font-semibold text-neutral-900 dark:text-white">
             Intambwe Media
           </p>
+          {/* Language Switcher */}
+          <div className="flex gap-1 mt-2">
+            {(['ky', 'en', 'sw'] as const).map((lang) => (
+              <button
+                key={lang}
+                onClick={() => {
+                  setLanguage(lang);
+                  setCurrentLang(lang);
+                }}
+                className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
+                  currentLang === lang
+                    ? 'bg-red-600 text-white'
+                    : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-900 dark:text-white hover:bg-neutral-300 dark:hover:bg-neutral-600'
+                }`}
+              >
+                {lang === 'ky' ? 'RW' : lang === 'en' ? 'EN' : 'SW'}
+              </button>
+            ))}
+          </div>
         </Link>
 
         {/* Payment Form */}
