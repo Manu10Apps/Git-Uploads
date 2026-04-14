@@ -256,7 +256,7 @@ export default function PremiumPage() {
               <p className="text-xs text-neutral-500 dark:text-neutral-400 text-center mt-4">
                 {language === 'ky'
                   ? 'Nuhitamo Gukomeza Uraba Uteye Inkunga E-Gazeti ya Intambwe Media'
-                  : 'By proceeding, you agree to our terms and KPay\'s payment terms.'}
+                  : 'By proceeding, You agree to support Intambwe Media E-Paper'}
               </p>
             </form>
           </div>
