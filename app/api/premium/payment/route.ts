@@ -4,21 +4,30 @@ interface PaymentRequest {
   amount: number;
   phoneNumber: string;
   language: string;
+  email?: string;
 }
 
-interface KPayPayload {
+interface ESICIAPayload {
+  action: string;
+  msisdn: string;
+  email: string;
+  details: string;
+  refid: string;
   amount: number;
-  phone: string;
-  reference: string;
-  narration: string;
   currency: string;
+  cname: string;
+  cnumber: string;
+  pmethod: string;
+  retailerid: string;
+  returl: string;
+  redirecturl: string;
 }
 
-const RECEIVER_PHONE = '+250788823265';
-const RECEIVER_NAME = 'Emmanuel Ndahayo';
-const KPAY_API_KEY = process.env.KPAY_API_KEY || '';
-const KPAY_API_URL = process.env.KPAY_API_URL || 'https://api.kpay.rw';
-const KPAY_MERCHANT_ID = process.env.KPAY_MERCHANT_ID || '';
+const RECEIVER_EMAIL = 'admin@intambwemedia.com';
+const ESICIA_API_KEY = process.env.ESICIA_API_KEY || '';
+const ESICIA_USERNAME = process.env.ESICIA_USERNAME || '';
+const ESICIA_PASSWORD = process.env.ESICIA_PASSWORD || '';
+const ESICIA_RETAILER_ID = process.env.ESICIA_RETAILER_ID || '';
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,7 +49,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Normalize phone number
+    // Normalize phone number to MSISDN format (256XXXXXXXXX)
     const normalizedPhone = phoneNumber
       .replace(/\s/g, '')
       .replace(/^0/, '256')
@@ -66,22 +75,30 @@ export async function POST(request: NextRequest) {
     // Generate unique transaction reference
     const txRef = `INTAMBWE-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
-    // Prepare KPay payload
-    const kpayPayload: KPayPayload = {
-      amount: amount,
-      phone: normalizedPhone,
-      reference: txRef,
-      narration: language === 'ky' 
-        ? 'Ifatabuguzi - Intambwe Media mu cyuma guto'
+    // Prepare ESICIA payload
+    const esiciaPayload: ESICIAPayload = {
+      action: 'pay',
+      msisdn: normalizedPhone,
+      email: RECEIVER_EMAIL,
+      details: language === 'ky' 
+        ? 'Ifatabuguzi - Intambwe Media'
         : language === 'sw'
         ? 'Kuchangia - Intambwe Media'
         : 'Premium Support - Intambwe Media',
+      refid: txRef,
+      amount: amount,
       currency: 'RWF',
+      cname: 'Intambwe Media',
+      cnumber: txRef,
+      pmethod: 'momo',
+      retailerid: ESICIA_RETAILER_ID || 'INTAMBWE',
+      returl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://intambwemedia.com'}/premium?tx_ref=${txRef}`,
+      redirecturl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://intambwemedia.com'}/premium`,
     };
 
-    // Process payment via KPay
-    const paymentResult = await processKPayPayment(
-      kpayPayload,
+    // Process payment via ESICIA
+    const paymentResult = await processESICIAPayment(
+      esiciaPayload,
       normalizedPhone,
       amount
     );
@@ -94,11 +111,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Log successful payment initiation
-    console.log(`✓ Payment Initiated via KPay:
+    console.log(`✓ Payment Initiated via ESICIA:
       TX Ref: ${txRef}
       Phone: ${normalizedPhone}
       Amount: ${amount} RWF
-      Receiver: ${RECEIVER_NAME} (${RECEIVER_PHONE})`);
+      Checkout URL: ${paymentResult.checkoutUrl}`);
 
     return NextResponse.json(
       {
@@ -109,10 +126,7 @@ export async function POST(request: NextRequest) {
             : `Payment initiated. Reference: ${txRef}. Complete the USSD prompt.`,
         transactionId: txRef,
         amount,
-        receiver: {
-          name: RECEIVER_NAME,
-          phone: RECEIVER_PHONE,
-        },
+        checkoutUrl: paymentResult.checkoutUrl,
       },
       { status: 200 }
     );
@@ -125,65 +139,74 @@ export async function POST(request: NextRequest) {
   }
 }
 
+
 /**
- * Process payment via KPay API
- * KPay Rwanda integration for mobile money payments
+ * Process payment via ESICIA API
+ * ESICIA Rwanda mobile money integration
  */
-async function processKPayPayment(
-  payload: KPayPayload,
+async function processESICIAPayment(
+  payload: ESICIAPayload,
   phoneNumber: string,
   amount: number
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; checkoutUrl?: string }> {
   try {
-    if (!KPAY_API_KEY || !KPAY_MERCHANT_ID) {
-      console.warn('KPay credentials not configured. Using fallback processing.');
+    if (!ESICIA_API_KEY || !ESICIA_USERNAME || !ESICIA_PASSWORD) {
+      console.warn('ESICIA credentials not configured.');
       return {
-        success: true,
-        message: 'Payment processing initiated',
+        success: false,
+        message: 'Payment system not configured. Please try again later.',
       };
     }
 
-    const response = await fetch(`${KPAY_API_URL}/v1/payments`, {
+    // Create Basic Auth header
+    const auth = Buffer.from(`${ESICIA_USERNAME}:${ESICIA_PASSWORD}`).toString('base64');
+
+    // Call ESICIA API
+    const response = await fetch('https://pay.esicia.com/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${KPAY_API_KEY}`,
-        'X-Merchant-ID': KPAY_MERCHANT_ID,
+        'Kpay-Key': ESICIA_API_KEY,
+        'Authorization': `Basic ${auth}`,
       },
-      body: JSON.stringify({
-        amount: payload.amount,
-        phone: payload.phone,
-        reference: payload.reference,
-        narration: payload.narration,
-        currency: payload.currency,
-        callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://intambwemedia.com'}/api/premium/webhook`,
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('KPay API error:', data);
+      console.error('ESICIA API error:', data);
       return {
         success: false,
-        message: data.message || 'Payment processing failed',
+        message: data.reply || data.message || 'Payment processing failed',
       };
     }
 
-    // KPay returns success with transaction details
-    if (data.status === 'success' || data.status === 'pending') {
+    // ESICIA returns success with checkout URL
+    if ((data.success === 1 || data.success === true) && data.url) {
+      console.log('✓ ESICIA Payment Processing:', data);
       return {
         success: true,
         message: 'Payment initiated',
+        checkoutUrl: data.url,
+      };
+    }
+
+    // Handle partial success but with URL
+    if (data.url) {
+      return {
+        success: true,
+        message: 'Payment initiated',
+        checkoutUrl: data.url,
       };
     }
 
     return {
-      success: true,
-      message: 'Payment initiated',
+      success: false,
+      message: data.reply || 'Payment initiation failed',
     };
   } catch (error) {
-    console.error('KPay processing error:', error);
+    console.error('ESICIA processing error:', error);
     return {
       success: false,
       message: 'Failed to process payment. Please try again.',
