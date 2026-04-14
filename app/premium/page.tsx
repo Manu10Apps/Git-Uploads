@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 
 export default function PremiumPage() {
-  const { language } = useAppStore();
+  const { language, setLanguage } = useAppStore();
   const t = getTranslation(language);
   const [selectedAmount, setSelectedAmount] = useState<number>(500);
   const [customAmount, setCustomAmount] = useState<string>('');
@@ -98,10 +99,29 @@ export default function PremiumPage() {
   };
 
   return (
-    <main className="min-h-screen bg-white dark:bg-neutral-900 flex flex-col items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md">
+    <main className="min-h-screen bg-white dark:bg-neutral-900 flex flex-col items-center justify-between px-4 py-8">
+      {/* Language Switcher */}
+      <div className="w-full flex justify-end mb-6">
+        <div className="flex gap-2">
+          {(['ky', 'en', 'sw'] as const).map((lang) => (
+            <button
+              key={lang}
+              onClick={() => setLanguage(lang)}
+              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                language === lang
+                  ? 'bg-red-600 text-white'
+                  : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-900 dark:text-white hover:bg-neutral-300 dark:hover:bg-neutral-600'
+              }`}
+            >
+              {lang === 'ky' ? 'Ky' : lang === 'en' ? 'En' : 'Sw'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="w-full max-w-md flex flex-col items-center">
         {/* Logo */}
-        <div className="flex justify-center mb-8">
+        <Link href="/" className="flex justify-center mb-8 hover:opacity-80 transition-opacity">
           <Image
             src="/Intambwe Linked 2025 Skeleton KCC logo in Red OK.png"
             alt="Intambwe Media"
@@ -109,7 +129,7 @@ export default function PremiumPage() {
             height={100}
             priority
           />
-        </div>
+        </Link>
 
         {/* Payment Form */}
         <form onSubmit={handlePayment} className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-6 sm:p-8 border border-neutral-200 dark:border-neutral-700">
@@ -232,7 +252,7 @@ export default function PremiumPage() {
               <p className="text-xs text-neutral-500 dark:text-neutral-400 text-center mt-4">
                 {language === 'ky'
                   ? 'Nuhitamo Gukomeza Uraba Uteye Inkunga E-Gazeti ya Intambwe Media'
-                  : 'By proceeding, you agree to our terms and KPay\'s payment terms.'
+                  : 'By proceeding, you agree to our terms and KPay\'s payment terms.'}
               </p>
             </form>
           </div>
