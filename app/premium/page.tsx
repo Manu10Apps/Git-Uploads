@@ -9,6 +9,7 @@ export default function PremiumPage() {
   const { language } = useAppStore();
   const t = getTranslation(language);
   const [selectedAmount, setSelectedAmount] = useState<number>(500);
+  const [customAmount, setCustomAmount] = useState<string>('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -17,11 +18,19 @@ export default function PremiumPage() {
 
   const amounts = [200, 500, 1000, 1500, 2000];
 
+  const finalAmount = customAmount ? parseInt(customAmount) : selectedAmount;
+
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!phoneNumber.trim()) {
       setMessage(language === 'ky' ? 'Ongereza nimiro y\'icyuma' : 'Please enter your phone number');
+      setPaymentStatus('error');
+      return;
+    }
+
+    if (finalAmount < 200) {
+      setMessage(language === 'ky' ? 'Ingano igomba kuva 200 RWF' : 'Amount must be at least 200 RWF');
       setPaymentStatus('error');
       return;
     }
@@ -37,7 +46,7 @@ export default function PremiumPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: selectedAmount,
+          amount: finalAmount,
           phoneNumber: phoneNumber.replace(/\s/g, ''),
           language,
         }),
@@ -115,9 +124,12 @@ export default function PremiumPage() {
                     <button
                       key={amount}
                       type="button"
-                      onClick={() => setSelectedAmount(amount)}
+                      onClick={() => {
+                        setSelectedAmount(amount);
+                        setCustomAmount('');
+                      }}
                       className={`py-3 px-4 rounded-lg font-semibold transition-all ${
-                        selectedAmount === amount
+                        selectedAmount === amount && !customAmount
                           ? 'bg-red-600 text-white shadow-lg'
                           : 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-600 hover:border-red-600'
                       }`}
@@ -125,6 +137,25 @@ export default function PremiumPage() {
                       {amount}
                     </button>
                   ))}
+                </div>
+                
+                {/* Custom Amount Input */}
+                <div className="mt-4">
+                  <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2">
+                    {language === 'ky' ? 'Cyangwa andika ingano y\'icyuma cy\'agucira 2000 (RWF)' : 'Or enter custom amount above 2000 (RWF)'}
+                  </label>
+                  <input
+                    type="number"
+                    min="200"
+                    placeholder="2500"
+                    value={customAmount}
+                    onChange={(e) => {
+                      setCustomAmount(e.target.value);
+                      setSelectedAmount(0);
+                    }}
+                    disabled={loading}
+                    className="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none disabled:opacity-50 text-sm"
+                  />
                 </div>
               </div>
 
@@ -155,7 +186,7 @@ export default function PremiumPage() {
                   {language === 'ky' ? 'Ingano yo kurema' : 'Amount to Pay'}
                 </div>
                 <div className="text-2xl font-bold text-neutral-900 dark:text-white">
-                  {selectedAmount.toLocaleString()} RWF
+                  {finalAmount.toLocaleString()} RWF
                 </div>
                 <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                   {language === 'ky'
