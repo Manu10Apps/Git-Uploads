@@ -1202,7 +1202,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                         </div>
                         <button
                           onClick={() => router.push(`/article/${story.slug}`)}
-                          className="text-sm font-semibold text-neutral-900 dark:text-white hover:text-red-600 dark:hover:text-red-600 transition-colors text-left line-clamp-2 leading-tight"
+                          className="text-sm font-bold text-neutral-900 dark:text-white hover:text-red-600 dark:hover:text-red-600 transition-colors text-left line-clamp-2 leading-tight"
                         >
                           {story.title}
                         </button>
