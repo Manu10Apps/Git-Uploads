@@ -268,7 +268,7 @@ export default function PremiumPage() {
                       ? 'Payment Sent'
                       : 'Malipo Yalitumwa'
                     : currentLang === 'ky'
-                      ? 'Emeza Gukomeza'
+                      ? 'Ishyura Nonaha'
                       : currentLang === 'en'
                       ? 'Pay Now'
                       : 'Lipa Sasa'}
