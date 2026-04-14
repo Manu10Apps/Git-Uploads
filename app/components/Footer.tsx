@@ -65,7 +65,7 @@ export function Footer() {
   const languages = [
     { code: 'ky', name: 'Kinyarwanda' },
     { code: 'en', name: 'English' },
-    { code: 'sw', name: 'Swahili' },
+    { code: 'sw', name: 'Kiswahili' },
   ];
 
   return (
