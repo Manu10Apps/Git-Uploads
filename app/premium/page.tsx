@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Header, Footer } from '@/app/components';
+import Image from 'next/image';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 
@@ -89,25 +89,18 @@ export default function PremiumPage() {
   };
 
   return (
-    <>
-      <Header />
-      <main className="min-h-screen bg-white dark:bg-neutral-900">
-        <section className="py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mx-auto">
-            {/* Header */}
-            <div className="text-center mb-12">
-              <h1 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white mb-4">
-                {language === 'ky' ? 'Ifatabuguzi' : language === 'sw' ? 'Kuchangia' : 'Premium Support'}
-              </h1>
-              <p className="text-lg text-neutral-600 dark:text-neutral-400">
-                {language === 'ky'
-                  ? 'Rema inzira Intambwe Media mu cyuma guto. Muhire mu mbuga nkuru z\'Afurika.'
-                  : 'Support quality journalism. Powered by Flutterwave.'}
-              </p>
-            </div>
+    <main className="min-h-screen bg-white dark:bg-neutral-900 flex flex-col items-center justify-center px-4 py-8">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 mx-auto mb-4 bg-red-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-2xl">IM</span>
+          </div>
+          <h2 className="text-sm font-semibold text-neutral-600 dark:text-neutral-400">Intambwe Media</h2>
+        </div>
 
-            {/* Payment Form */}
-            <form onSubmit={handlePayment} className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-6 sm:p-8 border border-neutral-200 dark:border-neutral-700">
+        {/* Payment Form */}
+        <form onSubmit={handlePayment} className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-6 sm:p-8 border border-neutral-200 dark:border-neutral-700">
               {/* Amount Selection */}
               <div className="mb-8">
                 <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-4">
@@ -204,58 +197,11 @@ export default function PremiumPage() {
               {/* Terms */}
               <p className="text-xs text-neutral-500 dark:text-neutral-400 text-center mt-4">
                 {language === 'ky'
-                  ? 'Mu gusobanura, wavuze ko wemeye amategeko y\'impigania ibyacuruza ya Flutterwave n\'Intambwe Media.'
-                  : 'By proceeding, you agree to our terms and Flutterwave\'s payment terms.'}
+                  ? 'Mu gusobanura, wavuze ko wemeye amategeko y\'impigania ibyacuruza ya KPay n\'Intambwe Media.'
+                  : 'By proceeding, you agree to our terms and KPay\'s payment terms.'}
               </p>
             </form>
-
-            {/* Powered by Flutterwave */}
-            <div className="text-center mt-8">
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                {language === 'ky' ? 'Impigania icyuma: ' : 'Payments powered by '}
-                <a 
-                  href="https://flutterwave.com/rw/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-red-600 hover:text-red-700 font-semibold"
-                >
-                  Flutterwave
-                </a>
-              </p>
-            </div>
-
-            {/* Info Box */}
-            <div className="mt-12 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-              <h3 className="font-semibold text-blue-900 dark:text-blue-400 mb-3">
-                {language === 'ky' ? 'Iki cyuma' : 'About This Payment'}
-              </h3>
-              <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-2">
-                <li>
-                  {language === 'ky'
-                    ? '✓ Rema imbere ya Intambwe Media na gahunda z\'amakuru'
-                    : '✓ Support Intambwe Media journalism and operations'}
-                </li>
-                <li>
-                  {language === 'ky'
-                    ? '✓ Mu masoko (MTN n\'Airtel) mukarangiza icyuma ku minuta 2'
-                    : '✓ Payment processed instantly via MTN & Airtel networks'}
-                </li>
-                <li>
-                  {language === 'ky'
-                    ? '✓ 100% y\'icyuma imonera mu nzira ya Emmanuel Ndahayo'
-                    : '✓ 100% of funds go directly to Emmanuel Ndahayo'}
-                </li>
-                <li>
-                  {language === 'ky'
-                    ? '✓ Icyuma cyokuwinjizwa cyisi kandi cyigire'
-                    : '✓ Secure and encrypted payment processing'}
-                </li>
-              </ul>
-            </div>
           </div>
-        </section>
-      </main>
-      <Footer />
-    </>
-  );
-}
+        </main>
+      );
+    }
