@@ -130,7 +130,7 @@ export default function PremiumPage() {
             >
               {lang === 'ky' ? 'RW' : lang === 'en' ? 'EN' : 'SW'}
             </button>
-          ))})
+          ))}
         </div>
       </div>
 
