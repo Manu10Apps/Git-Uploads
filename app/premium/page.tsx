@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 
@@ -120,7 +121,7 @@ export default function PremiumPage() {
 
       <div className="w-full max-w-md flex flex-col items-center">
         {/* Logo */}
-        <div className="flex justify-center mb-8">
+        <Link href="/" className="flex justify-center mb-8 hover:opacity-80 transition-opacity">
           <Image
             src="/Intambwe%20Linked%202025%20Skeleton%20KCC%20logo%20in%20Red%20OK.png"
             alt="Intambwe Media"
@@ -129,7 +130,7 @@ export default function PremiumPage() {
             priority
             unoptimized
           />
-        </div>
+        </Link>
 
         {/* Payment Form */}
         <form onSubmit={handlePayment} className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-6 sm:p-8 border border-neutral-200 dark:border-neutral-700">
@@ -194,7 +195,7 @@ export default function PremiumPage() {
                 />
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                   {language === 'ky'
-                    ? 'Komeza *USSD prompt*. Ukurikize Amabwiriza.'
+                    ? 'Urakira ubutumwa kuri telefone yawe bugusaba Gukomeza'
                     : 'You\'ll receive a USSD prompt to confirm the payment.'}
                 </p>
               </div>
