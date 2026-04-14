@@ -1179,10 +1179,45 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
           {/* Sidebar - Recent Stories - 1/3 width on desktop */}
           <aside className="lg:col-span-1">
             <div className="sticky top-24">
+              {/* Top Stories Section - INKURU NYAMUKURU */}
+              <section>
+                <div className="mb-6">
+                  <h3 className="text-red-600 text-xs font-semibold tracking-widest">INKURU NYAMUKURU</h3>
+                </div>
+                {topStoriesLoading ? (
+                  <ol className="space-y-4">
+                    {[1, 2, 3, 4, 5].map((index) => (
+                      <li key={index} className="space-y-2">
+                        <div className="h-4 w-32 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse"></div>
+                        <div className="h-3 w-48 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse"></div>
+                      </li>
+                    ))}
+                  </ol>
+                ) : topStories.length > 0 ? (
+                  <ol className="space-y-4">
+                    {topStories.map((story) => (
+                      <li key={story.slug} className="border-l-2 border-red-600 pl-4">
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">
+                          {formatDate(story.publishedAt, language)}
+                        </div>
+                        <button
+                          onClick={() => router.push(`/article/${story.slug}`)}
+                          className="text-sm font-semibold text-neutral-900 dark:text-white hover:text-red-600 dark:hover:text-red-600 transition-colors text-left line-clamp-2 leading-tight"
+                        >
+                          {story.title}
+                        </button>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">{t.article.noRelatedArticles}</p>
+                )}
+              </section>
+
               {/* Recent Stories Section - INKURU ZIHERUKA */}
-              <section className="border-t border-neutral-200 dark:border-neutral-700 pt-12">
+              <section className="border-t border-neutral-200 dark:border-neutral-700 pt-12 mt-12">
                 <div className="mb-10">
-                  <div className="text-red-600 text-xs font-semibold tracking-widest mb-2">{t.article.recentStories}</div>
+                  <h3 className="text-red-600 text-xs font-semibold tracking-widest">{t.article.recentStories}</h3>
                 </div>
                 <div className="grid grid-cols-1 gap-8">
                   {recentLoading ? (
@@ -1329,40 +1364,6 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
                   )}
                 </div>
               </section>
-
-              <aside className="mt-12 pt-12 border-t border-neutral-200 dark:border-neutral-700">
-                <div className="mb-6">
-                  <h3 className="text-red-600 text-xs font-semibold tracking-widest">INKURU NYAMUKURU</h3>
-                </div>
-                {topStoriesLoading ? (
-                  <ol className="space-y-4">
-                    {[1, 2, 3, 4, 5].map((index) => (
-                      <li key={index} className="space-y-2">
-                        <div className="h-4 w-32 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse"></div>
-                        <div className="h-3 w-48 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse"></div>
-                      </li>
-                    ))}
-                  </ol>
-                ) : topStories.length > 0 ? (
-                  <ol className="space-y-4">
-                    {topStories.map((story) => (
-                      <li key={story.slug} className="border-l-2 border-red-600 pl-4">
-                        <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">
-                          {formatDate(story.publishedAt, language)}
-                        </div>
-                        <button
-                          onClick={() => router.push(`/article/${story.slug}`)}
-                          className="text-sm font-semibold text-neutral-900 dark:text-white hover:text-red-600 dark:hover:text-red-600 transition-colors text-left line-clamp-2 leading-tight"
-                        >
-                          {story.title}
-                        </button>
-                      </li>
-                    ))}
-                  </ol>
-                ) : (
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">{t.article.noRelatedArticles}</p>
-                )}
-              </aside>
 
             </div>
 
