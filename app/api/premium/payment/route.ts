@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 
 interface PaymentRequest {
   amount: number;
@@ -7,41 +6,29 @@ interface PaymentRequest {
   language: string;
 }
 
-interface FlutterwavePayload {
-  tx_ref: string;
+interface KPayPayload {
   amount: number;
+  phone: string;
+  reference: string;
+  narration: string;
   currency: string;
-  payment_options: string;
-  customer: {
-    email: string;
-    phone_number: string;
-    name: string;
-  };
-  customizations: {
-    title: string;
-    description: string;
-    logo: string;
-  };
-  meta: {
-    receiver_name: string;
-    receiver_phone: string;
-  };
 }
 
 const RECEIVER_PHONE = '0788823265';
 const RECEIVER_NAME = 'Emmanuel Ndahayo';
-const FLUTTERWAVE_PUBLIC_KEY = process.env.FLUTTERWAVE_PUBLIC_KEY || '';
-const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY || '';
+const KPAY_API_KEY = process.env.KPAY_API_KEY || '';
+const KPAY_API_URL = process.env.KPAY_API_URL || 'https://api.kpay.rw';
+const KPAY_MERCHANT_ID = process.env.KPAY_MERCHANT_ID || '';
 
 export async function POST(request: NextRequest) {
   try {
     const body: PaymentRequest = await request.json();
     const { amount, phoneNumber, language } = body;
 
-    // Validate inputs
-    if (!amount || amount < 200 || amount > 2000) {
+    // Validate inputs - allow 200 RWF and above with no upper limit
+    if (!amount || amount < 200) {
       return NextResponse.json(
-        { message: language === 'ky' ? 'Ingano ntabwo ari neza' : 'Invalid amount' },
+        { message: language === 'ky' ? 'Ingano igomba kuba 200 RWF cyangwa hejuru' : 'Minimum amount is 200 RWF' },
         { status: 400 }
       );
     }
@@ -79,33 +66,22 @@ export async function POST(request: NextRequest) {
     // Generate unique transaction reference
     const txRef = `INTAMBWE-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
-    // Prepare Flutterwave payload
-    const flutterwavePayload: FlutterwavePayload = {
-      tx_ref: txRef,
+    // Prepare KPay payload
+    const kpayPayload: KPayPayload = {
       amount: amount,
+      phone: normalizedPhone,
+      reference: txRef,
+      narration: language === 'ky' 
+        ? 'Ifatabuguzi - Intambwe Media mu cyuma guto'
+        : language === 'sw'
+        ? 'Kuchangia - Intambwe Media'
+        : 'Premium Support - Intambwe Media',
       currency: 'RWF',
-      payment_options: 'mobilemoneyrwanda',
-      customer: {
-        email: 'support@intambwemedia.com',
-        phone_number: normalizedPhone,
-        name: 'Intambwe Media Supporter',
-      },
-      customizations: {
-        title: language === 'ky' ? 'Ifatabuguzi - Intambwe Media' : 'Premium - Intambwe Media',
-        description: language === 'ky' 
-          ? 'Rema inzira Intambwe Media mu cyuma guto' 
-          : 'Support quality African journalism',
-        logo: 'https://intambwemedia.com/logo.png',
-      },
-      meta: {
-        receiver_name: RECEIVER_NAME,
-        receiver_phone: RECEIVER_PHONE,
-      },
     };
 
-    // Process payment via Flutterwave
-    const paymentResult = await processFlutterwavePayment(
-      flutterwavePayload,
+    // Process payment via KPay
+    const paymentResult = await processKPayPayment(
+      kpayPayload,
       normalizedPhone,
       amount
     );
@@ -118,7 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Log successful payment initiation
-    console.log(`✓ Payment Initiated via Flutterwave:
+    console.log(`✓ Payment Initiated via KPay:
       TX Ref: ${txRef}
       Phone: ${normalizedPhone}
       Amount: ${amount} RWF
@@ -150,55 +126,55 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Process payment via Flutterwave API
- * Integrates with MTN Mobile Money Rwanda
+ * Process payment via KPay API
+ * KPay Rwanda integration for mobile money payments
  */
-async function processFlutterwavePayment(
-  payload: FlutterwavePayload,
+async function processKPayPayment(
+  payload: KPayPayload,
   phoneNumber: string,
   amount: number
 ): Promise<{ success: boolean; message: string }> {
   try {
-    if (!FLUTTERWAVE_SECRET_KEY) {
-      console.warn('Flutterwave secret key not configured. Using fallback processing.');
+    if (!KPAY_API_KEY || !KPAY_MERCHANT_ID) {
+      console.warn('KPay credentials not configured. Using fallback processing.');
       return {
         success: true,
         message: 'Payment processing initiated',
       };
     }
 
-    const response = await fetch('https://api.flutterwave.com/v3/charges?type=mobilemoney', {
+    const response = await fetch(`${KPAY_API_URL}/v1/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${FLUTTERWAVE_SECRET_KEY}`,
+        'Authorization': `Bearer ${KPAY_API_KEY}`,
+        'X-Merchant-ID': KPAY_MERCHANT_ID,
       },
       body: JSON.stringify({
-        tx_ref: payload.tx_ref,
         amount: payload.amount,
+        phone: payload.phone,
+        reference: payload.reference,
+        narration: payload.narration,
         currency: payload.currency,
-        customer: payload.customer,
-        customizations: payload.customizations,
-        meta: payload.meta,
-        payment_type: 'mobilemoney',
-        country: 'RW',
+        callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://intambwemedia.com'}/api/premium/webhook`,
       }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Flutterwave API error:', data);
+      console.error('KPay API error:', data);
       return {
         success: false,
         message: data.message || 'Payment processing failed',
       };
     }
 
-    if (data.data?.auth_url) {
+    // KPay returns success with transaction details
+    if (data.status === 'success' || data.status === 'pending') {
       return {
         success: true,
-        message: 'Proceed to payment authorization',
+        message: 'Payment initiated',
       };
     }
 
@@ -207,7 +183,7 @@ async function processFlutterwavePayment(
       message: 'Payment initiated',
     };
   } catch (error) {
-    console.error('Flutterwave processing error:', error);
+    console.error('KPay processing error:', error);
     return {
       success: false,
       message: 'Failed to process payment. Please try again.',

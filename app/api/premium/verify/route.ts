@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY || '';
+const KPAY_API_KEY = process.env.KPAY_API_KEY || '';
+const KPAY_API_URL = process.env.KPAY_API_URL || 'https://api.kpay.rw';
+const KPAY_MERCHANT_ID = process.env.KPAY_MERCHANT_ID || '';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +15,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!FLUTTERWAVE_SECRET_KEY) {
+    if (!KPAY_API_KEY || !KPAY_MERCHANT_ID) {
       // Return mock response if no API key configured
       return NextResponse.json({
         status: 'pending',
@@ -22,13 +24,14 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Verify payment with Flutterwave
+    // Verify payment with KPay
     const response = await fetch(
-      `https://api.flutterwave.com/v3/transactions/verify_by_reference?reference=${transactionId}`,
+      `${KPAY_API_URL}/v1/payments/${transactionId}`,
       {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${FLUTTERWAVE_SECRET_KEY}`,
+          'Authorization': `Bearer ${KPAY_API_KEY}`,
+          'X-Merchant-ID': KPAY_MERCHANT_ID,
         },
       }
     );
@@ -36,7 +39,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Flutterwave verification error:', data);
+      console.error('KPay verification error:', data);
       return NextResponse.json(
         {
           status: 'error',
@@ -46,19 +49,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const paymentData = data.data;
+    const paymentData = data.data || data;
 
     return NextResponse.json({
       status: paymentData.status || 'pending',
-      transactionId: paymentData.tx_ref,
+      transactionId: paymentData.reference || transactionId,
       amount: paymentData.amount,
-      currency: paymentData.currency,
+      currency: paymentData.currency || 'RWF',
       customer: {
-        phone: paymentData.customer?.phone_number,
-        name: paymentData.customer?.name,
+        phone: paymentData.phone,
       },
       message:
-        paymentData.status === 'successful'
+        paymentData.status === 'success' || paymentData.status === 'completed'
           ? 'Payment confirmed! Thank you for supporting Intambwe Media.'
           : paymentData.status === 'pending'
             ? 'Payment is being processed. Please wait...'
