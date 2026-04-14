@@ -25,20 +25,20 @@ export default function PremiumPage() {
     e.preventDefault();
 
     if (!phoneNumber.trim()) {
-      setMessage(language === 'ky' ? 'Ongereza nimiro y\'icyuma' : 'Please enter your phone number');
+      setMessage(language === 'ky' ? 'Ongereza nimiro y\'icyuma' : language === 'en' ? 'Please enter your phone number' : 'Tafadhali ingiza namba ya simu yako');
       setPaymentStatus('error');
       return;
     }
 
     if (finalAmount < 200) {
-      setMessage(language === 'ky' ? 'Ingano igomba kuva 200 RWF' : 'Amount must be at least 200 RWF');
+      setMessage(language === 'ky' ? 'Ingano igomba kuva 200 RWF' : language === 'en' ? 'Amount must be at least 200 RWF' : 'Kiasi lazima kuwa angalau 200 RWF');
       setPaymentStatus('error');
       return;
     }
 
     setLoading(true);
     setPaymentStatus('processing');
-    setMessage(language === 'ky' ? 'Imishyikirano irekuramo...' : 'Processing your payment...');
+    setMessage(language === 'ky' ? 'Imishyikirano irekuramo...' : language === 'en' ? 'Processing your payment...' : 'Inaendelea na malipo yako...');
 
     try {
       const response = await fetch('/api/premium/payment', {
@@ -61,7 +61,9 @@ export default function PremiumPage() {
         setMessage(
           language === 'ky'
             ? `Ijambo ryobwigire: ${data.transactionId}\n\nAndika USSD code Cyuma cyakurwa ya MTN/Airtel. Uramundane mu intara y'insanganyamatsiko.`
-            : `Reference: ${data.transactionId}\n\nCheck your phone for USSD prompt. Complete the payment confirmation on your device.`
+            : language === 'en'
+            ? `Reference: ${data.transactionId}\n\nCheck your phone for USSD prompt. Complete the payment confirmation on your device.`
+            : `Kumbukumbu: ${data.transactionId}\n\nKagua simu yako kwa ujumbe wa USSD. Kamata kupatiliza uthibitisho wa malipo kwenye kifaa chako.`
         );
         setPhoneNumber('');
         
@@ -69,11 +71,11 @@ export default function PremiumPage() {
         setTimeout(() => checkPaymentStatus(data.transactionId), 30000);
       } else {
         setPaymentStatus('error');
-        setMessage(data.message || (language === 'ky' ? 'Habaye ikosa mu cyuma' : 'Payment failed'));
+        setMessage(data.message || (language === 'ky' ? 'Habaye ikosa mu cyuma' : language === 'en' ? 'Payment failed' : 'Malipo yalishindwa'));
       }
     } catch (error) {
       setPaymentStatus('error');
-      setMessage(language === 'ky' ? 'Habaye ikosa, yongera kugerageza' : 'An error occurred. Please try again.');
+      setMessage(language === 'ky' ? 'Habaye ikosa, yongera kugerageza' : language === 'en' ? 'An error occurred. Please try again.' : 'Kumetokea hitilafu. Tafadhali jaribu tena.');
       console.error('Payment error:', error);
     } finally {
       setLoading(false);
@@ -90,7 +92,9 @@ export default function PremiumPage() {
         setMessage(
           language === 'ky'
             ? `Icyuma cyakozwe neza!\n\nMwibwagenguye ku rwego rw'Intambwe Media. Ijambo ryobwigire: ${txRef}`
-            : `Payment confirmed!\n\nThank you for supporting Intambwe Media. Reference: ${txRef}`
+            : language === 'en'
+            ? `Payment confirmed!\n\nThank you for supporting Intambwe Media. Reference: ${txRef}`
+            : `Malipo yamehakikiwa!\n\nAsanteni kwa kusaidia Intambwe Media. Kumbukumbu: ${txRef}`
         );
       }
     } catch (error) {
@@ -130,7 +134,7 @@ export default function PremiumPage() {
             className="h-16 w-16 rounded-lg sm:h-20 sm:w-20"
             priority
           />
-          <p className="text-center mt-3 text-sm font-semibold text-neutral-900 dark:text-white">
+          <p className="text-center mt-3 text-sm font-semibold font-sinbad-the-sailor text-neutral-900 dark:text-white">
             Intambwe Media
           </p>
         </Link>
@@ -140,7 +144,7 @@ export default function PremiumPage() {
               {/* Amount Selection */}
               <div className="mb-8">
                 <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-4">
-                  {language === 'ky' ? 'Hitamo ingano y\'amafaranga (RWF)' : 'Select Amount (RWF)'}
+                  {language === 'ky' ? 'Hitamo ingano y\'amafaranga (RWF)' : language === 'en' ? 'Select Amount (RWF)' : 'Chagua Kiasi (RWF)'}
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                   {amounts.map((amount) => (
@@ -165,7 +169,7 @@ export default function PremiumPage() {
                 {/* Custom Amount Input */}
                 <div className="mt-4">
                   <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2">
-                    {language === 'ky' ? 'Cyangwa Wandike Ingano y\'amafaranga arenga 2000 (RWF)' : 'Or enter custom amount above 2000 (RWF)'}
+                    {language === 'ky' ? 'Cyangwa Wandike Ingano y\'amafaranga arenga 2000 (RWF)' : language === 'en' ? 'Or enter custom amount above 2000 (RWF)' : 'Au ingiza kiasi cha kawaida zaidi ya 2000 (RWF)'}
                   </label>
                   <input
                     type="number"
@@ -185,7 +189,7 @@ export default function PremiumPage() {
               {/* Phone Number Input */}
               <div className="mb-8">
                 <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
-                  {language === 'ky' ? 'Nimiro yawe (MTN/Airtel)' : 'Phone Number (MTN/Airtel)'}
+                  {language === 'ky' ? 'Nimiro yawe (MTN/Airtel)' : language === 'en' ? 'Phone Number (MTN/Airtel)' : 'Namba ya Simu (MTN/Airtel)'}
                 </label>
                 <input
                   type="tel"
@@ -199,14 +203,16 @@ export default function PremiumPage() {
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                   {language === 'ky'
                     ? 'Urakira ubutumwa kuri telefone yawe bugusaba Gukomeza'
-                    : 'You\'ll receive a USSD prompt to confirm the payment.'}
+                    : language === 'en'
+                    ? 'You\'ll receive a USSD prompt to confirm the payment.'
+                    : 'Utapokea ujumbe wa USSD kwenye simu yako ujumbe ukuomba kubadilisha.'}
                 </p>
               </div>
 
               {/* Display Selected Amount */}
               <div className="bg-white dark:bg-neutral-700 rounded-lg p-4 mb-8 border-l-4 border-red-600">
                 <div className="text-sm text-neutral-600 dark:text-neutral-400">
-                  {language === 'ky' ? 'Ingano y\'amafaranga wahisemo' : 'Amount to Pay'}
+                  {language === 'ky' ? 'Ingano y\'amafaranga wahisemo' : language === 'en' ? 'Amount to Pay' : 'Kiasi cha Kulipa'}
                 </div>
                 <div className="text-2xl font-bold text-neutral-900 dark:text-white">
                   {finalAmount.toLocaleString()} RWF
@@ -214,7 +220,9 @@ export default function PremiumPage() {
                 <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                   {language === 'ky'
                     ? 'Amazina y\'Uwakira: Emmanuel Ndahayo (0788823265)'
-                    : 'Receiver: Emmanuel Ndahayo (0788823265)'}
+                    : language === 'en'
+                    ? 'Receiver: Emmanuel Ndahayo (0788823265)'
+                    : 'Mpokeaji: Emmanuel Ndahayo (0788823265)'}
                 </div>
               </div>
 
@@ -242,21 +250,29 @@ export default function PremiumPage() {
                 {loading
                   ? language === 'ky'
                     ? 'Imishyikirano...'
-                    : 'Processing...'
+                    : language === 'en'
+                    ? 'Processing...'
+                    : 'Inaendelea...'
                   : paymentStatus === 'success'
                     ? language === 'ky'
                       ? 'Icyuma cyakozwe'
-                      : 'Payment Sent'
+                      : language === 'en'
+                      ? 'Payment Sent'
+                      : 'Malipo Yalitumwa'
                     : language === 'ky'
                       ? 'Emeza Gukomeza'
-                      : 'Pay Now'}
+                      : language === 'en'
+                      ? 'Pay Now'
+                      : 'Lipa Sasa'}
               </button>
 
               {/* Terms */}
               <p className="text-xs text-neutral-500 dark:text-neutral-400 text-center mt-4">
                 {language === 'ky'
                   ? 'Nuhitamo Gukomeza Uraba Uteye Inkunga E-Gazeti ya Intambwe Media'
-                  : 'By proceeding, You agree to support Intambwe Media E-Paper'}
+                  : language === 'en'
+                  ? 'By proceeding, You agree to support Intambwe Media E-Paper'
+                  : 'Kwa kuendelea, unakubaliana kusaidia Intambwe Media E-Paper'}
               </p>
             </form>
           </div>
