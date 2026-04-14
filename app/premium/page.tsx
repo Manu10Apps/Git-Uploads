@@ -145,7 +145,7 @@ export default function PremiumPage() {
             className="h-16 w-16 rounded-lg sm:h-20 sm:w-20"
             priority
           />
-          <p className="text-center mt-3 text-sm font-semibold font-sinbad-the-sailor text-neutral-900 dark:text-white">
+          <p className="text-center mt-3 text-2xl font-semibold font-sinbad-the-sailor text-neutral-900 dark:text-white">
             Intambwe Media
           </p>
         </Link>
