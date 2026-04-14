@@ -82,6 +82,9 @@ export function Footer() {
               sizes="48px"
               className="h-12 w-12 rounded-lg mx-auto sm:mx-0"
             />
+            <p className="font-sinbad-the-sailor text-lg font-bold text-white text-center sm:text-left">
+              Intambwe Media
+            </p>
             <p className="text-sm text-neutral-400 font-light leading-relaxed">
               {t.footerBrand.description}
             </p>
