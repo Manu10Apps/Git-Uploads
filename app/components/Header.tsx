@@ -245,14 +245,14 @@ export function Header() {
               <Search className="w-4 sm:w-5 h-4 sm:h-5" aria-hidden="true" />
             </button>
 
-            {/* Subscribe Button */}
+            {/* Premium Button */}
             <div className="hidden xl:flex flex-col items-center">
               <Link
-                href="/#social-media-links"
+                href="/premium"
                 className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90"
                 style={{ backgroundColor: '#e3001b' }}
               >
-                {language === 'ky' ? 'Iyandikishe' : t.nav.subscribe}
+                {language === 'ky' ? 'Ifatabuguzi' : 'Premium'}
               </Link>
             </div>
 
@@ -277,12 +277,12 @@ export function Header() {
           <nav className="lg:hidden pb-3 sm:pb-4 space-y-1 sm:space-y-2 border-t border-neutral-200 dark:border-neutral-800 mt-2 max-h-[70vh] overflow-y-auto overscroll-contain">
             <div className="px-3 sm:px-4 pt-3">
               <Link
-                href="/#social-media-links"
+                href="/premium"
                 className="inline-flex items-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white"
                 style={{ backgroundColor: '#e3001b' }}
                 onClick={() => setIsMenuOpen(false)}
               >
-                {language === 'ky' ? 'Iyandikishe' : t.nav.subscribe}
+                {language === 'ky' ? 'Ifatabuguzi' : 'Premium'}
               </Link>
             </div>
             {NAV_CATEGORY_ITEMS.map((item) => {
