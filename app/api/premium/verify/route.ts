@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const ESICIA_API_KEY = process.env.ESICIA_API_KEY || '';
-const ESICIA_USERNAME = process.env.ESICIA_USERNAME || '';
-const ESICIA_PASSWORD = process.env.ESICIA_PASSWORD || '';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,7 +13,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!ESICIA_API_KEY || !ESICIA_USERNAME || !ESICIA_PASSWORD) {
+    if (!ESICIA_API_KEY) {
       // Return pending response if credentials not configured
       return NextResponse.json({
         status: 'pending',
@@ -53,6 +51,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * Verify payment status with ESICIA
+ * ESICIA API returns status via query parameter
  */
 async function verifyESICIAPayment(transactionId: string): Promise<{
   status: string;
@@ -62,20 +61,22 @@ async function verifyESICIAPayment(transactionId: string): Promise<{
   phone?: string;
 }> {
   try {
-    // Create Basic Auth header
-    const auth = Buffer.from(`${ESICIA_USERNAME}:${ESICIA_PASSWORD}`).toString('base64');
-
     // Query ESICIA for payment status
     const response = await fetch(`https://pay.esicia.com/?refid=${transactionId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Kpay-Key': ESICIA_API_KEY,
-        'Authorization': `Basic ${auth}`,
+        'secret_key': ESICIA_API_KEY,
       },
     });
 
     const data = await response.json();
+
+    console.log('ESICIA Verify Response:', {
+      refid: data.refid,
+      status: data.status,
+      reply: data.reply,
+    });
 
     if (!response.ok) {
       console.warn('ESICIA verification response:', data);
@@ -85,8 +86,16 @@ async function verifyESICIAPayment(transactionId: string): Promise<{
     }
 
     // Map ESICIA response to standard format
+    // ESICIA returns "successful" or similar status strings
+    const status = 
+      data.status === 'successful' || 
+      data.status === 'success' || 
+      data.reply === 'CONFIRMED' 
+        ? 'success' 
+        : data.status || 'pending';
+
     return {
-      status: data.status === 'successful' || data.status === 'success' ? 'success' : data.status || 'pending',
+      status: status,
       transactionId: data.refid || transactionId,
       amount: data.amount,
       currency: data.currency || 'RWF',
