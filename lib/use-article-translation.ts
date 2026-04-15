@@ -160,12 +160,23 @@ export function useArticleTranslation({
           });
 
           if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
+            let errorData;
+            try {
+              errorData = await response.json();
+            } catch {
+              errorData = { error: `HTTP ${response.status}` };
+            }
             console.error(
-              '[useArticleTranslation] Failed to save translation:',
-              response.status,
-              errorData
+              '[useArticleTranslation] Translation save FAILED:',
+              {
+                status: response.status,
+                error: errorData.error,
+                type: errorData.type,
+                code: errorData.code,
+                details: errorData.details,
+              }
             );
+            // Still display the translation locally even if save fails
           }
         } catch (error) {
           console.error('[useArticleTranslation] Error saving translation:', error);
