@@ -65,11 +65,11 @@ model ArticleTranslation {
   articleId         Int
   article           Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
   language          String    // "en" | "sw"
-  title             String
-  excerpt           String
-  content           String
-  seoTitle          String?
-  seoDescription    String?
+  title             String    @db.Text
+  excerpt           String    @db.Text
+  content           String    @db.Text
+  seoTitle          String?   @db.Text
+  seoDescription    String?   @db.Text
   galleryCaptions   String?   @db.Text @map("gallery_captions") // JSON array as string: '[{"url":"...","caption":"..."}]'
   translationSource String    @default("ai") // "ai" | "manual" | "deepl" | "google"
   versionHash       String    // hash of original content at time of translation
