@@ -77,19 +77,12 @@ export async function GET(request: NextRequest) {
  * Save a client-side (puter.ai) translation to the database.
  */
 export async function POST(request: NextRequest) {
-  console.log('[POST /api/translations/cache] === START REQUEST ===');
+  const startTime = Date.now();
   
   try {
-    // First, verify database connectivity
-    console.log('[translations/cache] Checking database connectivity...');
-    try {
-      await prisma.$queryRaw`SELECT 1`;
-      console.log('[translations/cache] ✓ Database connection OK');
-    } catch (dbConnErr) {
-      console.error('[translations/cache] ✗ Database connection FAILED:', dbConnErr);
-      throw new Error(`Database connection failed: ${dbConnErr instanceof Error ? dbConnErr.message : String(dbConnErr)}`);
-    }
-
+    console.log('[POST HOME] Request arrived at time:', startTime);
+    console.error('[POST HOME] ERROR-STYLE TEST');
+    
     console.log('[translations/cache] POST request received');
     
     let body;
