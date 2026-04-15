@@ -77,18 +77,21 @@ export async function GET(request: NextRequest) {
  * Save a client-side (puter.ai) translation to the database.
  */
 export async function POST(request: NextRequest) {
+  console.log('[POST /api/translations/cache] === START REQUEST ===');
+  
   try {
-    console.log('[translations/cache] POST request started at', new Date().toISOString());
+    console.log('[translations/cache] POST request received');
     
     let body;
     try {
       body = await request.json();
+      console.log('[translations/cache] Body parsed successfully');
     } catch (parseErr) {
       console.error('[translations/cache] JSON parse error:', parseErr);
-      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
     }
     
-    console.log('[translations/cache] Parsed body fields:', Object.keys(body));
+    console.log('[translations/cache] Body keys:', Object.keys(body));
     const { articleId, language, title, excerpt, content, galleryCaptions } = body;
 
     // Validate inputs
@@ -242,6 +245,7 @@ export async function POST(request: NextRequest) {
       throw upsertErr;
     }
 
+    console.log('[POST /api/translations/cache] === SUCCESS ===', result.id);
     return NextResponse.json({ success: true, id: result.id });
   } catch (err) {
     // Check if it's a timeout
@@ -256,15 +260,17 @@ export async function POST(request: NextRequest) {
       isTimeout,
     };
     console.error('[translations/cache] ERROR:', JSON.stringify(errorDetails, null, 2));
+    console.log('[POST /api/translations/cache] === SENDING ERROR RESPONSE ===', statusCode);
     
-    return NextResponse.json(
-      { 
-        error: errorDetails.message,
-        type: errorDetails.type,
-        code: errorDetails.code,
-        isTimeout: errorDetails.isTimeout,
-      },
-      { status: statusCode }
-    );
+    const responsePayload = { 
+      error: errorDetails.message,
+      type: errorDetails.type,
+      code: errorDetails.code,
+      isTimeout: errorDetails.isTimeout,
+    };
+    
+    console.log('[POST /api/translations/cache] Response payload:', responsePayload);
+    
+    return NextResponse.json(responsePayload, { status: statusCode });
   }
 }

@@ -179,19 +179,17 @@ export function useArticleTranslation({
           if (!response.ok) {
             let errorData;
             try {
-              errorData = await response.json();
+              const text = await response.text();
+              console.log('[useArticleTranslation] Response text:', text);
+              errorData = text ? JSON.parse(text) : { error: `HTTP ${response.status}` };
             } catch {
               errorData = { error: `HTTP ${response.status}` };
             }
             console.error(
-              '[useArticleTranslation] Translation save FAILED:',
-              {
-                status: response.status,
-                error: errorData.error,
-                type: errorData.type,
-                code: errorData.code,
-                isTimeout: errorData.isTimeout,
-              }
+              '[useArticleTranslation] Translation save FAILED - Status',
+              response.status,
+              'Error:',
+              JSON.stringify(errorData)
             );
             // Still display the translation locally even if save fails
           } else {
