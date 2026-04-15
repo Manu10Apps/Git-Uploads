@@ -164,9 +164,11 @@ export function useArticleTranslation({
             return; // Skip DB save if too large
           }
 
+          console.log('[useArticleTranslation] STARTING FETCH TO /api/translations/cache');
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
+          console.log('[useArticleTranslation] FETCH CONFIG - Method: POST, Headers: Content-Type: application/json');
           const response = await fetch('/api/translations/cache', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -176,14 +178,21 @@ export function useArticleTranslation({
 
           clearTimeout(timeoutId);
 
+          console.log('[useArticleTranslation] RESPONSE RECEIVED - Status:', response.status, 'OK:', response.ok);
+          console.log('[useArticleTranslation] RESPONSE HEADERS:', JSON.stringify(Object.fromEntries(response.headers)));
+
           if (!response.ok) {
+            console.log('[useArticleTranslation] RESPONSE NOT OK - Attempting to read body');
             let errorData;
+            let responseText = '';
             try {
-              const text = await response.text();
-              console.log('[useArticleTranslation] Response text:', text);
-              errorData = text ? JSON.parse(text) : { error: `HTTP ${response.status}` };
-            } catch {
-              errorData = { error: `HTTP ${response.status}` };
+              responseText = await response.text();
+              console.log('[useArticleTranslation] RAW RESPONSE TEXT:', responseText);
+              console.log('[useArticleTranslation] RAW TEXT LENGTH:', responseText.length);
+              errorData = responseText ? JSON.parse(responseText) : { error: `HTTP ${response.status}` };
+            } catch (parseErr) {
+              console.error('[useArticleTranslation] FAILED TO PARSE RESPONSE:', parseErr);
+              errorData = { error: `HTTP ${response.status}`, parseError: String(parseErr), rawText: responseText };
             }
             console.error(
               '[useArticleTranslation] Translation save FAILED - Status',
