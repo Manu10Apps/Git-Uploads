@@ -155,6 +155,25 @@ export async function POST(request: NextRequest) {
       versionHash,
     };
 
+    console.log('[translations/cache] Translation data prepared:', {
+      title: translationData.title || '(empty)',
+      excerpt: translationData.excerpt || '(empty)',
+      content: translationData.content.substring(0, 50) + '...',
+      hasGallery: !!translationData.galleryCaptions,
+      versionHash: translationData.versionHash,
+    });
+
+    // Validate final data
+    if (!translationData.title) {
+      console.error('[translations/cache] Title is empty after trimming');
+      return NextResponse.json({ error: 'Title is empty' }, { status: 400 });
+    }
+
+    if (!translationData.content) {
+      console.error('[translations/cache] Content is empty after trimming');
+      return NextResponse.json({ error: 'Content is empty' }, { status: 400 });
+    }
+
     console.log('[translations/cache] Attempting to save translation:', {
       articleId: id,
       language,
@@ -192,17 +211,21 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, id: result.id });
   } catch (err) {
-    console.error('[translations/cache] FATAL ERROR:', {
+    const errorDetails = {
       type: err instanceof Error ? err.constructor.name : typeof err,
       message: err instanceof Error ? err.message : String(err),
       code: (err as any)?.code,
       meta: (err as any)?.meta,
-      stack: err instanceof Error ? err.stack?.split('\n').slice(0, 5).join('\n') : undefined,
-    });
+    };
+    console.error('[translations/cache] FATAL ERROR:', errorDetails);
     
-    const message = err instanceof Error ? err.message : 'Save failed';
     return NextResponse.json(
-      { error: message, type: 'server_error' },
+      { 
+        error: errorDetails.message,
+        type: errorDetails.type,
+        code: errorDetails.code,
+        details: errorDetails.meta,
+      },
       { status: 500 }
     );
   }
