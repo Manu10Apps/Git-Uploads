@@ -113,6 +113,7 @@ export function useArticleTranslation({
             title: originalTitle,
             excerpt: originalExcerpt,
             content: originalContent,
+            gallery: originalGallery,
           },
           'ky',
           lang
@@ -124,7 +125,7 @@ export function useArticleTranslation({
           title: result.title,
           excerpt: result.excerpt,
           content: result.content,
-          galleryCaptions: originalGallery || undefined,
+          galleryCaptions: result.galleryCaptions || originalGallery,
           translationSource: 'puter-ai',
           translatedAt: new Date().toISOString(),
         };
@@ -143,7 +144,7 @@ export function useArticleTranslation({
               title: result.title,
               excerpt: result.excerpt,
               content: result.content,
-              galleryCaptions: originalGallery || null,
+              galleryCaptions: result.galleryCaptions || null,
             }),
           });
         } catch {
