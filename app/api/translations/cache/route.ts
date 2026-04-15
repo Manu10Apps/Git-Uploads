@@ -182,38 +182,62 @@ export async function POST(request: NextRequest) {
       hasGallery: !!galleryCaptionsJson,
     });
 
-    // Save to database
+    // Save to database with explicit field assignment
     let result;
     try {
-      console.log('[translations/cache] Starting upsert operation...');
+      console.log('[translations/cache] Starting upsert for article', id, 'language', language);
       
-      // Add timeout to prevent hanging
-      const upsertPromise = prisma.articleTranslation.upsert({
+      // Check if translation exists
+      const existing = await prisma.articleTranslation.findUnique({
         where: {
           articleId_language: {
             articleId: id,
             language,
           },
         },
-        create: {
-          articleId: id,
-          language,
-          ...translationData,
-        },
-        update: translationData,
+        select: { id: true },
       });
 
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Database operation timeout (30s)')), 30000)
-      );
+      console.log('[translations/cache] Existing translation found:', !!existing);
 
-      result = (await Promise.race([upsertPromise, timeoutPromise])) as any;
-      console.log('[translations/cache] Successfully upserted translation, id:', result.id);
+      if (existing) {
+        // Update existing
+        console.log('[translations/cache] Updating translation id', existing.id);
+        result = await prisma.articleTranslation.update({
+          where: { id: existing.id },
+          data: {
+            title: translationData.title,
+            excerpt: translationData.excerpt,
+            content: translationData.content,
+            galleryCaptions: translationData.galleryCaptions,
+            translationSource: translationData.translationSource,
+            versionHash: translationData.versionHash,
+            updatedAt: new Date(),
+          },
+        });
+      } else {
+        // Create new
+        console.log('[translations/cache] Creating new translation for article', id);
+        result = await prisma.articleTranslation.create({
+          data: {
+            articleId: id,
+            language,
+            title: translationData.title,
+            excerpt: translationData.excerpt,
+            content: translationData.content,
+            galleryCaptions: translationData.galleryCaptions,
+            translationSource: translationData.translationSource,
+            versionHash: translationData.versionHash,
+          },
+        });
+      }
+      console.log('[translations/cache] Successfully saved translation, id:', result.id);
     } catch (upsertErr) {
-      console.error('[translations/cache] Upsert failed:', {
+      console.error('[translations/cache] Save operation failed:', {
         error: upsertErr instanceof Error ? upsertErr.message : String(upsertErr),
         code: (upsertErr as any)?.code,
         meta: (upsertErr as any)?.meta,
+        stack: upsertErr instanceof Error ? upsertErr.stack?.substring(0, 300) : undefined,
       });
       throw upsertErr;
     }
