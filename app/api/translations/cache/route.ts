@@ -78,7 +78,16 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    console.log('[translations/cache POST] Request received');
     const body = await request.json();
+    console.log('[translations/cache POST] Body parsed:', { 
+      articleId: body.articleId, 
+      language: body.language, 
+      contentLength: body.content?.length || 0,
+      excerptLength: body.excerpt?.length || 0,
+      captionCount: Array.isArray(body.galleryCaptions) ? body.galleryCaptions.length : 0
+    });
+
     const { articleId, language, title, excerpt, content, galleryCaptions } = body;
 
     const id = typeof articleId === 'number' ? articleId : parseInt(String(articleId), 10);
@@ -93,6 +102,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the original article to compute version hash
+    console.log('[translations/cache POST] Looking up article:', id);
     const article = await prisma.article.findUnique({
       where: { id },
       select: { title: true, content: true },
@@ -104,6 +114,7 @@ export async function POST(request: NextRequest) {
     }
 
     const versionHash = generateContentHash(article.title, article.content);
+    console.log('[translations/cache POST] Version hash computed:', versionHash);
 
     // Convert gallery captions to JSON string if provided
     let galleryCaptionsJson: string | null = null;
@@ -126,44 +137,51 @@ export async function POST(request: NextRequest) {
     const now = new Date();
 
     // Use explicit create and update shapes to avoid type issues
-    await prisma.articleTranslation.upsert({
+    console.log('[translations/cache POST] Performing upsert with:', {
+      articleId: id,
+      language,
+      titleLength: String(title).substring(0, 500).length,
+      contentLength: String(content).length,
+      hasGalleryCaptions: !!galleryCaptionsJson
+    });
+
+    const result = await prisma.articleTranslation.upsert({
       where: { articleId_language: { articleId: id, language } },
       create: {
         articleId: id,
         language: String(language),
-        title: String(title).substring(0, 500), // Ensure not too long
-        excerpt: String(excerpt || '').substring(0, 1000),
+        title: String(title),
+        excerpt: String(excerpt || ''),
         content: String(content),
         galleryCaptions: galleryCaptionsJson,
         translationSource: 'puter-ai',
         versionHash: String(versionHash),
-        translatedAt: now,
       },
       update: {
-        title: String(title).substring(0, 500),
-        excerpt: String(excerpt || '').substring(0, 1000),
+        title: String(title),
+        excerpt: String(excerpt || ''),
         content: String(content),
         galleryCaptions: galleryCaptionsJson,
         translationSource: 'puter-ai',
         versionHash: String(versionHash),
-        translatedAt: now,
+        translatedAt: now, // update translation timestamp on re-translation
       },
     });
 
     console.log(
       '[translations/cache POST] Successfully saved translation:',
-      id,
-      language,
-      'with captions:',
-      !!galleryCaptionsJson
+      { id, language, resultId: result.id, hasCaptions: !!galleryCaptionsJson }
     );
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error('[translations/cache POST] Error:', {
+    const errorInfo = {
+      name: err instanceof Error ? err.name : 'Unknown',
       message: err instanceof Error ? err.message : String(err),
+      code: (err as any)?.code,
+      meta: (err as any)?.meta,
       stack: err instanceof Error ? err.stack : undefined,
-      cause: err instanceof Error ? (err as any).cause : undefined,
-    });
+    };
+    console.error('[translations/cache POST] ERROR:', JSON.stringify(errorInfo, null, 2));
     const message = err instanceof Error ? err.message : 'Failed to save translation';
     return NextResponse.json({ error: message }, { status: 500 });
   }
