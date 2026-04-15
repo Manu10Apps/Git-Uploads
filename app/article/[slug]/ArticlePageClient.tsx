@@ -1187,7 +1187,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               {/* Top Stories Section - INKURU NYAMUKURU */}
               <section>
                 <div className="mb-6">
-                  <h3 className="text-red-600 text-xs font-semibold tracking-widest">INKURU NYAMUKURU</h3>
+                  <h3 className="text-red-600 text-xs font-semibold tracking-widest">{t.article.topStories}</h3>
                 </div>
                 {topStoriesLoading ? (
                   <ol className="space-y-4">

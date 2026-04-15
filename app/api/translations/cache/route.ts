@@ -95,29 +95,31 @@ export async function POST(request: NextRequest) {
           galleryCaptionsJson = JSON.stringify(galleryCaptions);
         }
       } catch (e) {
-        console.warn('[translations/cache POST] Failed to parse galleryCaptions:', e);
+        console.warn('[translations/cache POST] Failed to stringify galleryCaptions:', e);
+        // Continue without gallery captions
       }
+    }
+
+    const upsertData: any = {
+      articleId: id,
+      language,
+      title: String(title),
+      excerpt: String(excerpt || ''),
+      content: String(content),
+      translationSource: 'puter-ai',
+      versionHash,
+    };
+
+    // Only add galleryCaptions if we have valid data
+    if (galleryCaptionsJson !== null) {
+      upsertData.galleryCaptions = galleryCaptionsJson;
     }
 
     await prisma.articleTranslation.upsert({
       where: { articleId_language: { articleId: id, language } },
-      create: {
-        articleId: id,
-        language,
-        title: String(title),
-        excerpt: String(excerpt || ''),
-        content: String(content),
-        galleryCaptions: galleryCaptionsJson,
-        translationSource: 'puter-ai',
-        versionHash,
-      },
+      create: upsertData,
       update: {
-        title: String(title),
-        excerpt: String(excerpt || ''),
-        content: String(content),
-        galleryCaptions: galleryCaptionsJson,
-        translationSource: 'puter-ai',
-        versionHash,
+        ...upsertData,
         translatedAt: new Date(),
       },
     });
