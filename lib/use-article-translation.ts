@@ -146,18 +146,35 @@ export function useArticleTranslation({
             }
           }
 
+          // Check payload size before sending
+          const payload = {
+            articleId,
+            language: lang,
+            title: result.title,
+            excerpt: result.excerpt,
+            content: result.content,
+            galleryCaptions: sanitizedCaptions,
+          };
+
+          const payloadSize = JSON.stringify(payload).length;
+          console.log('[useArticleTranslation] Payload size:', payloadSize, 'bytes');
+
+          if (payloadSize > 10 * 1024 * 1024) {
+            console.error('[useArticleTranslation] Payload too large:', payloadSize);
+            return; // Skip DB save if too large
+          }
+
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
           const response = await fetch('/api/translations/cache', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              articleId,
-              language: lang,
-              title: result.title,
-              excerpt: result.excerpt,
-              content: result.content,
-              galleryCaptions: sanitizedCaptions,
-            }),
+            body: JSON.stringify(payload),
+            signal: controller.signal,
           });
+
+          clearTimeout(timeoutId);
 
           if (!response.ok) {
             let errorData;
@@ -173,13 +190,19 @@ export function useArticleTranslation({
                 error: errorData.error,
                 type: errorData.type,
                 code: errorData.code,
-                details: errorData.details,
+                isTimeout: errorData.isTimeout,
               }
             );
             // Still display the translation locally even if save fails
+          } else {
+            console.log('[useArticleTranslation] Translation saved successfully');
           }
         } catch (error) {
-          console.error('[useArticleTranslation] Error saving translation:', error);
+          if (error instanceof DOMException && error.name === 'AbortError') {
+            console.error('[useArticleTranslation] Save request timed out after 15s');
+          } else {
+            console.error('[useArticleTranslation] Error saving translation:', error);
+          }
           // DB save failed — translation still works client-side
         }
       } catch (error: any) {

@@ -77,51 +77,44 @@ export async function GET(request: NextRequest) {
  * Save a client-side (puter.ai) translation to the database.
  */
 export async function POST(request: NextRequest) {
-  console.log('=== [translations/cache POST] START ===');
-  
   try {
-    console.log('[translations/cache] Step 1: Request received');
+    console.log('[translations/cache] POST request started at', new Date().toISOString());
     
     let body;
     try {
       body = await request.json();
-      console.log('[translations/cache] Step 2: JSON parsed successfully');
     } catch (parseErr) {
-      console.error('[translations/cache] Step 2 FAILED: JSON parse error', parseErr);
-      return NextResponse.json({ error: 'Invalid JSON', step: 2 }, { status: 400 });
+      console.error('[translations/cache] JSON parse error:', parseErr);
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
     
-    console.log('[translations/cache] Step 3: Extracting fields from body');
+    console.log('[translations/cache] Parsed body fields:', Object.keys(body));
     const { articleId, language, title, excerpt, content, galleryCaptions } = body;
 
     // Validate inputs
-    console.log('[translations/cache] Step 4: Validating articleId');
     const id = Number(articleId);
     if (!Number.isInteger(id) || id <= 0) {
-      console.error('[translations/cache] Step 4 FAILED: Invalid articleId:', articleId);
-      return NextResponse.json({ error: 'Invalid articleId', step: 4 }, { status: 400 });
+      console.error('[translations/cache] Invalid articleId:', articleId);
+      return NextResponse.json({ error: 'Invalid articleId' }, { status: 400 });
     }
 
-    console.log('[translations/cache] Step 5: Validating language');
     if (!['en', 'sw'].includes(language)) {
-      console.error('[translations/cache] Step 5 FAILED: Invalid language:', language);
-      return NextResponse.json({ error: 'Invalid language', step: 5 }, { status: 400 });
+      console.error('[translations/cache] Invalid language:', language);
+      return NextResponse.json({ error: 'Invalid language' }, { status: 400 });
     }
 
-    console.log('[translations/cache] Step 6: Validating title');
     if (!title || typeof title !== 'string') {
-      console.error('[translations/cache] Step 6 FAILED: Missing or invalid title');
-      return NextResponse.json({ error: 'Missing title', step: 6 }, { status: 400 });
+      console.error('[translations/cache] Missing or invalid title');
+      return NextResponse.json({ error: 'Missing title' }, { status: 400 });
     }
 
-    console.log('[translations/cache] Step 7: Validating content');
     if (!content || typeof content !== 'string') {
-      console.error('[translations/cache] Step 7 FAILED: Missing or invalid content');
-      return NextResponse.json({ error: 'Missing content', step: 7 }, { status: 400 });
+      console.error('[translations/cache] Missing or invalid content');
+      return NextResponse.json({ error: 'Missing content' }, { status: 400 });
     }
 
     // Verify article exists
-    console.log('[translations/cache] Step 8: Fetching article from DB');
+    console.log('[translations/cache] Checking if article exists:', id);
     let article;
     try {
       article = await prisma.article.findUnique({
@@ -129,32 +122,30 @@ export async function POST(request: NextRequest) {
         select: { id: true, title: true, content: true },
       });
     } catch (dbErr) {
-      console.error('[translations/cache] Step 8 FAILED: Database error', dbErr);
-      return NextResponse.json({ error: 'Database error fetching article', step: 8 }, { status: 500 });
+      console.error('[translations/cache] Database error fetching article:', dbErr);
+      return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
 
     if (!article) {
-      console.error('[translations/cache] Step 9: Article not found:', id);
-      return NextResponse.json({ error: 'Article not found', step: 9 }, { status: 404 });
+      console.error('[translations/cache] Article not found:', id);
+      return NextResponse.json({ error: 'Article not found' }, { status: 404 });
     }
 
-    console.log('[translations/cache] Step 10: Computing version hash');
+    console.log('[translations/cache] Article exists. Computing hash...');
     const versionHash = generateContentHash(article.title, article.content);
 
     // Handle gallery captions
-    console.log('[translations/cache] Step 11: Processing gallery captions');
     let galleryCaptionsJson: string | null = null;
     if (Array.isArray(galleryCaptions) && galleryCaptions.length > 0) {
       try {
         galleryCaptionsJson = JSON.stringify(galleryCaptions);
-        console.log('[translations/cache] Step 11: Gallery captions serialized OK');
+        console.log('[translations/cache] Gallery captions serialized:', galleryCaptionsJson.length, 'bytes');
       } catch (e) {
-        console.warn('[translations/cache] Step 11: Could not serialize gallery captions:', e);
+        console.warn('[translations/cache] Could not serialize gallery captions:', e);
       }
     }
 
     // Prepare data
-    console.log('[translations/cache] Step 12: Preparing translation data');
     const translationData = {
       title: String(title).trim(),
       excerpt: String(excerpt || '').trim(),
@@ -164,21 +155,40 @@ export async function POST(request: NextRequest) {
       versionHash,
     };
 
-    console.log('[translations/cache] Step 13: Validating prepared data');
+    console.log('[translations/cache] Translation data prepared:', {
+      title: translationData.title || '(empty)',
+      excerpt: translationData.excerpt || '(empty)',
+      content: translationData.content.substring(0, 50) + '...',
+      hasGallery: !!translationData.galleryCaptions,
+      versionHash: translationData.versionHash,
+    });
+
+    // Validate final data
     if (!translationData.title) {
-      console.error('[translations/cache] Step 13 FAILED: Title is empty after trimming');
-      return NextResponse.json({ error: 'Title is empty', step: 13 }, { status: 400 });
+      console.error('[translations/cache] Title is empty after trimming');
+      return NextResponse.json({ error: 'Title is empty' }, { status: 400 });
     }
 
     if (!translationData.content) {
-      console.error('[translations/cache] Step 13 FAILED: Content is empty after trimming');
-      return NextResponse.json({ error: 'Content is empty', step: 13 }, { status: 400 });
+      console.error('[translations/cache] Content is empty after trimming');
+      return NextResponse.json({ error: 'Content is empty' }, { status: 400 });
     }
 
-    console.log('[translations/cache] Step 14: Performing upsert');
+    console.log('[translations/cache] Attempting to save translation:', {
+      articleId: id,
+      language,
+      titleLen: translationData.title.length,
+      contentLen: translationData.content.length,
+      hasGallery: !!galleryCaptionsJson,
+    });
+
+    // Save to database
     let result;
     try {
-      result = await prisma.articleTranslation.upsert({
+      console.log('[translations/cache] Starting upsert operation...');
+      
+      // Add timeout to prevent hanging
+      const upsertPromise = prisma.articleTranslation.upsert({
         where: {
           articleId_language: {
             articleId: id,
@@ -192,33 +202,45 @@ export async function POST(request: NextRequest) {
         },
         update: translationData,
       });
-      console.log('[translations/cache] Step 14 SUCCESS: Upserted translation, id:', result.id);
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Database operation timeout (30s)')), 30000)
+      );
+
+      result = (await Promise.race([upsertPromise, timeoutPromise])) as any;
+      console.log('[translations/cache] Successfully upserted translation, id:', result.id);
     } catch (upsertErr) {
-      console.error('[translations/cache] Step 14 FAILED: Upsert error');
-      console.error('Error message:', upsertErr instanceof Error ? upsertErr.message : String(upsertErr));
-      console.error('Error code:', (upsertErr as any)?.code);
-      console.error('Error meta:', (upsertErr as any)?.meta);
+      console.error('[translations/cache] Upsert failed:', {
+        error: upsertErr instanceof Error ? upsertErr.message : String(upsertErr),
+        code: (upsertErr as any)?.code,
+        meta: (upsertErr as any)?.meta,
+      });
       throw upsertErr;
     }
 
     return NextResponse.json({ success: true, id: result.id });
   } catch (err) {
-    console.log('=== [translations/cache POST] ERROR CAUGHT ===');
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    const errorCode = (err as any)?.code || 'UNKNOWN';
-    const errorMeta = (err as any)?.meta;
+    // Check if it's a timeout
+    const isTimeout = err instanceof Error && err.message.includes('timeout');
+    const statusCode = isTimeout ? 504 : 500;
     
-    console.error('[translations/cache] Error message:', errorMessage);
-    console.error('[translations/cache] Error code:', errorCode);
-    console.error('[translations/cache] Error meta:', errorMeta);
+    const errorDetails = {
+      type: err instanceof Error ? err.constructor.name : typeof err,
+      message: err instanceof Error ? err.message : String(err),
+      code: (err as any)?.code,
+      meta: (err as any)?.meta,
+      isTimeout,
+    };
+    console.error('[translations/cache] ERROR:', JSON.stringify(errorDetails, null, 2));
     
     return NextResponse.json(
-      {
-        error: errorMessage,
-        code: errorCode,
-        meta: errorMeta || null,
+      { 
+        error: errorDetails.message,
+        type: errorDetails.type,
+        code: errorDetails.code,
+        isTimeout: errorDetails.isTimeout,
       },
-      { status: 500 }
+      { status: statusCode }
     );
   }
 }
