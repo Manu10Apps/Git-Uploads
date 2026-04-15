@@ -78,111 +78,132 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    console.log('[translations/cache POST] Request received');
-    const body = await request.json();
-    console.log('[translations/cache POST] Body parsed:', { 
-      articleId: body.articleId, 
-      language: body.language, 
-      contentLength: body.content?.length || 0,
-      excerptLength: body.excerpt?.length || 0,
-      captionCount: Array.isArray(body.galleryCaptions) ? body.galleryCaptions.length : 0
-    });
-
+    console.log('[translations/cache] POST request started at', new Date().toISOString());
+    
+    let body;
+    try {
+      body = await request.json();
+    } catch (parseErr) {
+      console.error('[translations/cache] JSON parse error:', parseErr);
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    }
+    
+    console.log('[translations/cache] Parsed body fields:', Object.keys(body));
     const { articleId, language, title, excerpt, content, galleryCaptions } = body;
 
-    const id = typeof articleId === 'number' ? articleId : parseInt(String(articleId), 10);
-    if (isNaN(id) || id <= 0 || !['en', 'sw'].includes(language)) {
-      console.warn('[translations/cache POST] Invalid parameters:', { id, language });
-      return NextResponse.json({ error: 'Invalid parameters' }, { status: 400 });
+    // Validate inputs
+    const id = Number(articleId);
+    if (!Number.isInteger(id) || id <= 0) {
+      console.error('[translations/cache] Invalid articleId:', articleId);
+      return NextResponse.json({ error: 'Invalid articleId' }, { status: 400 });
     }
 
-    if (!title || !content) {
-      console.warn('[translations/cache POST] Missing fields:', { title: !!title, content: !!content });
-      return NextResponse.json({ error: 'Missing translation fields' }, { status: 400 });
+    if (!['en', 'sw'].includes(language)) {
+      console.error('[translations/cache] Invalid language:', language);
+      return NextResponse.json({ error: 'Invalid language' }, { status: 400 });
     }
 
-    // Get the original article to compute version hash
-    console.log('[translations/cache POST] Looking up article:', id);
-    const article = await prisma.article.findUnique({
-      where: { id },
-      select: { title: true, content: true },
-    });
+    if (!title || typeof title !== 'string') {
+      console.error('[translations/cache] Missing or invalid title');
+      return NextResponse.json({ error: 'Missing title' }, { status: 400 });
+    }
+
+    if (!content || typeof content !== 'string') {
+      console.error('[translations/cache] Missing or invalid content');
+      return NextResponse.json({ error: 'Missing content' }, { status: 400 });
+    }
+
+    // Verify article exists
+    console.log('[translations/cache] Checking if article exists:', id);
+    let article;
+    try {
+      article = await prisma.article.findUnique({
+        where: { id },
+        select: { id: true, title: true, content: true },
+      });
+    } catch (dbErr) {
+      console.error('[translations/cache] Database error fetching article:', dbErr);
+      return NextResponse.json({ error: 'Database error' }, { status: 500 });
+    }
 
     if (!article) {
-      console.warn('[translations/cache POST] Article not found:', id);
+      console.error('[translations/cache] Article not found:', id);
       return NextResponse.json({ error: 'Article not found' }, { status: 404 });
     }
 
+    console.log('[translations/cache] Article exists. Computing hash...');
     const versionHash = generateContentHash(article.title, article.content);
-    console.log('[translations/cache POST] Version hash computed:', versionHash);
 
-    // Convert gallery captions to JSON string if provided
+    // Handle gallery captions
     let galleryCaptionsJson: string | null = null;
-    if (galleryCaptions) {
+    if (Array.isArray(galleryCaptions) && galleryCaptions.length > 0) {
       try {
-        if (Array.isArray(galleryCaptions) && galleryCaptions.length > 0) {
-          galleryCaptionsJson = JSON.stringify(galleryCaptions);
-          console.log(
-            '[translations/cache POST] Stringified gallery captions:',
-            galleryCaptionsJson.length,
-            'bytes'
-          );
-        }
+        galleryCaptionsJson = JSON.stringify(galleryCaptions);
+        console.log('[translations/cache] Gallery captions serialized:', galleryCaptionsJson.length, 'bytes');
       } catch (e) {
-        console.error('[translations/cache POST] Failed to stringify galleryCaptions:', e);
-        // Continue without gallery captions
+        console.warn('[translations/cache] Could not serialize gallery captions:', e);
       }
     }
 
-    const now = new Date();
+    // Prepare data
+    const translationData = {
+      title: String(title).trim(),
+      excerpt: String(excerpt || '').trim(),
+      content: String(content).trim(),
+      galleryCaptions: galleryCaptionsJson,
+      translationSource: 'puter-ai',
+      versionHash,
+    };
 
-    // Use explicit create and update shapes to avoid type issues
-    console.log('[translations/cache POST] Performing upsert with:', {
+    console.log('[translations/cache] Attempting to save translation:', {
       articleId: id,
       language,
-      titleLength: String(title).substring(0, 500).length,
-      contentLength: String(content).length,
-      hasGalleryCaptions: !!galleryCaptionsJson
+      titleLen: translationData.title.length,
+      contentLen: translationData.content.length,
+      hasGallery: !!galleryCaptionsJson,
     });
 
-    const result = await prisma.articleTranslation.upsert({
-      where: { articleId_language: { articleId: id, language } },
-      create: {
-        articleId: id,
-        language: String(language),
-        title: String(title),
-        excerpt: String(excerpt || ''),
-        content: String(content),
-        galleryCaptions: galleryCaptionsJson,
-        translationSource: 'puter-ai',
-        versionHash: String(versionHash),
-      },
-      update: {
-        title: String(title),
-        excerpt: String(excerpt || ''),
-        content: String(content),
-        galleryCaptions: galleryCaptionsJson,
-        translationSource: 'puter-ai',
-        versionHash: String(versionHash),
-        translatedAt: now, // update translation timestamp on re-translation
-      },
-    });
+    // Save to database
+    let result;
+    try {
+      result = await prisma.articleTranslation.upsert({
+        where: {
+          articleId_language: {
+            articleId: id,
+            language,
+          },
+        },
+        create: {
+          articleId: id,
+          language,
+          ...translationData,
+        },
+        update: translationData,
+      });
+      console.log('[translations/cache] Successfully upserted translation, id:', result.id);
+    } catch (upsertErr) {
+      console.error('[translations/cache] Upsert failed:', {
+        error: upsertErr instanceof Error ? upsertErr.message : String(upsertErr),
+        code: (upsertErr as any)?.code,
+        meta: (upsertErr as any)?.meta,
+      });
+      throw upsertErr;
+    }
 
-    console.log(
-      '[translations/cache POST] Successfully saved translation:',
-      { id, language, resultId: result.id, hasCaptions: !!galleryCaptionsJson }
-    );
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, id: result.id });
   } catch (err) {
-    const errorInfo = {
-      name: err instanceof Error ? err.name : 'Unknown',
+    console.error('[translations/cache] FATAL ERROR:', {
+      type: err instanceof Error ? err.constructor.name : typeof err,
       message: err instanceof Error ? err.message : String(err),
       code: (err as any)?.code,
       meta: (err as any)?.meta,
-      stack: err instanceof Error ? err.stack : undefined,
-    };
-    console.error('[translations/cache POST] ERROR:', JSON.stringify(errorInfo, null, 2));
-    const message = err instanceof Error ? err.message : 'Failed to save translation';
-    return NextResponse.json({ error: message }, { status: 500 });
+      stack: err instanceof Error ? err.stack?.split('\n').slice(0, 5).join('\n') : undefined,
+    });
+    
+    const message = err instanceof Error ? err.message : 'Save failed';
+    return NextResponse.json(
+      { error: message, type: 'server_error' },
+      { status: 500 }
+    );
   }
 }
