@@ -123,12 +123,12 @@ ${JSON.stringify(fieldsToTranslate)}`;
   try {
     parsed = JSON.parse(jsonMatch[0]) as PuterTranslationResult;
   } catch (parseErr) {
-    // Silent error - don't log to console
+    console.warn('[puter-translate] JSON parse error:', parseErr);
     throw new Error('Translation service temporarily unavailable');
   }
 
   if (!parsed.title || !parsed.content) {
-    // Silent error - don't log to console
+    console.warn('[puter-translate] Missing required fields:', { title: !!parsed.title, content: !!parsed.content });
     throw new Error('Translation service temporarily unavailable');
   }
 
@@ -138,13 +138,21 @@ ${JSON.stringify(fieldsToTranslate)}`;
   }
 
   // Include gallery captions if provided
-  if (parsed.galleryCaptions) {
-    // Validate gallery captions structure
-    if (Array.isArray(parsed.galleryCaptions)) {
-      parsed.galleryCaptions = parsed.galleryCaptions.map((item: any) => ({
-        url: item.url || '',
-        caption: item.caption || item.text || '',
-      }));
+  if (article.gallery && article.gallery.length > 0) {
+    if (parsed.galleryCaptions && Array.isArray(parsed.galleryCaptions)) {
+      try {
+        parsed.galleryCaptions = parsed.galleryCaptions.map((item: any) => ({
+          url: item.url || '',
+          caption: item.caption || item.text || '',
+        }));
+      } catch (e) {
+        console.warn('[puter-translate] Error mapping gallery captions:', e);
+        // Keep original gallery if parsing fails
+        parsed.galleryCaptions = article.gallery;
+      }
+    } else {
+      // If gallery captions not translated, use original
+      parsed.galleryCaptions = article.gallery;
     }
   }
 
