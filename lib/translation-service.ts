@@ -24,6 +24,7 @@ interface TranslationResult {
   content: string;
   seoTitle?: string;
   seoDescription?: string;
+  galleryCaptions?: Array<{ url: string; caption: string }>;
 }
 
 interface TranslateTextResult {
@@ -106,6 +107,7 @@ export async function translateArticle(
     content: string;
     seoTitle?: string | null;
     seoDescription?: string | null;
+    gallery?: Array<{ url: string; caption: string }> | null;
   },
   fromLang: SupportedLanguage,
   toLang: SupportedLanguage
@@ -117,6 +119,7 @@ export async function translateArticle(
       content: article.content,
       seoTitle: article.seoTitle || undefined,
       seoDescription: article.seoDescription || undefined,
+      galleryCaptions: article.gallery || undefined,
     };
   }
 
@@ -124,13 +127,16 @@ export async function translateArticle(
   const fromName = getLanguageFullName(fromLang);
   const toName = getLanguageFullName(toLang);
 
-  const fieldsToTranslate: Record<string, string> = {
+  const fieldsToTranslate: Record<string, string | any> = {
     title: article.title,
     excerpt: article.excerpt,
     content: article.content,
   };
   if (article.seoTitle) fieldsToTranslate.seoTitle = article.seoTitle;
   if (article.seoDescription) fieldsToTranslate.seoDescription = article.seoDescription;
+  if (article.gallery && article.gallery.length > 0) {
+    fieldsToTranslate.galleryCaptions = article.gallery;
+  }
 
   const response = await openai.chat.completions.create({
     model: process.env.OPENAI_TRANSLATION_MODEL || 'gpt-4o-mini',
@@ -145,8 +151,10 @@ export async function translateArticle(
 - HTML/markdown formatting in content
 - Numbers, dates, currencies
 - Cultural context appropriate for the target audience
+- For gallery captions: preserve the url field unchanged, translate only the caption field
 
-Return a JSON object with the same keys, each containing the translated text.
+For galleryCaptions (if present), return an array with the same structure: [{"url": "...", "caption": "..."}]
+Return a JSON object with the same keys, each containing the translated text or array.
 Keys: ${Object.keys(fieldsToTranslate).join(', ')}`,
       },
       {
@@ -158,7 +166,7 @@ Keys: ${Object.keys(fieldsToTranslate).join(', ')}`,
 
   const rawContent = response.choices[0]?.message?.content || '{}';
 
-  let parsed: Record<string, string>;
+  let parsed: Record<string, any>;
   try {
     parsed = JSON.parse(rawContent);
   } catch {
@@ -168,6 +176,15 @@ Keys: ${Object.keys(fieldsToTranslate).join(', ')}`,
       translateText(article.excerpt, fromLang, toLang),
       translateText(article.content, fromLang, toLang),
     ]);
+
+    const galleryCaptions = article.gallery
+      ? await Promise.all(
+          article.gallery.map(async (item) => ({
+            url: item.url,
+            caption: (await translateText(item.caption, fromLang, toLang)).text,
+          }))
+        )
+      : undefined;
 
     return {
       title: titleResult.text,
@@ -179,6 +196,7 @@ Keys: ${Object.keys(fieldsToTranslate).join(', ')}`,
       seoDescription: article.seoDescription
         ? (await translateText(article.seoDescription, fromLang, toLang)).text
         : undefined,
+      galleryCaptions,
     };
   }
 
@@ -188,6 +206,7 @@ Keys: ${Object.keys(fieldsToTranslate).join(', ')}`,
     content: parsed.content || article.content,
     seoTitle: parsed.seoTitle || undefined,
     seoDescription: parsed.seoDescription || undefined,
+    galleryCaptions: parsed.galleryCaptions || undefined,
   };
 }
 

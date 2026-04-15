@@ -70,6 +70,7 @@ model ArticleTranslation {
   content           String
   seoTitle          String?
   seoDescription    String?
+  galleryCaptions   String?   // JSON array as string: '[{"url":"...","caption":"..."}]'
   translationSource String    @default("ai") // "ai" | "manual" | "deepl" | "google"
   versionHash       String    // hash of original content at time of translation
   translatedAt      DateTime  @default(now())

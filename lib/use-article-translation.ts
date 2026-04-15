@@ -9,6 +9,7 @@ interface TranslatedArticle {
   title: string;
   excerpt: string;
   content: string;
+  galleryCaptions?: Array<{ url: string; caption: string }>;
   translationSource: string;
   translatedAt: string;
 }
@@ -18,12 +19,14 @@ interface UseArticleTranslationOptions {
   originalTitle: string;
   originalExcerpt: string;
   originalContent: string;
+  originalGallery?: Array<{ url: string; caption: string }>;
 }
 
 interface UseArticleTranslationResult {
   title: string;
   excerpt: string;
   content: string;
+  galleryCaptions?: Array<{ url: string; caption: string }>;
   isTranslating: boolean;
   isTranslated: boolean;
   translationError: string | null;
@@ -38,6 +41,7 @@ export function useArticleTranslation({
   originalTitle,
   originalExcerpt,
   originalContent,
+  originalGallery,
 }: UseArticleTranslationOptions): UseArticleTranslationResult {
   const { language } = useAppStore();
   const [translation, setTranslation] = useState<TranslatedArticle | null>(null);
@@ -80,6 +84,7 @@ export function useArticleTranslation({
             title: dbData.data.title,
             excerpt: dbData.data.excerpt,
             content: dbData.data.content,
+            galleryCaptions: dbData.data.galleryCaptions,
             translationSource: dbData.data.translationSource || 'db-cache',
             translatedAt: new Date().toISOString(),
           };
@@ -94,6 +99,7 @@ export function useArticleTranslation({
             title: dbData.data.title,
             excerpt: dbData.data.excerpt,
             content: dbData.data.content,
+            galleryCaptions: dbData.data.galleryCaptions,
             translationSource: dbData.data.translationSource || 'db-cache',
             translatedAt: new Date().toISOString(),
           };
@@ -118,6 +124,7 @@ export function useArticleTranslation({
           title: result.title,
           excerpt: result.excerpt,
           content: result.content,
+          galleryCaptions: originalGallery ? originalGallery : undefined,
           translationSource: 'puter-ai',
           translatedAt: new Date().toISOString(),
         };
@@ -136,6 +143,7 @@ export function useArticleTranslation({
               title: result.title,
               excerpt: result.excerpt,
               content: result.content,
+              galleryCaptions: originalGallery,
             }),
           });
         } catch {
@@ -151,7 +159,7 @@ export function useArticleTranslation({
         }
       }
     },
-    [articleId, originalTitle, originalExcerpt, originalContent]
+    [articleId, originalTitle, originalExcerpt, originalContent, originalGallery]
   );
 
   useEffect(() => {
@@ -168,6 +176,7 @@ export function useArticleTranslation({
     title: isTranslated ? translation.title : originalTitle,
     excerpt: isTranslated ? translation.excerpt : originalExcerpt,
     content: isTranslated ? translation.content : originalContent,
+    galleryCaptions: isTranslated ? translation.galleryCaptions : originalGallery,
     isTranslating,
     isTranslated,
     translationError,
