@@ -68,10 +68,12 @@ export async function POST(request: NextRequest) {
 
     const id = typeof articleId === 'number' ? articleId : parseInt(String(articleId), 10);
     if (isNaN(id) || id <= 0 || !['en', 'sw'].includes(language)) {
+      console.warn('[translations/cache POST] Invalid parameters:', { id, language });
       return NextResponse.json({ error: 'Invalid parameters' }, { status: 400 });
     }
 
     if (!title || !content) {
+      console.warn('[translations/cache POST] Missing fields:', { title: !!title, content: !!content });
       return NextResponse.json({ error: 'Missing translation fields' }, { status: 400 });
     }
 
@@ -82,6 +84,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!article) {
+      console.warn('[translations/cache POST] Article not found:', id);
       return NextResponse.json({ error: 'Article not found' }, { status: 404 });
     }
 
@@ -93,40 +96,59 @@ export async function POST(request: NextRequest) {
       try {
         if (Array.isArray(galleryCaptions) && galleryCaptions.length > 0) {
           galleryCaptionsJson = JSON.stringify(galleryCaptions);
+          console.log(
+            '[translations/cache POST] Stringified gallery captions:',
+            galleryCaptionsJson.length,
+            'bytes'
+          );
         }
       } catch (e) {
-        console.warn('[translations/cache POST] Failed to stringify galleryCaptions:', e);
+        console.error('[translations/cache POST] Failed to stringify galleryCaptions:', e);
         // Continue without gallery captions
       }
     }
 
-    const upsertData: any = {
-      articleId: id,
-      language,
-      title: String(title),
-      excerpt: String(excerpt || ''),
-      content: String(content),
-      translationSource: 'puter-ai',
-      versionHash,
-    };
+    const now = new Date();
 
-    // Only add galleryCaptions if we have valid data
-    if (galleryCaptionsJson !== null) {
-      upsertData.galleryCaptions = galleryCaptionsJson;
-    }
-
+    // Use explicit create and update shapes to avoid type issues
     await prisma.articleTranslation.upsert({
       where: { articleId_language: { articleId: id, language } },
-      create: upsertData,
+      create: {
+        articleId: id,
+        language: String(language),
+        title: String(title).substring(0, 500), // Ensure not too long
+        excerpt: String(excerpt || '').substring(0, 1000),
+        content: String(content),
+        galleryCaptions: galleryCaptionsJson,
+        translationSource: 'puter-ai',
+        versionHash: String(versionHash),
+        translatedAt: now,
+      },
       update: {
-        ...upsertData,
-        translatedAt: new Date(),
+        title: String(title).substring(0, 500),
+        excerpt: String(excerpt || '').substring(0, 1000),
+        content: String(content),
+        galleryCaptions: galleryCaptionsJson,
+        translationSource: 'puter-ai',
+        versionHash: String(versionHash),
+        translatedAt: now,
       },
     });
 
+    console.log(
+      '[translations/cache POST] Successfully saved translation:',
+      id,
+      language,
+      'with captions:',
+      !!galleryCaptionsJson
+    );
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error('[translations/cache POST] Error:', err);
+    console.error('[translations/cache POST] Error:', {
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+      cause: err instanceof Error ? (err as any).cause : undefined,
+    });
     const message = err instanceof Error ? err.message : 'Failed to save translation';
     return NextResponse.json({ error: message }, { status: 500 });
   }

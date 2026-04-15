@@ -135,7 +135,18 @@ export function useArticleTranslation({
 
         // 3. Save/update translation in database for future visitors
         try {
-          await fetch('/api/translations/cache', {
+          // Validate and sanitize gallery captions
+          let sanitizedCaptions = null;
+          if (result.galleryCaptions && Array.isArray(result.galleryCaptions)) {
+            sanitizedCaptions = result.galleryCaptions.filter(
+              (item: any) => item && item.caption && item.url
+            );
+            if (sanitizedCaptions.length === 0) {
+              sanitizedCaptions = null;
+            }
+          }
+
+          const response = await fetch('/api/translations/cache', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -144,10 +155,20 @@ export function useArticleTranslation({
               title: result.title,
               excerpt: result.excerpt,
               content: result.content,
-              galleryCaptions: result.galleryCaptions || null,
+              galleryCaptions: sanitizedCaptions,
             }),
           });
-        } catch {
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error(
+              '[useArticleTranslation] Failed to save translation:',
+              response.status,
+              errorData
+            );
+          }
+        } catch (error) {
+          console.error('[useArticleTranslation] Error saving translation:', error);
           // DB save failed — translation still works client-side
         }
       } catch (error: any) {
