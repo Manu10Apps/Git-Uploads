@@ -88,7 +88,16 @@ export async function POST(request: NextRequest) {
     const versionHash = generateContentHash(article.title, article.content);
 
     // Convert gallery captions to JSON string if provided
-    const galleryCaptionsJson = galleryCaptions ? JSON.stringify(galleryCaptions) : null;
+    let galleryCaptionsJson: string | null = null;
+    if (galleryCaptions) {
+      try {
+        if (Array.isArray(galleryCaptions) && galleryCaptions.length > 0) {
+          galleryCaptionsJson = JSON.stringify(galleryCaptions);
+        }
+      } catch (e) {
+        console.warn('[translations/cache POST] Failed to parse galleryCaptions:', e);
+      }
+    }
 
     await prisma.articleTranslation.upsert({
       where: { articleId_language: { articleId: id, language } },
