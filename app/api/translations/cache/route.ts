@@ -36,6 +36,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ data: null });
     }
 
+    // Parse galleryCaptions from JSON string if present
+    let galleryCaptionsArray: Array<{ url: string; caption: string }> | null = null;
+    if (translation.galleryCaptions) {
+      try {
+        galleryCaptionsArray = JSON.parse(translation.galleryCaptions);
+      } catch (e) {
+        console.warn('[translations/cache GET] Failed to parse galleryCaptions:', e);
+      }
+    }
+
     // Check if original content has changed since translation
     let stale = false;
     const article = await prisma.article.findUnique({
@@ -48,8 +58,13 @@ export async function GET(request: NextRequest) {
       stale = translation.versionHash !== currentHash;
     }
 
+    const responseData = {
+      ...translation,
+      galleryCaptions: galleryCaptionsArray,
+    };
+
     return NextResponse.json(
-      { data: translation, stale },
+      { data: responseData, stale },
       { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } }
     );
   } catch {
