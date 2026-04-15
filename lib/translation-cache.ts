@@ -62,6 +62,7 @@ interface ArticleTranslationData {
   content: string;
   seoTitle?: string;
   seoDescription?: string;
+  galleryCaptions?: Array<{ url: string; caption: string }>;
   translationSource: string;
   translatedAt: Date;
 }
@@ -98,12 +99,17 @@ export async function getArticleTranslation(
       const currentHash = generateContentHash(article.title, article.content);
 
       if (dbTranslation.versionHash === currentHash) {
+        const galleryCaptions = dbTranslation.galleryCaptions
+          ? JSON.parse(dbTranslation.galleryCaptions)
+          : undefined;
+
         const result: ArticleTranslationData = {
           title: dbTranslation.title,
           excerpt: dbTranslation.excerpt,
           content: dbTranslation.content,
           seoTitle: dbTranslation.seoTitle || undefined,
           seoDescription: dbTranslation.seoDescription || undefined,
+          galleryCaptions,
           translationSource: dbTranslation.translationSource,
           translatedAt: dbTranslation.translatedAt,
         };
@@ -137,14 +143,36 @@ export async function createArticleTranslation(
       content: true,
       seoTitle: true,
       seoDescription: true,
+      gallery: true,
     },
   });
 
   if (!article) return null;
 
+  // Parse gallery JSON if exists
+  let gallery: Array<{ url: string; caption: string }> | undefined;
+  if (article.gallery) {
+    try {
+      gallery = JSON.parse(article.gallery);
+    } catch {
+      gallery = undefined;
+    }
+  }
+
   const versionHash = generateContentHash(article.title, article.content);
 
-  const translated = await translateArticle(article, DEFAULT_LANGUAGE, language);
+  const translated = await translateArticle(
+    {
+      title: article.title,
+      excerpt: article.excerpt,
+      content: article.content,
+      seoTitle: article.seoTitle,
+      seoDescription: article.seoDescription,
+      gallery,
+    },
+    DEFAULT_LANGUAGE,
+    language
+  );
 
   const saved = await prisma.articleTranslation.upsert({
     where: { articleId_language: { articleId, language } },
@@ -156,6 +184,9 @@ export async function createArticleTranslation(
       content: translated.content,
       seoTitle: translated.seoTitle || null,
       seoDescription: translated.seoDescription || null,
+      galleryCaptions: translated.galleryCaptions
+        ? JSON.stringify(translated.galleryCaptions)
+        : null,
       translationSource: 'ai',
       versionHash,
     },
@@ -165,11 +196,18 @@ export async function createArticleTranslation(
       content: translated.content,
       seoTitle: translated.seoTitle || null,
       seoDescription: translated.seoDescription || null,
+      galleryCaptions: translated.galleryCaptions
+        ? JSON.stringify(translated.galleryCaptions)
+        : null,
       translationSource: 'ai',
       versionHash,
       translatedAt: new Date(),
     },
   });
+
+  const galleryCaptions = saved.galleryCaptions
+    ? JSON.parse(saved.galleryCaptions)
+    : undefined;
 
   const result: ArticleTranslationData = {
     title: saved.title,
@@ -177,6 +215,7 @@ export async function createArticleTranslation(
     content: saved.content,
     seoTitle: saved.seoTitle || undefined,
     seoDescription: saved.seoDescription || undefined,
+    galleryCaptions,
     translationSource: saved.translationSource,
     translatedAt: saved.translatedAt,
   };

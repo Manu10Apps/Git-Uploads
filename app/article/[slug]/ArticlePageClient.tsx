@@ -218,6 +218,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     title: translatedTitle,
     excerpt: translatedExcerpt,
     content: translatedContent,
+    galleryCaptions: translatedGalleryCaptions,
     isTranslating,
     isTranslated,
     translationError,
@@ -227,6 +228,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     originalTitle: article?.title || '',
     originalExcerpt: article?.excerpt || '',
     originalContent: article?.content || '',
+    originalGallery: article?.gallery,
   });
 
   const galleryGridClass =
@@ -238,13 +240,16 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const showGalleryInMiddle = article?.galleryPosition !== 'end';
   const showGalleryAtEnd = article?.galleryPosition === 'end';
 
-  const gallerySection = article?.gallery && article.gallery.length > 0 ? (
+  // Use translated gallery captions if available, otherwise use original
+  const displayGallery = translatedGalleryCaptions || article?.gallery;
+
+  const gallerySection = displayGallery && displayGallery.length > 0 ? (
     <div className="mb-8 sm:mb-10 md:mb-12">
       <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white mb-4 sm:mb-6">
         {t.article.morePhotos}
       </h2>
       <div className={`grid ${galleryGridClass} gap-4 sm:gap-6`}>
-        {article.gallery.map((item, index) => (
+        {displayGallery.map((item, index) => (
           <div key={index} className="rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 hover:shadow-lg transition-shadow">
             <div className="aspect-square w-full">
               <ArticleImage

@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
         title: true,
         excerpt: true,
         content: true,
+        galleryCaptions: true,
         translationSource: true,
         versionHash: true,
       },
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { articleId, language, title, excerpt, content } = body;
+    const { articleId, language, title, excerpt, content, galleryCaptions } = body;
 
     const id = typeof articleId === 'number' ? articleId : parseInt(String(articleId), 10);
     if (isNaN(id) || id <= 0 || !['en', 'sw'].includes(language)) {
@@ -86,6 +87,9 @@ export async function POST(request: NextRequest) {
 
     const versionHash = generateContentHash(article.title, article.content);
 
+    // Convert gallery captions to JSON string if provided
+    const galleryCaptionsJson = galleryCaptions ? JSON.stringify(galleryCaptions) : null;
+
     await prisma.articleTranslation.upsert({
       where: { articleId_language: { articleId: id, language } },
       create: {
@@ -94,6 +98,7 @@ export async function POST(request: NextRequest) {
         title: String(title),
         excerpt: String(excerpt || ''),
         content: String(content),
+        galleryCaptions: galleryCaptionsJson,
         translationSource: 'puter-ai',
         versionHash,
       },
@@ -101,6 +106,7 @@ export async function POST(request: NextRequest) {
         title: String(title),
         excerpt: String(excerpt || ''),
         content: String(content),
+        galleryCaptions: galleryCaptionsJson,
         translationSource: 'puter-ai',
         versionHash,
         translatedAt: new Date(),
