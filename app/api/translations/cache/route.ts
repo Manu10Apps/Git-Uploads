@@ -80,6 +80,16 @@ export async function POST(request: NextRequest) {
   console.log('[POST /api/translations/cache] === START REQUEST ===');
   
   try {
+    // First, verify database connectivity
+    console.log('[translations/cache] Checking database connectivity...');
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      console.log('[translations/cache] ✓ Database connection OK');
+    } catch (dbConnErr) {
+      console.error('[translations/cache] ✗ Database connection FAILED:', dbConnErr);
+      throw new Error(`Database connection failed: ${dbConnErr instanceof Error ? dbConnErr.message : String(dbConnErr)}`);
+    }
+
     console.log('[translations/cache] POST request received');
     
     let body;
@@ -252,24 +262,44 @@ export async function POST(request: NextRequest) {
     const isTimeout = err instanceof Error && err.message.includes('timeout');
     const statusCode = isTimeout ? 504 : 500;
     
-    const errorDetails = {
+    const errorDetails: any = {
       type: err instanceof Error ? err.constructor.name : typeof err,
       message: err instanceof Error ? err.message : String(err),
       code: (err as any)?.code,
       meta: (err as any)?.meta,
       isTimeout,
+      timestamp: new Date().toISOString(),
     };
-    console.error('[translations/cache] ERROR:', JSON.stringify(errorDetails, null, 2));
+
+    // Add full stack trace for debugging
+    if (err instanceof Error) {
+      errorDetails.stack = err.stack;
+    }
+
+    // Add Prisma-specific error details
+    if ((err as any)?.clientVersion) {
+      errorDetails.prismaError = {
+        code: (err as any)?.code,
+        message: (err as any)?.message,
+        meta: (err as any)?.meta,
+      };
+    }
+
+    console.error('[translations/cache] FULL ERROR:', JSON.stringify(errorDetails, null, 2));
     console.log('[POST /api/translations/cache] === SENDING ERROR RESPONSE ===', statusCode);
     
     const responsePayload = { 
+      success: false,
       error: errorDetails.message,
       type: errorDetails.type,
       code: errorDetails.code,
       isTimeout: errorDetails.isTimeout,
+      timestamp: errorDetails.timestamp,
+      meta: errorDetails.meta,
+      stack: process.env.NODE_ENV === 'development' ? errorDetails.stack : undefined,
     };
     
-    console.log('[POST /api/translations/cache] Response payload:', responsePayload);
+    console.log('[POST /api/translations/cache] Response payload:', JSON.stringify(responsePayload));
     
     return NextResponse.json(responsePayload, { status: statusCode });
   }
