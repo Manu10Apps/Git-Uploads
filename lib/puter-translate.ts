@@ -22,6 +22,7 @@ interface PuterTranslationResult {
   title: string;
   excerpt: string;
   content: string;
+  galleryCaptions?: Array<{ url: string; caption: string }>;
 }
 
 /**
@@ -44,12 +45,22 @@ async function waitForPuter(maxWait = 10000): Promise<boolean> {
  * Translate article fields using puter.ai (client-side, free, no API key).
  */
 export async function puterTranslateArticle(
-  article: { title: string; excerpt: string; content: string },
+  article: {
+    title: string;
+    excerpt: string;
+    content: string;
+    gallery?: Array<{ url: string; caption: string }>;
+  },
   fromLang: SupportedLanguage,
   toLang: SupportedLanguage
 ): Promise<PuterTranslationResult> {
   if (fromLang === toLang) {
-    return { title: article.title, excerpt: article.excerpt, content: article.content };
+    return {
+      title: article.title,
+      excerpt: article.excerpt,
+      content: article.content,
+      galleryCaptions: article.gallery || undefined,
+    };
   }
 
   const ready = await waitForPuter();
@@ -60,6 +71,17 @@ export async function puterTranslateArticle(
   const fromName = LANGUAGE_NAMES[fromLang];
   const toName = LANGUAGE_NAMES[toLang];
 
+  const fieldsToTranslate: any = {
+    title: article.title,
+    excerpt: article.excerpt,
+    content: article.content,
+  };
+
+  // Include gallery captions if available
+  if (article.gallery && article.gallery.length > 0) {
+    fieldsToTranslate.galleryCaptions = article.gallery;
+  }
+
   const prompt = `You are an expert journalist translator specializing in East African languages. Translate the following article fields from ${fromName} to ${toName}.
 
 Rules:
@@ -67,11 +89,12 @@ Rules:
 - Do NOT translate proper nouns (names, places, organizations)
 - Preserve all HTML/markdown formatting in the content field
 - Keep numbers, dates, and currencies as-is
+- For galleryCaptions (if present): preserve the url field unchanged, translate only the caption field
 
-Return ONLY a valid JSON object with these exact keys: "title", "excerpt", "content"
+Return ONLY a valid JSON object with these exact keys: "title", "excerpt", "content"${article.gallery && article.gallery.length > 0 ? ', "galleryCaptions"' : ''}
 
 Input:
-${JSON.stringify({ title: article.title, excerpt: article.excerpt, content: article.content })}`;
+${JSON.stringify(fieldsToTranslate)}`;
 
   const response = await window.puter.ai.chat(prompt, { model: 'gpt-5.4-nano' });
 
@@ -112,6 +135,17 @@ ${JSON.stringify({ title: article.title, excerpt: article.excerpt, content: arti
   // Ensure excerpt has a value
   if (!parsed.excerpt) {
     parsed.excerpt = parsed.title;
+  }
+
+  // Include gallery captions if provided
+  if (parsed.galleryCaptions) {
+    // Validate gallery captions structure
+    if (Array.isArray(parsed.galleryCaptions)) {
+      parsed.galleryCaptions = parsed.galleryCaptions.map((item: any) => ({
+        url: item.url || '',
+        caption: item.caption || item.text || '',
+      }));
+    }
   }
 
   return parsed;
