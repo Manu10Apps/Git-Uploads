@@ -126,7 +126,7 @@ export function useArticleTranslation({
           excerpt: result.excerpt,
           content: result.content,
           galleryCaptions: result.galleryCaptions || originalGallery,
-          translationSource: 'puter-ai',
+          translationSource: 'ai',
           translatedAt: new Date().toISOString(),
         };
 
