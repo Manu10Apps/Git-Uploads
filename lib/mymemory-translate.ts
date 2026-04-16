@@ -60,7 +60,8 @@ function chunkText(text: string, maxChunkSize: number = 400): string[] {
 async function translateTextMyMemory(
   text: string,
   sourceLang: string,
-  targetLang: string
+  targetLang: string,
+  maxRetries = 5  // Increased from default
 ): Promise<string> {
   if (!text || !text.trim()) {
     return '';
@@ -76,29 +77,55 @@ async function translateTextMyMemory(
     const chunk = chunks[i];
     console.log(`[mymemory-translate] Translating chunk ${i + 1}/${chunks.length} (${chunk.length} chars)`);
 
-    try {
-      const encoded = encodeURIComponent(chunk);
-      const response = await fetch(
-        `https://api.mymemory.translated.net/get?q=${encoded}&langpair=${sourceLang}|${targetLang}`,
-        {
-          headers: { 'User-Agent': 'Mozilla/5.0' },
-          signal: AbortSignal.timeout(15000),
+    let lastError: any;
+    let success = false;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const encoded = encodeURIComponent(chunk);
+        const response = await fetch(
+          `https://api.mymemory.translated.net/get?q=${encoded}&langpair=${sourceLang}|${targetLang}`,
+          {
+            headers: { 'User-Agent': 'Mozilla/5.0' },
+            signal: AbortSignal.timeout(15000),
+          }
+        );
+
+        if (!response.ok) {
+          // 429 = rate limited, retry with backoff
+          if (response.status === 429) {
+            const waitTime = Math.pow(2, attempt) * 2000; // 2s, 4s, 8s, 16s, 32s
+            console.warn(`[mymemory-translate] Rate limited (429). Waiting ${waitTime}ms before retry ${attempt + 1}/${maxRetries}...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            continue;
+          }
+          throw new Error(`MyMemory API error: ${response.status}`);
         }
-      );
 
-      if (!response.ok) {
-        throw new Error(`MyMemory API error: ${response.status}`);
+        const data = await response.json();
+        if (!data.responseData?.translatedText) {
+          throw new Error('No translation from MyMemory');
+        }
+
+        translatedChunks.push(data.responseData.translatedText);
+        success = true;
+        break;
+      } catch (err) {
+        lastError = err;
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        console.warn(`[mymemory-translate] Attempt ${attempt + 1} failed:`, errorMsg);
+        
+        if (attempt < maxRetries) {
+          // Default backoff: 1s, 2s, 4s, etc.
+          const waitTime = Math.pow(2, attempt) * 1000;
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
       }
+    }
 
-      const data = await response.json();
-      if (!data.responseData?.translatedText) {
-        throw new Error('No translation from MyMemory');
-      }
-
-      translatedChunks.push(data.responseData.translatedText);
-    } catch (err) {
-      console.error(`[mymemory-translate] Chunk ${i + 1} failed:`, err instanceof Error ? err.message : String(err));
-      throw err;
+    if (!success) {
+      console.error(`[mymemory-translate] Chunk ${i + 1} failed after ${maxRetries + 1} attempts`);
+      throw lastError instanceof Error ? lastError : new Error(String(lastError));
     }
   }
 
