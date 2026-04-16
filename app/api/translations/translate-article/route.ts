@@ -76,14 +76,14 @@ export async function POST(request: NextRequest) {
       console.warn('[translate-article] ⚠️  Kinyarwanda detected - free services have limited support');
     }
 
-    // Translate using backend service (LibreTranslate - free, open-source)
+    // Translate using backend service (fallback chain: MyMemory → LibreTranslate → Puter)
     let result;
-    let translationSource = 'libretranslate';
+    let translationSource = 'mymemory';
     let lastError: Error | null = null;
     
-    // 1. Try LibreTranslate (free, open-source)
+    // 1. Try MyMemory first (most stable, currently only working service)
     try {
-      result = await translateArticleLibreTranslate(
+      result = await translateArticleMyMemory(
         {
           title,
           excerpt,
@@ -93,15 +93,15 @@ export async function POST(request: NextRequest) {
         from as SupportedLanguage,
         to as SupportedLanguage
       );
-      console.log('[translate-article] ✓ LibreTranslate translation successful');
-    } catch (libreError) {
-      lastError = libreError instanceof Error ? libreError : new Error(String(libreError));
-      const errorMessage = lastError.message;
-      console.warn('[translate-article] LibreTranslate unavailable, trying Puter');
+      console.log('[translate-article] ✓ MyMemory translation successful');
+    } catch (memoryError) {
+      lastError = memoryError instanceof Error ? memoryError : new Error(String(memoryError));
+      const memoryErrorMsg = lastError.message;
+      console.warn('[translate-article] MyMemory unavailable, trying LibreTranslate');
       
-      // 2. Try Puter (free AI service)
+      // 2. Try LibreTranslate (free, open-source)
       try {
-        result = await translateArticlePuter(
+        result = await translateArticleLibreTranslate(
           {
             title,
             excerpt,
@@ -111,17 +111,16 @@ export async function POST(request: NextRequest) {
           from as SupportedLanguage,
           to as SupportedLanguage
         );
-        translationSource = 'puter';
-        console.log('[translate-article] ✓ Puter translation successful');
+        translationSource = 'libretranslate';
+        console.log('[translate-article] ✓ LibreTranslate translation successful');
         lastError = null;
-      } catch (puterError) {
-        const puterErrorMsg = puterError instanceof Error ? puterError.message : String(puterError);
-        console.warn('[translate-article] Puter failed:', puterErrorMsg);
+      } catch (libreError) {
+        const libreErrorMsg = libreError instanceof Error ? libreError.message : String(libreError);
+        console.warn('[translate-article] LibreTranslate unavailable, trying Puter');
         
-        // 3. Try MyMemory (most stable free fallback)
+        // 3. Try Puter (free AI service)
         try {
-          console.warn('[translate-article] Trying MyMemory as final fallback');
-          result = await translateArticleMyMemory(
+          result = await translateArticlePuter(
             {
               title,
               excerpt,
@@ -131,17 +130,17 @@ export async function POST(request: NextRequest) {
             from as SupportedLanguage,
             to as SupportedLanguage
           );
-          translationSource = 'mymemory';
-          console.log('[translate-article] ✓ MyMemory translation successful');
+          translationSource = 'puter';
+          console.log('[translate-article] ✓ Puter translation successful');
           lastError = null;
-        } catch (memoryError) {
-          const memoryErrorMsg = memoryError instanceof Error ? memoryError.message : String(memoryError);
+        } catch (puterError) {
+          const puterErrorMsg = puterError instanceof Error ? puterError.message : String(puterError);
           console.error('[translate-article] All translation services failed');
-          console.error('  - LibreTranslate:', errorMessage);
-          console.error('  - Puter:', puterErrorMsg);
           console.error('  - MyMemory:', memoryErrorMsg);
+          console.error('  - LibreTranslate:', libreErrorMsg);
+          console.error('  - Puter:', puterErrorMsg);
           throw new Error(
-            `All translation services failed. LibreTranslate: ${errorMessage}. Puter: ${puterErrorMsg}. MyMemory: ${memoryErrorMsg}`
+            `All translation services failed. MyMemory: ${memoryErrorMsg}. LibreTranslate: ${libreErrorMsg}. Puter: ${puterErrorMsg}`
           );
         }
       }

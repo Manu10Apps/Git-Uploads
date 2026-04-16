@@ -125,7 +125,8 @@ async function translateTextMyMemory(
 
     if (!success) {
       console.error(`[mymemory-translate] Chunk ${i + 1} failed after ${maxRetries + 1} attempts`);
-      throw lastError instanceof Error ? lastError : new Error(String(lastError));
+      console.error(`[mymemory-translate] Last error:`, lastError);
+      throw lastError instanceof Error ? lastError : new Error(String(lastError || 'Unknown error'));
     }
   }
 

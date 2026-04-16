@@ -26,10 +26,11 @@ interface LibreTranslationResult {
 // Multiple LibreTranslate instances to try as fallbacks
 // Includes both public and self-hosted instances for better language support
 const LIBRETRANSLATE_ENDPOINTS = [
-  'https://libretranslate.com/translate',
+  'https://translate.terraprint.com/translate', // Most reliable
   'https://api.libretranslate.de/translate',
-  'https://translate.terraprint.com/translate', // Alternative instance
   'https://libretranslate.de/translate',
+  'https://libretranslate.com/translate',
+  'https://libretranslate.nyc/translate', // NYC instance
 ];
 
 /**
@@ -165,6 +166,12 @@ async function translateChunk(
       if (!contentType || !contentType.includes('application/json')) {
         const responseText = await response.text();
         console.error(`[libretranslate-server] Invalid content type ${contentType}`);
+        console.error(`[libretranslate-server] Response preview: ${responseText.substring(0, 200)}`);
+        // If we're getting HTML, the endpoint is likely down or misconfigured
+        if (contentType?.includes('text/html')) {
+          // Skip to next endpoint for HTML responses
+          throw new Error(`Endpoint returned HTML (possibly down): ${contentType}`);
+        }
         throw new Error(`Invalid content-type: ${contentType}`);
       }
 
@@ -181,7 +188,8 @@ async function translateChunk(
       console.warn(`[libretranslate-server] Endpoint attempt ${attempt + 1}/${maxRetries + 1} failed:`, errorMsg);
 
       // 400 errors (bad request/unsupported lang) should skip to next endpoint immediately
-      if (isBadRequest) {
+      // Also skip on HTML responses (endpoint likely down)
+      if (isBadRequest || errorMsg.includes('HTML') || errorMsg.includes('endpoint returned')) {
         break;  // Exit retry loop, try next endpoint
       }
 
