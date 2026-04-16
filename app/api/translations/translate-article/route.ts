@@ -91,9 +91,16 @@ export async function POST(request: NextRequest) {
       lastError = openaiError instanceof Error ? openaiError : new Error(String(openaiError));
       const errorMessage = lastError.message;
       
-      // Check if it's a quota exceeded error (429)
-      if (errorMessage.includes('429') || errorMessage.includes('quota') || errorMessage.includes('rate limit')) {
-        console.warn('[translate-article] OpenAI quota exceeded, trying LibreTranslate');
+      // Check if it's a quota exceeded error (429), missing key, or rate limit
+      if (
+        errorMessage.includes('429') || 
+        errorMessage.includes('quota') || 
+        errorMessage.includes('rate limit') ||
+        errorMessage.includes('OPENAI_API_KEY') ||
+        errorMessage.includes('API key') ||
+        errorMessage.includes('Unauthorized')
+      ) {
+        console.warn('[translate-article] OpenAI unavailable, trying LibreTranslate');
         
         // 2. Try LibreTranslate
         try {
