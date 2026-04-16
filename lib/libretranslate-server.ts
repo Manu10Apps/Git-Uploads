@@ -8,6 +8,13 @@ const LANGUAGE_MAP: Record<SupportedLanguage, string> = {
   sw: 'sw', // Kiswahili
 };
 
+// Fallback language codes if primary doesn't work
+const LANGUAGE_FALLBACK: Record<SupportedLanguage, string> = {
+  ky: 'en', // Fallback Kinyarwanda to English if 'rw' unsupported
+  en: 'en',
+  sw: 'sw',
+};
+
 interface LibreTranslationResult {
   title: string;
   excerpt: string;
@@ -17,10 +24,12 @@ interface LibreTranslationResult {
 }
 
 // Multiple LibreTranslate instances to try as fallbacks
+// Includes both public and self-hosted instances for better language support
 const LIBRETRANSLATE_ENDPOINTS = [
-  'https://libretranslate.de/translate',
-  'https://api.libretranslate.de/translate',
   'https://libretranslate.com/translate',
+  'https://api.libretranslate.de/translate',
+  'https://translate.terraprint.com/translate', // Alternative instance
+  'https://libretranslate.de/translate',
 ];
 
 /**
@@ -103,7 +112,7 @@ async function translateChunk(
   sourceLang: string,
   targetLang: string,
   endpointIndex = 0,
-  maxRetries = 2
+  maxRetries = 3  // Increased from 2
 ): Promise<string> {
   if (endpointIndex >= LIBRETRANSLATE_ENDPOINTS.length) {
     throw new Error('All LibreTranslate endpoints exhausted');
@@ -111,6 +120,7 @@ async function translateChunk(
 
   const endpoint = LIBRETRANSLATE_ENDPOINTS[endpointIndex];
   let lastError: any;
+  let isBadRequest = false;  // Track if it's a 400 error (unsupported language)
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
@@ -135,7 +145,19 @@ async function translateChunk(
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`[libretranslate-server] HTTP ${response.status}:`, errorText.substring(0, 200));
+        console.error(`[libretranslate-server] HTTP ${response.status} from ${endpoint}`);
+        console.error(`  Lang: ${sourceLang} -> ${targetLang}, Text: "${text.substring(0, 50)}..."`);
+        console.error(`  Response: ${errorText.substring(0, 300)}`);
+        
+        // 400 = bad request (likely unsupported language), try next endpoint immediately
+        if (response.status === 400) {
+          isBadRequest = true;
+          throw new Error(`Unsupported language pair (${sourceLang}->${targetLang}): ${response.status}`);
+        }
+        // 429 = rate limited, retry with backoff
+        if (response.status === 429) {
+          throw new Error(`Rate limited: ${response.status}`);
+        }
         throw new Error(`LibreTranslate API error: ${response.status}`);
       }
 
@@ -143,7 +165,7 @@ async function translateChunk(
       if (!contentType || !contentType.includes('application/json')) {
         const responseText = await response.text();
         console.error(`[libretranslate-server] Invalid content type ${contentType}`);
-        throw new Error(`Invalid content-type: ${contentType}. Expected JSON but got HTML or error page`);
+        throw new Error(`Invalid content-type: ${contentType}`);
       }
 
       const data = await response.json();
@@ -151,15 +173,22 @@ async function translateChunk(
         throw new Error('No translation returned from API');
       }
 
+      console.log(`[libretranslate-server] ✓ Translated ${text.length} chars successfully`);
       return data.translatedText;
     } catch (err) {
       lastError = err;
       const errorMsg = err instanceof Error ? err.message : String(err);
-      console.warn(`[libretranslate-server] Endpoint ${endpoint} attempt ${attempt + 1} failed:`, errorMsg);
+      console.warn(`[libretranslate-server] Endpoint attempt ${attempt + 1}/${maxRetries + 1} failed:`, errorMsg);
+
+      // 400 errors (bad request/unsupported lang) should skip to next endpoint immediately
+      if (isBadRequest) {
+        break;  // Exit retry loop, try next endpoint
+      }
 
       if (attempt < maxRetries) {
-        // Exponential backoff: 1s, 2s
+        // Exponential backoff: 1s, 2s, 4s, 8s
         const waitTime = Math.pow(2, attempt) * 1000;
+        console.log(`[libretranslate-server] Waiting ${waitTime}ms before retry...`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
       }
     }
@@ -167,7 +196,7 @@ async function translateChunk(
 
   // Try next endpoint if available
   if (endpointIndex < LIBRETRANSLATE_ENDPOINTS.length - 1) {
-    console.log(`[libretranslate-server] Trying next endpoint: ${LIBRETRANSLATE_ENDPOINTS[endpointIndex + 1]}`);
+    console.log(`[libretranslate-server] Trying next endpoint (${endpointIndex + 1}/${LIBRETRANSLATE_ENDPOINTS.length})`);
     return translateChunk(text, sourceLang, targetLang, endpointIndex + 1, maxRetries);
   }
 

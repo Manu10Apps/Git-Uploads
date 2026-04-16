@@ -70,6 +70,12 @@ export async function POST(request: NextRequest) {
       galleryCount: processedGallery?.length || 0,
     });
 
+    // Check for Kinyarwanda - many free services don't support it
+    const hasKinyarwanda = from === 'ky' || to === 'ky';
+    if (hasKinyarwanda) {
+      console.warn('[translate-article] ⚠️  Kinyarwanda detected - free services have limited support');
+    }
+
     // Translate using backend service (LibreTranslate - free, open-source)
     let result;
     let translationSource = 'libretranslate';
