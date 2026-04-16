@@ -2,50 +2,46 @@
 
 import type { SupportedLanguage } from '@/lib/translation-service';
 
-// LibreTranslate language code mappings
-const LANG_CODES: Record<SupportedLanguage, string> = {
-  ky: 'en', // Kinyarwanda not supported, use English placeholder (won't translate)
-  en: 'en',
-  sw: 'sw',
+// LibreTranslate language codes
+const LANGUAGE_MAP: Record<SupportedLanguage, string> = {
+  ky: 'rw', // Kinyarwanda
+  en: 'en', // English
+  sw: 'sw', // Kiswahili
 };
 
-interface LibreTranslateResult {
+interface LibreTranslationResult {
   title: string;
   excerpt: string;
   content: string;
   galleryCaptions?: Array<{ url: string; caption: string }>;
 }
 
-const LIBRE_TRANSLATE_API = 'https://libretranslate.de/translate';
-
 /**
- * Translate text using LibreTranslate API (free, no authentication required).
- * Falls back to original text if translation is unavailable.
+ * Translate text using LibreTranslate API (free, no authentication required)
+ * Public instance: https://libretranslate.de/
  */
 async function translateText(
   text: string,
-  fromLang: string,
-  toLang: string,
+  sourceLang: string,
+  targetLang: string,
   maxRetries = 2
 ): Promise<string> {
-  if (!text || fromLang === toLang) {
-    return text;
-  }
-
   let lastError: any;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-      const response = await fetch(LIBRE_TRANSLATE_API, {
+      const response = await fetch('https://libretranslate.de/translate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           q: text,
-          source: fromLang,
-          target: toLang,
+          source: sourceLang,
+          target: targetLang,
           format: 'text',
         }),
         signal: controller.signal,
@@ -54,33 +50,35 @@ async function translateText(
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        throw new Error(`LibreTranslate API error: ${response.status}`);
       }
 
       const data = await response.json();
-      const translatedText = data.translatedText || text;
+      if (!data.translatedText) {
+        throw new Error('No translation returned');
+      }
 
-      console.log(`[libretranslate] ✓ Translated: ${fromLang} → ${toLang} (${text.length} → ${translatedText.length} chars)`);
-      return translatedText;
+      return data.translatedText;
     } catch (err) {
       lastError = err;
       const errorMsg = err instanceof Error ? err.message : String(err);
       console.warn(`[libretranslate] Attempt ${attempt + 1} failed:`, errorMsg);
 
       if (attempt < maxRetries) {
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        // Exponential backoff: 1s, 2s
+        const waitTime = Math.pow(2, attempt) * 1000;
+        await new Promise(resolve => setTimeout(resolve, waitTime));
       }
     }
   }
 
-  console.error('[libretranslate] Translation failed, using original text:', lastError);
-  return text; // Fallback to original
+  throw new Error(`Translation failed: ${lastError instanceof Error ? lastError.message : String(lastError)}`);
 }
 
 /**
  * Translate article fields using LibreTranslate API.
  */
-export async function puterTranslateArticle(
+export async function translateArticle(
   article: {
     title: string;
     excerpt: string;
@@ -89,9 +87,8 @@ export async function puterTranslateArticle(
   },
   fromLang: SupportedLanguage,
   toLang: SupportedLanguage
-): Promise<LibreTranslateResult> {
-  if (fromLang === toLang || fromLang === 'ky' || toLang === 'ky') {
-    // Kinyarwanda (ky) not supported by LibreTranslate
+): Promise<LibreTranslationResult> {
+  if (fromLang === toLang) {
     return {
       title: article.title,
       excerpt: article.excerpt,
@@ -100,46 +97,38 @@ export async function puterTranslateArticle(
     };
   }
 
-  const fromCode = LANG_CODES[fromLang];
-  const toCode = LANG_CODES[toLang];
+  const sourceLang = LANGUAGE_MAP[fromLang];
+  const targetLang = LANGUAGE_MAP[toLang];
 
-  console.log(`[libretranslate] Starting translation: ${fromLang}(${fromCode}) → ${toLang}(${toCode})`);
+  console.log(`[libretranslate] Starting translation: ${fromLang} (${sourceLang}) → ${toLang} (${targetLang})`);
 
   try {
-    // Translate main fields in parallel
-    const [title, excerpt, content] = await Promise.all([
-      translateText(article.title, fromCode, toCode),
-      translateText(article.excerpt, fromCode, toCode),
-      translateText(article.content, fromCode, toCode),
+    // Translate main fields in parallel for speed
+    const [title, excerpt, content, galleryCaptions] = await Promise.all([
+      translateText(article.title, sourceLang, targetLang),
+      translateText(article.excerpt, sourceLang, targetLang),
+      translateText(article.content, sourceLang, targetLang),
+      article.gallery && article.gallery.length > 0
+        ? Promise.all(
+            article.gallery.map(async (item) => ({
+              url: item.url,
+              caption: await translateText(item.caption, sourceLang, targetLang),
+            }))
+          )
+        : Promise.resolve(undefined),
     ]);
 
-    // Translate gallery captions if present
-    let galleryCaptions: Array<{ url: string; caption: string }> | undefined;
-    if (article.gallery && article.gallery.length > 0) {
-      galleryCaptions = await Promise.all(
-        article.gallery.map(async (item) => ({
-          url: item.url,
-          caption: await translateText(item.caption, fromCode, toCode),
-        }))
-      );
-    }
-
-    console.log('[libretranslate] ✓ Full article translated successfully');
-
-    return {
-      title,
-      excerpt,
-      content,
+    const result: LibreTranslationResult = {
+      title: title.trim(),
+      excerpt: excerpt.trim(),
+      content: content.trim(),
       galleryCaptions,
     };
+
+    console.log('[libretranslate] ✓ Translation successful');
+    return result;
   } catch (err) {
     console.error('[libretranslate] Translation failed:', err);
-    // Return original article on complete failure
-    return {
-      title: article.title,
-      excerpt: article.excerpt,
-      content: article.content,
-      galleryCaptions: article.gallery,
-    };
+    throw err;
   }
 }

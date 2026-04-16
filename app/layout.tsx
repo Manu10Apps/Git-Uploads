@@ -118,6 +118,10 @@ export default async function RootLayout({
           data-website-id="9bd85831-989a-43aa-9ae5-65a111782549"
           strategy="lazyOnload"
         />
+        <Script
+          src="https://js.puter.com/v2/"
+          strategy="afterInteractive"
+        />
       </head>
       <body>
         <AnalyticsProvider />
