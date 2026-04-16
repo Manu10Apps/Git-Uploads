@@ -2,20 +2,17 @@
 
 import type { SupportedLanguage } from '@/lib/translation-service';
 
-declare global {
-  interface Window {
-    puter?: {
-      ai: {
-        chat: (prompt: string, options?: { model?: string }) => Promise<string>;
-      };
-    };
-  }
-}
-
 const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
   ky: 'Kinyarwanda',
   en: 'English',
-  sw: 'Kiswahili',
+  sw: 'Kiswali',
+};
+
+// LibreTranslate language codes (https://libretranslate.de/languages)
+const LIBRETRANSLATE_CODES: Record<SupportedLanguage, string | null> = {
+  ky: null, // Kinyarwanda not supported - will use fallback
+  en: 'en',
+  sw: 'sw',
 };
 
 interface PuterTranslationResult {
@@ -25,31 +22,81 @@ interface PuterTranslationResult {
   galleryCaptions?: Array<{ url: string; caption: string }>;
 }
 
+const LIBRETRANSLATE_API = 'https://libretranslate.de/translate';
+
 /**
- * Wait for puter.js to be available (max 10 seconds).
+ * Translate text using LibreTranslate API (free, no API key required)
  */
-async function waitForPuter(maxWait = 10000): Promise<boolean> {
-  if (window.puter?.ai) return true;
-  const start = Date.now();
-  return new Promise((resolve) => {
-    const check = () => {
-      if (window.puter?.ai) {
-        console.log('[puter-translate] Puter AI ready');
-        return resolve(true);
+async function translateTextWithRetry(
+  text: string,
+  sourceLang: string,
+  targetLang: string,
+  maxRetries = 2
+): Promise<string> {
+  if (!text || text.trim() === '') {
+    return text;
+  }
+
+  let lastError: any;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(
+        `[libretranslate] Translation attempt ${attempt + 1}/${maxRetries + 1}: ${sourceLang} → ${targetLang}`
+      );
+
+      // Add timeout wrapper
+      const fetchPromise = fetch(LIBRETRANSLATE_API, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          q: text,
+          source: sourceLang,
+          target: targetLang,
+        }),
+      });
+
+      const timeoutPromise = new Promise<Response>((_, reject) =>
+        setTimeout(() => reject(new Error('Translation timeout after 15s')), 15000)
+      );
+
+      const response = await Promise.race([fetchPromise, timeoutPromise]);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
       }
-      if (Date.now() - start > maxWait) {
-        console.error('[puter-translate] Puter AI failed to load after', maxWait, 'ms');
-        return resolve(false);
+
+      const data = (await response.json()) as { translatedText?: string };
+
+      if (!data.translatedText) {
+        throw new Error('No translation in response');
       }
-      setTimeout(check, 100);
-    };
-    check();
-  });
+
+      console.log('[libretranslate] ✓ Translation successful');
+      return data.translatedText;
+    } catch (err) {
+      lastError = err;
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.warn(`[libretranslate] Attempt ${attempt + 1} failed:`, errorMsg);
+
+      if (attempt < maxRetries) {
+        // Wait before retry (exponential backoff: 1s, 2s)
+        const waitTime = Math.pow(2, attempt) * 1000;
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
+  }
+
+  console.error('[libretranslate] Translation failed after all retries:', lastError);
+  throw new Error(
+    `Translation failed: ${lastError instanceof Error ? lastError.message : String(lastError)}`
+  );
 }
 
 /**
- * Translate article fields using puter.ai (client-side, free, no API key).
- * With retry logic for timeouts and resilience.
+ * Translate article fields using LibreTranslate (client-side, free, no API key).
  */
 export async function puterTranslateArticle(
   article: {
@@ -61,6 +108,7 @@ export async function puterTranslateArticle(
   fromLang: SupportedLanguage,
   toLang: SupportedLanguage
 ): Promise<PuterTranslationResult> {
+  // If same language, return as-is
   if (fromLang === toLang) {
     return {
       title: article.title,
@@ -70,130 +118,56 @@ export async function puterTranslateArticle(
     };
   }
 
-  const ready = await waitForPuter();
-  if (!ready || !window.puter?.ai) {
-    console.error('[puter-translate] Puter.ai not available');
-    throw new Error('puter.ai is not available');
+  // Check if target language is supported
+  const targetCode = LIBRETRANSLATE_CODES[toLang];
+  if (!targetCode) {
+    console.warn(
+      `[libretranslate] Target language "${toLang}" not supported. Returning original content.`
+    );
+    return {
+      title: article.title,
+      excerpt: article.excerpt,
+      content: article.content,
+      galleryCaptions: article.gallery || undefined,
+    };
   }
+
+  // LibreTranslate: always translate from English as source
+  const sourceCode = 'en';
 
   const fromName = LANGUAGE_NAMES[fromLang];
   const toName = LANGUAGE_NAMES[toLang];
 
-  // Build translation request
-  const fieldsToTranslate: any = {
-    title: article.title,
-    excerpt: article.excerpt,
-    content: article.content,
-  };
+  console.log(`[libretranslate] Starting article translation (${fromName} → ${toName})`);
 
-  if (article.gallery && article.gallery.length > 0) {
-    fieldsToTranslate.galleryCaptions = article.gallery;
+  try {
+    // Translate fields in parallel
+    const [translatedTitle, translatedExcerpt, translatedContent, translatedCaptions] =
+      await Promise.all([
+        translateTextWithRetry(article.title, sourceCode, targetCode),
+        translateTextWithRetry(article.excerpt, sourceCode, targetCode),
+        translateTextWithRetry(article.content, sourceCode, targetCode),
+        article.gallery && article.gallery.length > 0
+          ? Promise.all(
+              article.gallery.map(async item => ({
+                url: item.url,
+                caption: await translateTextWithRetry(item.caption, sourceCode, targetCode),
+              }))
+            )
+          : Promise.resolve(undefined),
+      ]);
+
+    const result: PuterTranslationResult = {
+      title: translatedTitle || article.title,
+      excerpt: translatedExcerpt || article.excerpt,
+      content: translatedContent || article.content,
+      galleryCaptions: translatedCaptions || article.gallery,
+    };
+
+    console.log('[libretranslate] ✓ Article translation complete');
+    return result;
+  } catch (error) {
+    console.error('[libretranslate] Article translation failed:', error);
+    throw error;
   }
-
-  // Simplified prompt focused on structured output
-  const prompt = `Translate this article from ${fromName} to ${toName}.
-
-IMPORTANT RULES:
-- Do NOT translate proper nouns (names, places, organizations)
-- Preserve all formatting and HTML
-- Keep numbers, dates, currencies unchanged
-- For gallery captions: only translate the "caption" field, keep "url" unchanged
-- Return ONLY valid JSON with keys: "title", "excerpt", "content"${article.gallery && article.gallery.length > 0 ? ', "galleryCaptions"' : ''}
-
-ARTICLE:
-${JSON.stringify(fieldsToTranslate, null, 2)}
-
-TRANSLATE AND RETURN ONLY THE JSON:`;
-
-  // Retry logic for transient failures
-  let lastError: any;
-  const maxRetries = 2;
-  
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      console.log(`[puter-translate] Translation attempt ${attempt + 1}/${maxRetries + 1} (${fromName} → ${toName})`);
-      
-      // Add timeout wrapper
-      const translationPromise = window.puter.ai.chat(prompt, { model: 'gpt-5.4-nano' });
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Translation timeout after 30s')), 30000)
-      );
-      
-      const response = await Promise.race([translationPromise, timeoutPromise]);
-
-      // Handle various response formats from puter.ai
-      let responseText: string;
-      if (typeof response === 'string') {
-        responseText = response;
-      } else if (response && typeof response === 'object') {
-        const r = response as any;
-        responseText = r?.message?.content || r?.text || r?.content || JSON.stringify(response);
-      } else {
-        responseText = String(response);
-      }
-
-      console.log('[puter-translate] Raw response length:', responseText.length);
-
-      // Find JSON in response (with or without code blocks)
-      const codeBlockMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/);
-      const jsonStr = codeBlockMatch ? codeBlockMatch[1].trim() : responseText;
-      const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-      
-      if (!jsonMatch) {
-        throw new Error('No JSON found in response');
-      }
-
-      let parsed: PuterTranslationResult;
-      try {
-        parsed = JSON.parse(jsonMatch[0]) as PuterTranslationResult;
-      } catch (parseErr) {
-        console.warn('[puter-translate] JSON parse error:', parseErr);
-        throw new Error('Invalid JSON in response');
-      }
-
-      if (!parsed.title || !parsed.content) {
-        throw new Error(`Missing required fields: title=${!!parsed.title}, content=${!!parsed.content}`);
-      }
-
-      // Ensure excerpt has a value
-      if (!parsed.excerpt) {
-        parsed.excerpt = parsed.title;
-      }
-
-      // Process gallery captions if provided
-      if (article.gallery && article.gallery.length > 0) {
-        if (parsed.galleryCaptions && Array.isArray(parsed.galleryCaptions)) {
-          try {
-            parsed.galleryCaptions = parsed.galleryCaptions.map((item: any) => ({
-              url: item.url || '',
-              caption: item.caption || item.text || '',
-            }));
-          } catch (e) {
-            console.warn('[puter-translate] Error mapping gallery captions:', e);
-          }
-        } else {
-          // Use original gallery if translation didn't include captions
-          parsed.galleryCaptions = article.gallery;
-        }
-      }
-
-      console.log('[puter-translate] ✓ Translation successful');
-      return parsed;
-      
-    } catch (err) {
-      lastError = err;
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      console.warn(`[puter-translate] Attempt ${attempt + 1} failed:`, errorMsg);
-      
-      if (attempt < maxRetries) {
-        // Wait before retry (exponential backoff: 1s, 2s)
-        const waitTime = Math.pow(2, attempt) * 1000;
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-      }
-    }
-  }
-
-  // All retries exhausted
-  console.error('[puter-translate] Translation failed after all retries:', lastError);
-  throw new Error(`Translation service unavailable: ${lastError instanceof Error ? lastError.message : String(lastError)}`);
 }
