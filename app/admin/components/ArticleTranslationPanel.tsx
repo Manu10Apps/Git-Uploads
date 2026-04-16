@@ -103,6 +103,7 @@ export default function ArticleTranslationPanel({
   );
 
   const autoTranslate = async (langCode: string) => {
+    console.log(`[ArticleTranslationPanel] autoTranslate: ${langCode}`);
     setLangs((prev) => ({
       ...prev,
       [langCode]: { ...prev[langCode], status: 'translating' },
@@ -113,6 +114,7 @@ export default function ArticleTranslationPanel({
         'ky',
         langCode as any
       );
+      console.log(`[ArticleTranslationPanel] ✓ Translation complete for ${langCode}`);
       setLangs((prev) => ({
         ...prev,
         [langCode]: {
@@ -142,6 +144,7 @@ export default function ArticleTranslationPanel({
         });
       }
     } catch (err: any) {
+      console.error(`[ArticleTranslationPanel] Error translating ${langCode}:`, err?.message || err);
       setLangs((prev) => ({
         ...prev,
         [langCode]: {
@@ -155,10 +158,14 @@ export default function ArticleTranslationPanel({
 
   const saveTranslation = async (langCode: string) => {
     const form = langs[langCode].form;
-    if (!form.title.trim() || !form.content.trim()) return;
+    if (!form.title.trim() || !form.content.trim()) {
+      console.warn(`[ArticleTranslationPanel] Skipping save for ${langCode}: missing title or content`);
+      return;
+    }
 
     // In pre-publish mode, just mark as ready and notify parent
     if (isPrePublish) {
+      console.log(`[ArticleTranslationPanel] Pre-publish mode: marking ${langCode} as saved`);
       setLangs((prev) => ({
         ...prev,
         [langCode]: { ...prev[langCode], status: 'saved', error: undefined },
@@ -177,6 +184,7 @@ export default function ArticleTranslationPanel({
       return;
     }
 
+    console.log(`[ArticleTranslationPanel] Saving ${langCode} translation to database...`);
     setLangs((prev) => ({
       ...prev,
       [langCode]: { ...prev[langCode], status: 'saving' },
@@ -193,28 +201,40 @@ export default function ArticleTranslationPanel({
           content: form.content.trim(),
         }),
       });
-      if (!res.ok) throw new Error('Failed to save');
+
+      const responseData = await res.json();
+      
+      if (!res.ok) {
+        const errorMsg = responseData?.error || `API returned ${res.status}`;
+        throw new Error(`Failed to save: ${errorMsg}`);
+      }
+
+      console.log(`[ArticleTranslationPanel] ✓ ${langCode} saved successfully:`, responseData);
       setLangs((prev) => ({
         ...prev,
         [langCode]: { ...prev[langCode], status: 'saved', error: undefined },
       }));
     } catch (err: any) {
+      const errorMsg = err?.message || 'Save failed';
+      console.error(`[ArticleTranslationPanel] Error saving ${langCode}:`, errorMsg);
       setLangs((prev) => ({
         ...prev,
         [langCode]: {
           ...prev[langCode],
           status: 'error',
-          error: err?.message || 'Save failed',
+          error: errorMsg,
         },
       }));
     }
   };
 
   const translateAndSaveAll = async () => {
+    console.log('[ArticleTranslationPanel] Starting translateAndSaveAll:', { isPrePublish, articleId, languageCount: LANGUAGES.length });
     setTranslatingAll(true);
     const allResults: Record<string, { title: string; excerpt: string; content: string }> = {};
     for (const lang of LANGUAGES) {
       // Auto-translate
+      console.log(`[ArticleTranslationPanel] Translating to ${lang.code}...`);
       setLangs((prev) => ({
         ...prev,
         [lang.code]: { ...prev[lang.code], status: 'translating' },
@@ -233,6 +253,7 @@ export default function ArticleTranslationPanel({
 
         if (isPrePublish) {
           // Pre-publish: just fill forms, don't save to DB
+          console.log(`[ArticleTranslationPanel] Pre-publish mode: filling form for ${lang.code}`);
           setLangs((prev) => ({
             ...prev,
             [lang.code]: { status: 'saved', form, error: undefined },
@@ -244,6 +265,7 @@ export default function ArticleTranslationPanel({
             [lang.code]: { status: 'saving', form },
           }));
           // Save immediately with the result
+          console.log(`[ArticleTranslationPanel] Saving "${lang.code}" translation to database...`);
           const res = await fetch('/api/translations/cache', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -255,13 +277,23 @@ export default function ArticleTranslationPanel({
               content: form.content.trim(),
             }),
           });
-          if (!res.ok) throw new Error('Failed to save');
+
+          const responseData = await res.json();
+          
+          if (!res.ok) {
+            const errorMsg = responseData?.error || `API returned ${res.status}`;
+            throw new Error(`Failed to save: ${errorMsg}`);
+          }
+
+          console.log(`[ArticleTranslationPanel] ✓ Translation saved for ${lang.code}:`, responseData);
           setLangs((prev) => ({
             ...prev,
             [lang.code]: { ...prev[lang.code], status: 'saved', error: undefined },
           }));
         }
       } catch (err: any) {
+        const errorMsg = err?.message || 'Failed to process translation';
+        console.error(`[ArticleTranslationPanel] Error for ${lang.code}:`, errorMsg);
         setLangs((prev) => ({
           ...prev,
           [lang.code]: {
@@ -273,8 +305,10 @@ export default function ArticleTranslationPanel({
       }
     }
     if (isPrePublish && onTranslationsReady && Object.keys(allResults).length > 0) {
+      console.log('[ArticleTranslationPanel] Pre-publish complete, calling onTranslationsReady with:', Object.keys(allResults));
       onTranslationsReady(allResults);
     }
+    console.log('[ArticleTranslationPanel] translateAndSaveAll complete');
     setTranslatingAll(false);
   };
 
