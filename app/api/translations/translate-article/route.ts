@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { translateArticle as translateArticleBackend, isValidLanguage, type SupportedLanguage } from '@/lib/translation-service';
+import { translateArticle as translateArticleLibreTranslate } from '@/lib/libretranslate-server';
 
 /**
  * POST /api/translations/translate-article
@@ -68,19 +69,53 @@ export async function POST(request: NextRequest) {
     });
 
     // Translate using backend service (OpenAI)
-    const result = await translateArticleBackend(
-      {
-        title,
-        excerpt,
-        content,
-        gallery: processedGallery,
-      },
-      from as SupportedLanguage,
-      to as SupportedLanguage
-    );
+    let result;
+    let translationSource = 'openai';
+    
+    try {
+      result = await translateArticleBackend(
+        {
+          title,
+          excerpt,
+          content,
+          gallery: processedGallery,
+        },
+        from as SupportedLanguage,
+        to as SupportedLanguage
+      );
+    } catch (openaiError) {
+      const errorMessage = openaiError instanceof Error ? openaiError.message : String(openaiError);
+      
+      // Check if it's a quota exceeded error (429)
+      if (errorMessage.includes('429') || errorMessage.includes('quota') || errorMessage.includes('rate limit')) {
+        console.warn('[translate-article] OpenAI quota exceeded, falling back to LibreTranslate');
+        
+        try {
+          result = await translateArticleLibreTranslate(
+            {
+              title,
+              excerpt,
+              content,
+              gallery: processedGallery,
+            },
+            from as SupportedLanguage,
+            to as SupportedLanguage
+          );
+          translationSource = 'libretranslate';
+          console.log('[translate-article] ✓ Fallback to LibreTranslate successful');
+        } catch (fallbackError) {
+          console.error('[translate-article] Both OpenAI and LibreTranslate failed:', fallbackError);
+          throw new Error(`Translation services unavailable. OpenAI error: ${errorMessage}. Fallback also failed: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`);
+        }
+      } else {
+        // Re-throw if it's not a quota issue
+        throw openaiError;
+      }
+    }
 
     console.log('[translate-article] ✓ Translation successful:', {
       to,
+      source: translationSource,
       resultLen: result.content.length,
     });
 
@@ -93,7 +128,7 @@ export async function POST(request: NextRequest) {
         excerpt: result.excerpt,
         content: result.content,
         galleryCaptions: result.galleryCaptions,
-        translationSource: 'openai',
+        translationSource: translationSource,
       },
     });
   } catch (error) {
