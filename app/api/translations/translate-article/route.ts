@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { translateArticle as translateArticleBackend, isValidLanguage, type SupportedLanguage } from '@/lib/translation-service';
+import { isValidLanguage, type SupportedLanguage } from '@/lib/translation-service';
 import { translateArticle as translateArticleLibreTranslate } from '@/lib/libretranslate-server';
+import { translateArticle as translateArticlePuter } from '@/lib/puter-server-translate';
 import { translateArticle as translateArticleMyMemory } from '@/lib/mymemory-translate';
 
 /**
@@ -69,14 +70,14 @@ export async function POST(request: NextRequest) {
       galleryCount: processedGallery?.length || 0,
     });
 
-    // Translate using backend service (OpenAI)
+    // Translate using backend service (LibreTranslate - free, open-source)
     let result;
-    let translationSource = 'openai';
+    let translationSource = 'libretranslate';
     let lastError: Error | null = null;
     
-    // 1. Try OpenAI
+    // 1. Try LibreTranslate (free, open-source)
     try {
-      result = await translateArticleBackend(
+      result = await translateArticleLibreTranslate(
         {
           title,
           excerpt,
@@ -86,25 +87,35 @@ export async function POST(request: NextRequest) {
         from as SupportedLanguage,
         to as SupportedLanguage
       );
-      console.log('[translate-article] ✓ OpenAI translation successful');
-    } catch (openaiError) {
-      lastError = openaiError instanceof Error ? openaiError : new Error(String(openaiError));
+      console.log('[translate-article] ✓ LibreTranslate translation successful');
+    } catch (libreError) {
+      lastError = libreError instanceof Error ? libreError : new Error(String(libreError));
       const errorMessage = lastError.message;
+      console.warn('[translate-article] LibreTranslate unavailable, trying Puter');
       
-      // Check if it's a quota exceeded error (429), missing key, or rate limit
-      if (
-        errorMessage.includes('429') || 
-        errorMessage.includes('quota') || 
-        errorMessage.includes('rate limit') ||
-        errorMessage.includes('OPENAI_API_KEY') ||
-        errorMessage.includes('API key') ||
-        errorMessage.includes('Unauthorized')
-      ) {
-        console.warn('[translate-article] OpenAI unavailable, trying LibreTranslate');
+      // 2. Try Puter (free AI service)
+      try {
+        result = await translateArticlePuter(
+          {
+            title,
+            excerpt,
+            content,
+            gallery: processedGallery,
+          },
+          from as SupportedLanguage,
+          to as SupportedLanguage
+        );
+        translationSource = 'puter';
+        console.log('[translate-article] ✓ Puter translation successful');
+        lastError = null;
+      } catch (puterError) {
+        const puterErrorMsg = puterError instanceof Error ? puterError.message : String(puterError);
+        console.warn('[translate-article] Puter failed:', puterErrorMsg);
         
-        // 2. Try LibreTranslate
+        // 3. Try MyMemory (most stable free fallback)
         try {
-          result = await translateArticleLibreTranslate(
+          console.warn('[translate-article] Trying MyMemory as final fallback');
+          result = await translateArticleMyMemory(
             {
               title,
               excerpt,
@@ -114,43 +125,19 @@ export async function POST(request: NextRequest) {
             from as SupportedLanguage,
             to as SupportedLanguage
           );
-          translationSource = 'libretranslate';
-          console.log('[translate-article] ✓ LibreTranslate translation successful');
+          translationSource = 'mymemory';
+          console.log('[translate-article] ✓ MyMemory translation successful');
           lastError = null;
-        } catch (libreError) {
-          const libreErrorMsg = libreError instanceof Error ? libreError.message : String(libreError);
-          console.warn('[translate-article] LibreTranslate failed:', libreErrorMsg);
-          
-          // 3. Try MyMemory (most stable free fallback)
-          try {
-            console.warn('[translate-article] Trying MyMemory as final fallback');
-            result = await translateArticleMyMemory(
-              {
-                title,
-                excerpt,
-                content,
-                gallery: processedGallery,
-              },
-              from as SupportedLanguage,
-              to as SupportedLanguage
-            );
-            translationSource = 'mymemory';
-            console.log('[translate-article] ✓ MyMemory translation successful');
-            lastError = null;
-          } catch (memoryError) {
-            const memoryErrorMsg = memoryError instanceof Error ? memoryError.message : String(memoryError);
-            console.error('[translate-article] All translation services failed');
-            console.error('  - OpenAI:', errorMessage);
-            console.error('  - LibreTranslate:', libreErrorMsg);
-            console.error('  - MyMemory:', memoryErrorMsg);
-            throw new Error(
-              `All translation services failed. OpenAI: ${errorMessage}. LibreTranslate: ${libreErrorMsg}. MyMemory: ${memoryErrorMsg}`
-            );
-          }
+        } catch (memoryError) {
+          const memoryErrorMsg = memoryError instanceof Error ? memoryError.message : String(memoryError);
+          console.error('[translate-article] All translation services failed');
+          console.error('  - LibreTranslate:', errorMessage);
+          console.error('  - Puter:', puterErrorMsg);
+          console.error('  - MyMemory:', memoryErrorMsg);
+          throw new Error(
+            `All translation services failed. LibreTranslate: ${errorMessage}. Puter: ${puterErrorMsg}. MyMemory: ${memoryErrorMsg}`
+          );
         }
-      } else {
-        // Re-throw if it's not a quota issue
-        throw openaiError;
       }
     }
 

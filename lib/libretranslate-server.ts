@@ -24,10 +24,81 @@ const LIBRETRANSLATE_ENDPOINTS = [
 ];
 
 /**
+ * Split text into chunks respecting the API limit
+ * LibreTranslate free tier has ~500 char limit per request
+ */
+function chunkText(text: string, maxChunkSize: number = 400): string[] {
+  if (text.length <= maxChunkSize) {
+    return [text];
+  }
+
+  const chunks: string[] = [];
+  let remaining = text;
+
+  while (remaining.length > 0) {
+    if (remaining.length <= maxChunkSize) {
+      chunks.push(remaining);
+      break;
+    }
+
+    // Try to break at a sentence or word boundary
+    let chunkEnd = maxChunkSize;
+    const lastPeriod = remaining.lastIndexOf('.', maxChunkSize);
+    const lastNewline = remaining.lastIndexOf('\n', maxChunkSize);
+    const lastSpace = remaining.lastIndexOf(' ', maxChunkSize);
+
+    if (lastPeriod > maxChunkSize * 0.7) {
+      chunkEnd = lastPeriod + 1;
+    } else if (lastNewline > maxChunkSize * 0.7) {
+      chunkEnd = lastNewline + 1;
+    } else if (lastSpace > maxChunkSize * 0.7) {
+      chunkEnd = lastSpace;
+    }
+
+    chunks.push(remaining.substring(0, chunkEnd).trim());
+    remaining = remaining.substring(chunkEnd).trim();
+  }
+
+  return chunks;
+}
+
+/**
  * Translate text using LibreTranslate API (free, no authentication required)
  * Tries multiple public instances for reliability
+ * Chunks large text to respect API limits (~500 chars per request)
  */
 async function translateText(
+  text: string,
+  sourceLang: string,
+  targetLang: string,
+  endpointIndex = 0,
+  maxRetries = 2
+): Promise<string> {
+  if (!text || !text.trim()) {
+    return '';
+  }
+
+  // Chunk the text for large translations
+  const chunks = chunkText(text, 400);
+  console.log(`[libretranslate-server] Translating ${chunks.length} chunk(s) (total: ${text.length} chars)`);
+
+  const translatedChunks: string[] = [];
+
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    console.log(`[libretranslate-server] Translating chunk ${i + 1}/${chunks.length} (${chunk.length} chars)`);
+
+    const translated = await translateChunk(chunk, sourceLang, targetLang, endpointIndex, maxRetries);
+    translatedChunks.push(translated);
+  }
+
+  return translatedChunks.join(' ').trim();
+}
+
+/**
+ * Translate a single chunk of text
+ */
+async function translateChunk(
   text: string,
   sourceLang: string,
   targetLang: string,
@@ -45,8 +116,6 @@ async function translateText(
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
-
-      console.log(`[libretranslate-server] Attempting translation with endpoint: ${endpoint} (attempt ${attempt + 1})`);
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -73,7 +142,7 @@ async function translateText(
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         const responseText = await response.text();
-        console.error(`[libretranslate-server] Invalid content type ${contentType}. Response:`, responseText.substring(0, 200));
+        console.error(`[libretranslate-server] Invalid content type ${contentType}`);
         throw new Error(`Invalid content-type: ${contentType}. Expected JSON but got HTML or error page`);
       }
 
@@ -99,7 +168,7 @@ async function translateText(
   // Try next endpoint if available
   if (endpointIndex < LIBRETRANSLATE_ENDPOINTS.length - 1) {
     console.log(`[libretranslate-server] Trying next endpoint: ${LIBRETRANSLATE_ENDPOINTS[endpointIndex + 1]}`);
-    return translateText(text, sourceLang, targetLang, endpointIndex + 1, maxRetries);
+    return translateChunk(text, sourceLang, targetLang, endpointIndex + 1, maxRetries);
   }
 
   throw new Error(`Translation failed: ${lastError instanceof Error ? lastError.message : String(lastError)}`);
