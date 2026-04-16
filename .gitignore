@@ -6,6 +6,8 @@ node_modules
 # Testing
 coverage
 .nyc_output
+diagnose-*.ts
+test-*.ts
 
 # Next.js build output and cache
 .next
