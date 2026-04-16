@@ -137,5 +137,10 @@ export function HomepageAdverts({
                 <span className="text-neutral-400 dark:text-neutral-500 text-sm">{t.article.advertSpace}</span>
               </div>
             )}
+          </div>
+        </div>
+      </section>
+
+    </>
   );
 }
