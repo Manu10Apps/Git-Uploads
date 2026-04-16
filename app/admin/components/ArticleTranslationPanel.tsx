@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Languages, CheckCircle, Loader2, AlertCircle, Save } from 'lucide-react';
-import { translateArticle } from '@/lib/libretranslate';
 
 interface ArticleTranslationPanelProps {
   articleId?: number | string | null;
@@ -109,11 +108,27 @@ export default function ArticleTranslationPanel({
       [langCode]: { ...prev[langCode], status: 'translating' },
     }));
     try {
-      const result = await translateArticle(
-        { title, excerpt, content, gallery: [] },
-        'ky',
-        langCode as any
-      );
+      const apiRes = await fetch('/api/translations/translate-article', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          excerpt,
+          content,
+          gallery: [],
+          from: 'ky',
+          to: langCode,
+        }),
+      });
+
+      if (!apiRes.ok) {
+        const errorData = await apiRes.json();
+        throw new Error(errorData?.error || `Translation API returned ${apiRes.status}`);
+      }
+
+      const apiData = await apiRes.json();
+      const result = apiData.data;
+
       console.log(`[ArticleTranslationPanel] ✓ Translation complete for ${langCode}`);
       setLangs((prev) => ({
         ...prev,
@@ -240,11 +255,27 @@ export default function ArticleTranslationPanel({
         [lang.code]: { ...prev[lang.code], status: 'translating' },
       }));
       try {
-        const result = await translateArticle(
-          { title, excerpt, content, gallery: [] },
-          'ky',
-          lang.code as any
-        );
+        const apiRes = await fetch('/api/translations/translate-article', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title,
+            excerpt,
+            content,
+            gallery: [],
+            from: 'ky',
+            to: lang.code,
+          }),
+        });
+
+        if (!apiRes.ok) {
+          const errorData = await apiRes.json();
+          throw new Error(errorData?.error || `Translation API returned ${apiRes.status}`);
+        }
+
+        const apiData = await apiRes.json();
+        const result = apiData.data;
+
         const form = {
           title: result.title || '',
           excerpt: result.excerpt || '',

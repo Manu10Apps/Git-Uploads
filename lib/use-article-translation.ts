@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAppStore } from '@/lib/store';
 import type { SupportedLanguage } from '@/lib/translation-service';
-import { translateArticle } from '@/lib/libretranslate';
 
 interface TranslatedArticle {
   title: string;
@@ -107,17 +106,28 @@ export function useArticleTranslation({
           // Don't return — fall through to re-translate and update DB below
         }
 
-        // 2. No DB cache or stale — translate with LibreTranslate
-        const result = await translateArticle(
-          {
+        // 2. No DB cache or stale — translate via backend API (avoids CORS issues)
+        console.log(`[useArticleTranslation] Translating to ${lang} via backend API...`);
+        const apiRes = await fetch('/api/translations/translate-article', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
             title: originalTitle,
             excerpt: originalExcerpt,
             content: originalContent,
             gallery: originalGallery,
-          },
-          'ky',
-          lang
-        );
+            from: 'ky',
+            to: lang,
+          }),
+        });
+
+        if (!apiRes.ok) {
+          const errorData = await apiRes.json();
+          throw new Error(errorData?.error || `Translation API returned ${apiRes.status}`);
+        }
+
+        const apiData = await apiRes.json();
+        const result = apiData.data;
 
         if (cancelledRef.current) return;
 
