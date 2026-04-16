@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
       excerpt: String(excerpt || '').trim(),
       content: String(content).trim(),
       galleryCaptions: galleryCaptionsJson,
-      translationSource: 'puter-ai',
+      translationSource: 'ai', // Always use 'ai' as the source (valid DB value)
       versionHash,
     };
 

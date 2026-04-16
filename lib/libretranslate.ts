@@ -14,6 +14,7 @@ interface LibreTranslationResult {
   excerpt: string;
   content: string;
   galleryCaptions?: Array<{ url: string; caption: string }>;
+  translationSource?: string;
 }
 
 /**
@@ -123,6 +124,7 @@ export async function translateArticle(
       excerpt: excerpt.trim(),
       content: content.trim(),
       galleryCaptions,
+      translationSource: 'ai', // Store as generic 'ai' source
     };
 
     console.log('[libretranslate] ✓ Translation successful');
