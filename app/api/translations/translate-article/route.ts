@@ -47,9 +47,9 @@ export async function POST(request: NextRequest) {
 
     // Validate content length (rough limit to avoid huge translations)
     const totalLength = title.length + excerpt.length + content.length;
-    if (totalLength > 50000) {
+    if (totalLength > 500000) {  // Increased from 50,000 to 500,000 (500K chars)
       return NextResponse.json(
-        { error: 'Content too long. Keep total under 50,000 characters.' },
+        { error: 'Content too long. Keep total under 500,000 characters.' },
         { status: 400 }
       );
     }
