@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Languages, CheckCircle, Loader2, AlertCircle, Save } from 'lucide-react';
-import { puterTranslateArticle } from '@/lib/puter-translate';
+import { translateArticle } from '@/lib/libretranslate';
 
 interface ArticleTranslationPanelProps {
   articleId?: number | string | null;
@@ -108,8 +108,8 @@ export default function ArticleTranslationPanel({
       [langCode]: { ...prev[langCode], status: 'translating' },
     }));
     try {
-      const result = await puterTranslateArticle(
-        { title, excerpt, content },
+      const result = await translateArticle(
+        { title, excerpt, content, gallery: [] },
         'ky',
         langCode as any
       );
@@ -220,8 +220,8 @@ export default function ArticleTranslationPanel({
         [lang.code]: { ...prev[lang.code], status: 'translating' },
       }));
       try {
-        const result = await puterTranslateArticle(
-          { title, excerpt, content },
+        const result = await translateArticle(
+          { title, excerpt, content, gallery: [] },
           'ky',
           lang.code as any
         );
