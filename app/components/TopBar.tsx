@@ -363,24 +363,35 @@ export function TopBar() {
     deferredDetectLocation();
   }, []);
 
-  // Check for live video status
+  // Check for live video status (only on page focus, max once per 5 minutes)
   useEffect(() => {
+    let lastCheckTime = 0;
+    const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
     const checkLiveVideo = async () => {
-      console.log('[TopBar] Checking for live videos...');
+      const now = Date.now();
+      if (now - lastCheckTime < CHECK_INTERVAL_MS) {
+        return; // Skip if checked recently
+      }
+      lastCheckTime = now;
       const url = await getLiveYouTubeVideoUrl();
-      console.log('[TopBar] Live video URL:', url);
       setLiveVideoUrl(url);
     };
 
-    // Check immediately on mount
+    // Check on mount
     void checkLiveVideo();
 
-    // Check every 30 seconds for live video status changes
-    const intervalId = setInterval(() => {
-      void checkLiveVideo();
-    }, 30000);
+    // Only check when page regains focus
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void checkLiveVideo();
+      }
+    };
 
-    return () => clearInterval(intervalId);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const handleLiveClick = () => {

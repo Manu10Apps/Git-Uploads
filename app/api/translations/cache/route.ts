@@ -74,14 +74,10 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/translations/cache
- * Save a client-side (puter.ai) translation to the database.
+ * Save a client-side (LibreTranslate) translation to the database.
  */
 export async function POST(request: NextRequest) {
-  const startTime = Date.now();
-  
   try {
-    console.log('[POST HOME] Request arrived at time:', startTime);
-    console.error('[POST HOME] ERROR-STYLE TEST');
     
     console.log('[translations/cache] POST request received');
     
