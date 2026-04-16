@@ -79,12 +79,33 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (parseErr) {
+      console.error('[translations/cache POST] JSON parse error:', parseErr);
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+
     const { articleId, language, title, excerpt, content, galleryCaptions } = body;
+
+    console.log('[translations/cache POST] Received:', {
+      articleId,
+      language,
+      titleLength: title?.length,
+      contentLength: content?.length,
+      hasCaptions: !!galleryCaptions,
+    });
 
     // Basic validation
     if (!articleId || !language || !title || !content) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      const missing = [];
+      if (!articleId) missing.push('articleId');
+      if (!language) missing.push('language');
+      if (!title) missing.push('title');
+      if (!content) missing.push('content');
+      console.error('[translations/cache POST] Missing fields:', missing);
+      return NextResponse.json({ error: `Missing required fields: ${missing.join(', ')}` }, { status: 400 });
     }
 
     if (!['en', 'sw'].includes(language)) {
@@ -103,6 +124,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!article) {
+      console.error('[translations/cache POST] Article not found:', id);
       return NextResponse.json({ error: 'Article not found' }, { status: 404 });
     }
 
@@ -112,7 +134,7 @@ export async function POST(request: NextRequest) {
       try {
         galleryCaptionsJson = JSON.stringify(galleryCaptions);
       } catch (e) {
-        // Skip gallery if serialization fails
+        console.warn('[translations/cache POST] Failed to serialize captions:', e);
       }
     }
 
@@ -128,6 +150,11 @@ export async function POST(request: NextRequest) {
 
     let result;
     if (existing) {
+      console.log('[translations/cache POST] Updating existing translation:', {
+        translationId: existing.id,
+        articleId: id,
+        language,
+      });
       result = await prisma.articleTranslation.update({
         where: { id: existing.id },
         data: {
@@ -141,6 +168,10 @@ export async function POST(request: NextRequest) {
         },
       });
     } else {
+      console.log('[translations/cache POST] Creating new translation:', {
+        articleId: id,
+        language,
+      });
       result = await prisma.articleTranslation.create({
         data: {
           articleId: id,
@@ -155,12 +186,27 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    console.log('[translations/cache POST] ✓ Translation saved successfully:', {
+      resultId: result.id,
+      articleId: id,
+      language,
+    });
+    console.log('[translations/cache POST] ✓ Translation saved successfully:', {
+      resultId: result.id,
+      articleId: id,
+      language,
+    });
     return NextResponse.json({ success: true, id: result.id });
   } catch (err) {
-    console.error('[translations/cache] Error:', err);
+    console.error('[translations/cache POST] Fatal error:', {
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+      type: err instanceof Error ? err.constructor.name : typeof err,
+    });
     return NextResponse.json(
       {
         error: err instanceof Error ? err.message : 'Server error',
+        debug: process.env.NODE_ENV === 'development' ? String(err) : undefined,
       },
       { status: 500 }
     );
