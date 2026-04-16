@@ -16,16 +16,29 @@ interface LibreTranslationResult {
   translationSource?: string;
 }
 
+// Multiple LibreTranslate instances to try as fallbacks
+const LIBRETRANSLATE_ENDPOINTS = [
+  'https://libretranslate.de/translate',
+  'https://api.libretranslate.de/translate',
+  'https://libretranslate.com/translate',
+];
+
 /**
  * Translate text using LibreTranslate API (free, no authentication required)
- * Public instance: https://libretranslate.de/
+ * Tries multiple public instances for reliability
  */
 async function translateText(
   text: string,
   sourceLang: string,
   targetLang: string,
+  endpointIndex = 0,
   maxRetries = 2
 ): Promise<string> {
+  if (endpointIndex >= LIBRETRANSLATE_ENDPOINTS.length) {
+    throw new Error('All LibreTranslate endpoints exhausted');
+  }
+
+  const endpoint = LIBRETRANSLATE_ENDPOINTS[endpointIndex];
   let lastError: any;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -33,7 +46,9 @@ async function translateText(
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-      const response = await fetch('https://libretranslate.de/translate', {
+      console.log(`[libretranslate-server] Attempting translation with endpoint: ${endpoint} (attempt ${attempt + 1})`);
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -50,19 +65,28 @@ async function translateText(
       clearTimeout(timeoutId);
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[libretranslate-server] HTTP ${response.status}:`, errorText.substring(0, 200));
         throw new Error(`LibreTranslate API error: ${response.status}`);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const responseText = await response.text();
+        console.error(`[libretranslate-server] Invalid content type ${contentType}. Response:`, responseText.substring(0, 200));
+        throw new Error(`Invalid content-type: ${contentType}. Expected JSON but got HTML or error page`);
       }
 
       const data = await response.json();
       if (!data.translatedText) {
-        throw new Error('No translation returned');
+        throw new Error('No translation returned from API');
       }
 
       return data.translatedText;
     } catch (err) {
       lastError = err;
       const errorMsg = err instanceof Error ? err.message : String(err);
-      console.warn(`[libretranslate-server] Attempt ${attempt + 1} failed:`, errorMsg);
+      console.warn(`[libretranslate-server] Endpoint ${endpoint} attempt ${attempt + 1} failed:`, errorMsg);
 
       if (attempt < maxRetries) {
         // Exponential backoff: 1s, 2s
@@ -70,6 +94,12 @@ async function translateText(
         await new Promise(resolve => setTimeout(resolve, waitTime));
       }
     }
+  }
+
+  // Try next endpoint if available
+  if (endpointIndex < LIBRETRANSLATE_ENDPOINTS.length - 1) {
+    console.log(`[libretranslate-server] Trying next endpoint: ${LIBRETRANSLATE_ENDPOINTS[endpointIndex + 1]}`);
+    return translateText(text, sourceLang, targetLang, endpointIndex + 1, maxRetries);
   }
 
   throw new Error(`Translation failed: ${lastError instanceof Error ? lastError.message : String(lastError)}`);
