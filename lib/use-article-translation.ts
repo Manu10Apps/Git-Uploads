@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAppStore } from '@/lib/store';
 import type { SupportedLanguage } from '@/lib/translation-service';
-import { puterTranslateArticle } from '@/lib/puter-translate';
+import { puterTranslateArticle } from '@/lib/libretranslate';
 
 interface TranslatedArticle {
   title: string;
