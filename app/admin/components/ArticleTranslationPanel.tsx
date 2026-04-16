@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Languages, CheckCircle, Loader2, AlertCircle, Save } from 'lucide-react';
-import { puterTranslateArticle } from '@/lib/libretranslate';
+import { puterTranslateArticle } from '@/lib/puter-translate';
 
 interface ArticleTranslationPanelProps {
   articleId?: number | string | null;

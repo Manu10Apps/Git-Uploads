@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAppStore } from '@/lib/store';
 import type { SupportedLanguage } from '@/lib/translation-service';
-import { puterTranslateArticle } from '@/lib/libretranslate';
+import { translateArticle } from '@/lib/libretranslate';
 
 interface TranslatedArticle {
   title: string;
@@ -107,8 +107,8 @@ export function useArticleTranslation({
           // Don't return — fall through to re-translate and update DB below
         }
 
-        // 2. No DB cache or stale — translate with puter.ai
-        const result = await puterTranslateArticle(
+        // 2. No DB cache or stale — translate with LibreTranslate
+        const result = await translateArticle(
           {
             title: originalTitle,
             excerpt: originalExcerpt,
@@ -202,20 +202,21 @@ export function useArticleTranslation({
             );
             // Still display the translation locally even if save fails
           } else {
-            console.log('[useArticleTranslation] Translation saved successfully');
+            console.log('[useArticleTranslation] Translation saved successfully to database');
           }
         } catch (error) {
           if (error instanceof DOMException && error.name === 'AbortError') {
-            console.error('[useArticleTranslation] Save request timed out after 15s');
+            console.error('[useArticleTranslation] Database save request timed out after 15s');
           } else {
-            console.error('[useArticleTranslation] Error saving translation:', error);
+            console.error('[useArticleTranslation] Error saving translation to database:', error);
           }
           // DB save failed — translation still works client-side
         }
       } catch (error: any) {
         if (cancelledRef.current) return;
         setTranslation(null);
-        setTranslationError(null);
+        console.error('[useArticleTranslation] LibreTranslate error:', error instanceof Error ? error.message : String(error));
+        setTranslationError('Translation service temporarily unavailable');
       } finally {
         if (!cancelledRef.current) {
           setIsTranslating(false);
