@@ -93,45 +93,69 @@ ${chunk}`;
 async function translateWithPuterOrFallback(
   prompt: string,
   fromLang: string,
-  toLang: string
+  toLang: string,
+  maxRetries = 3
 ): Promise<string> {
-  try {
-    // Try Puter.ai HTTP API endpoint
-    const response = await fetch('https://api.puter.com/ai/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messages: [
-          {
-            role: 'system',
-            content: `You are a professional translator. Translate text from ${fromLang} to ${toLang}. Return ONLY the translated text.`,
-          },
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-        model: 'gpt-3.5-turbo',
-      }),
-      signal: AbortSignal.timeout(30000),
-    });
+  let lastError: any;
 
-    if (response.ok) {
-      const data = await response.json();
-      const translated = data.choices?.[0]?.message?.content;
-      if (translated) {
-        return translated.trim();
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      // Try Puter.ai HTTP API endpoint
+      const response = await fetch('https://api.puter.com/ai/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'system',
+              content: `You are a professional translator. Translate text from ${fromLang} to ${toLang}. Return ONLY the translated text.`,
+            },
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          model: 'gpt-3.5-turbo',
+        }),
+        signal: AbortSignal.timeout(30000),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const translated = data.choices?.[0]?.message?.content;
+        if (translated) {
+          console.log('[puter-server-translate] ✓ Translation successful');
+          return translated.trim();
+        }
+      } else {
+        // Handle rate limiting
+        if (response.status === 429) {
+          const waitTime = Math.pow(2, attempt) * 2000; // 2s, 4s, 8s
+          console.warn(`[puter-server-translate] Rate limited (429). Waiting ${waitTime}ms before retry ${attempt + 1}/${maxRetries}...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          continue;
+        }
+        throw new Error(`HTTP ${response.status}`);
+      }
+    } catch (err) {
+      lastError = err;
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.warn(`[puter-server-translate] Attempt ${attempt + 1} failed:`, errorMsg);
+
+      if (attempt < maxRetries) {
+        const waitTime = Math.pow(2, attempt) * 1000;
+        console.log(`[puter-server-translate] Retrying in ${waitTime}ms...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
       }
     }
-  } catch (err) {
-    console.warn('[puter-server-translate] Puter API failed:', err instanceof Error ? err.message : String(err));
   }
 
   // Fallback: Use a basic translation approach or another service
   // For production, consider: Groq API, Ollama local, or other free services
-  throw new Error('No translation service available');
+  const finalError = lastError instanceof Error ? lastError.message : String(lastError);
+  throw new Error(`Puter translation failed after ${maxRetries + 1} attempts: ${finalError}`);
 }
 
 /**
