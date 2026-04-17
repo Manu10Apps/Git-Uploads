@@ -61,9 +61,19 @@ export default function SocialMediaVerificationPage() {
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
-      <AdminHeader title="Social Media Link Preview Verification" />
+      <AdminHeader />
 
       <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Page Title */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
+            Social Media Link Preview Verification
+          </h1>
+          <p className="text-neutral-600 dark:text-neutral-400">
+            Test how your articles will appear when shared on social platforms (Facebook, Twitter, LinkedIn, etc.)
+          </p>
+        </div>
+
         {/* Search Form */}
         <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 mb-8">
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
