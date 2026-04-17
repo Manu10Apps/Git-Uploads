@@ -227,7 +227,7 @@ export default function SocialMediaVerificationPage() {
                           {report.report.imageProcessing.resolvedUrl}
                         </span>
                         <button
-                          onClick={() => copyToClipboard(report.report.imageProcessing.resolvedUrl, 'url')}
+                          onClick={() => copyToClipboard(report.report!.imageProcessing.resolvedUrl, 'url')}
                           className="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded"
                         >
                           {copied === 'url' ? (
