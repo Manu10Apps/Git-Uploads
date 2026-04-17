@@ -212,9 +212,6 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const [adverts, setAdverts] = useState<any[]>([]);
   const [shareUrl, setShareUrl] = useState('');
   const commentFormRef = React.useRef<HTMLFormElement | null>(null);
-  const [expandedCaptions, setExpandedCaptions] = useState<Set<number>>(new Set());
-  const [captionTranslations, setCaptionTranslations] = useState<Record<number, Record<string, string>>>({});
-  const [loadingCaptionTranslations, setLoadingCaptionTranslations] = useState<Set<number>>(new Set());
 
   // AI Translation hook — translates article content when language changes
   const {
@@ -246,49 +243,14 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   // Use translated gallery captions if available, otherwise use original
   const displayGallery = translatedGalleryCaptions || article?.gallery;
 
-  const toggleCaptionTranslation = async (index: number, caption: string) => {
-    const isExpanded = expandedCaptions.has(index);
-    
-    if (isExpanded) {
-      // Collapse
-      setExpandedCaptions(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(index);
-        return newSet;
-      });
-    } else {
-      // Expand and fetch translations if not already fetched
-      if (!captionTranslations[index]) {
-        setLoadingCaptionTranslations(prev => new Set(prev).add(index));
-        
-        try {
-          const response = await fetch('/api/translations/text', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: caption }),
-          });
-          
-          if (response.ok) {
-            const result = await response.json();
-            setCaptionTranslations(prev => ({
-              ...prev,
-              [index]: result.translations || {},
-            }));
-          }
-        } catch (error) {
-          console.error('Failed to translate caption:', error);
-        } finally {
-          setLoadingCaptionTranslations(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(index);
-            return newSet;
-          });
-        }
-      }
-      
-      setExpandedCaptions(prev => new Set(prev).add(index));
-    }
+  // Language code to language name mapping
+  const languageNames: Record<string, string> = {
+    ky: 'Kinyarwanda',
+    en: 'English',
+    sw: 'Swahili',
   };
+
+  const currentLanguageName = languageNames[language] || 'Original';
 
   const gallerySection = displayGallery && displayGallery.length > 0 ? (
     <div className="mb-8 sm:mb-10 md:mb-12">
@@ -298,7 +260,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
       <div className={`grid ${galleryGridClass} gap-4 sm:gap-6`}>
         {displayGallery.map((item, index) => (
           <div key={index} className="rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 hover:shadow-lg transition-shadow">
-            <div className="aspect-square w-full">
+            <div className="aspect-square w-full relative">
               <ArticleImage
                 src={item.url}
                 alt={item.caption || `Gallery image ${index + 1}`}
@@ -306,51 +268,35 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               />
             </div>
             {item.caption && (
-              <div className="bg-neutral-50 dark:bg-neutral-800">
-                <div className="p-3 sm:p-4">
-                  <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-2">
+              <div className={`p-3 sm:p-4 bg-neutral-50 dark:bg-neutral-800 transition-opacity duration-300 ${
+                isTranslating ? 'opacity-75' : 'opacity-100'
+              }`}>
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <p className="text-sm text-neutral-700 dark:text-neutral-300 flex-1">
                     {item.caption}
                   </p>
-                  <button
-                    onClick={() => toggleCaptionTranslation(index, item.caption)}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors"
-                  >
-                    {expandedCaptions.has(index) ? (
-                      <>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" transform="rotate(180 12 12)" />
-                        </svg>
-                        {language === 'ky' ? 'Kwirengagiza' : language === 'sw' ? 'Ficha' : 'Hide'}
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                        {language === 'ky' ? 'Iyongereza' : language === 'sw' ? 'Tafsiri' : 'Translate'}
-                      </>
-                    )}
-                  </button>
+                  {isTranslated && language !== 'ky' && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 whitespace-nowrap">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                      </svg>
+                      {currentLanguageName}
+                    </span>
+                  )}
+                  {isTranslating && language !== 'ky' && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 whitespace-nowrap animate-pulse">
+                      <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Translating...
+                    </span>
+                  )}
                 </div>
-                {expandedCaptions.has(index) && (
-                  <div className="border-t border-neutral-200 dark:border-neutral-700 p-3 sm:p-4 space-y-2">
-                    {loadingCaptionTranslations.has(index) ? (
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                        {language === 'ky' ? 'Iranslatoshwa...' : language === 'sw' ? 'Inatafsiriwa...' : 'Translating...'}
-                      </p>
-                    ) : captionTranslations[index] ? (
-                      Object.entries(captionTranslations[index]).map(([lang, translatedText]) => (
-                        <div key={lang} className="py-2">
-                          <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1 uppercase">
-                            {lang === 'en' ? 'English' : lang === 'sw' ? 'Swahili' : 'Kinyarwanda'}
-                          </p>
-                          <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                            {translatedText}
-                          </p>
-                        </div>
-                      ))
-                    ) : null}
-                  </div>
+                {translationSource && language !== 'ky' && !isTranslating && (
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    {translationSource === 'db-cache' ? '📦 Cached translation' : '🤖 AI translated'}
+                  </p>
                 )}
               </div>
             )}
