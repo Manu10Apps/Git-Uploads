@@ -47,20 +47,49 @@ function isLiveOrPremiereSignal(value: string | undefined): boolean {
     return false;
   }
 
-  const text = value.toLowerCase();
-  return (
-    text.includes('streamed live')
-    || text.includes('watching now')
-    || text.includes('live now')
-    || text.includes('en direct')
-    || text.includes('premiered')
-    || text.includes('premiering')
-    || text.includes('premiere')
-    || text.includes('premiering now')
-    || text.includes('premiering in')
-    || text === 'live'
-    || text === 'direct'
-  );
+  const text = value.toLowerCase().trim();
+  
+  // Direct live/premiere indicators
+  const directIndicators = [
+    'streamed live',
+    'watching now',
+    'live now',
+    'en direct',
+    'premiered',
+    'premiering',
+    'premiere',
+    'premiering now',
+    'premiering in',
+  ];
+  
+  if (text === 'live' || text === 'direct' || text === 'live stream' || text === 'premiere') {
+    return true;
+  }
+  
+  // Check for direct indicators
+  if (directIndicators.some(indicator => text.includes(indicator))) {
+    return true;
+  }
+  
+  // Additional patterns: "Premieres in X days", "Starts in X hours", etc
+  if (/premieres?\s+in\s+\d+\s+(second|minute|hour|day)/.test(text)) {
+    return true;
+  }
+  if (/starts?\s+in\s+\d+\s+(second|minute|hour|day)/.test(text)) {
+    return true;
+  }
+  
+  // "Started live X ago" or "Started streaming X ago"
+  if (/started\s+(live|streaming)\s+\d+\s+(second|minute|hour|day)/.test(text)) {
+    return true;
+  }
+  
+  // "Was live" or "Was streamed live" (recently finished)
+  if (/was\s+(live|streamed\s+live)/.test(text)) {
+    return true;
+  }
+  
+  return false;
 }
 
 function hasExplicitLiveOrPremiereBadge(contextText: string | undefined): boolean {
@@ -68,25 +97,32 @@ function hasExplicitLiveOrPremiereBadge(contextText: string | undefined): boolea
     return false;
   }
 
-  return (
-    /"badgeStyle":"BADGE_STYLE_TYPE_LIVE_NOW"/.test(contextText)
-    || /"badgeStyle":"BADGE_STYLE_TYPE_PREMIERE"/.test(contextText)
-    || /"style":"LIVE"/.test(contextText)
-    || /"style":"PREMIERE"/.test(contextText)
-    || /"iconType":"LIVE"/.test(contextText)
-    || /"iconType":"PREMIERE"/.test(contextText)
-    || /"label":"LIVE"/.test(contextText)
-    || /"label":"PREMIERE"/.test(contextText)
-    || /"thumbnailOverlayTimeStatusRenderer"\s*:\s*\{[^}]*"style":"LIVE"/.test(contextText)
-    || /"thumbnailOverlayTimeStatusRenderer"\s*:\s*\{[^}]*"style":"PREMIERE"/.test(contextText)
-    || /"upcomingEventData"\s*:\s*\{/.test(contextText)
-    || /"scheduledStartTime"\s*:/.test(contextText)
-    || /"isUpcoming"\s*:\s*true/.test(contextText)
-    || /"isLiveNow"\s*:\s*true/.test(contextText)
-    || /"isLive"\s*:\s*true/.test(contextText)
-    || /"isPremiere"\s*:\s*true/.test(contextText)
-    || /"liveNow"\s*:\s*true/.test(contextText)
-  );
+  const patterns = [
+    /"badgeStyle":"BADGE_STYLE_TYPE_LIVE_NOW"/.test(contextText),
+    /"badgeStyle":"BADGE_STYLE_TYPE_PREMIERE"/.test(contextText),
+    /"style":"LIVE"/.test(contextText),
+    /"style":"PREMIERE"/.test(contextText),
+    /"iconType":"LIVE"/.test(contextText),
+    /"iconType":"PREMIERE"/.test(contextText),
+    /"label":"LIVE"/.test(contextText),
+    /"label":"PREMIERE"/.test(contextText),
+    /"thumbnailOverlayTimeStatusRenderer"\s*:\s*\{[^}]*"style":"LIVE"/.test(contextText),
+    /"thumbnailOverlayTimeStatusRenderer"\s*:\s*\{[^}]*"style":"PREMIERE"/.test(contextText),
+    /"upcomingEventData"\s*:\s*\{/.test(contextText),
+    /"scheduledStartTime"\s*:/.test(contextText),
+    /"isUpcoming"\s*:\s*true/.test(contextText),
+    /"isLiveNow"\s*:\s*true/.test(contextText),
+    /"isLive"\s*:\s*true/.test(contextText),
+    /"isPremiere"\s*:\s*true/.test(contextText),
+    /"liveNow"\s*:\s*true/.test(contextText),
+    // Additional patterns
+    /"style":"VIDEO_STATUS_TYPE_PREMIERE"/.test(contextText),
+    /"style":"PREMIERE_VIDEO"/.test(contextText),
+    /"LIVE_VIDEO"/.test(contextText),
+    /"PREMIERE_VIDEO"/.test(contextText),
+  ];
+  
+  return patterns.some(result => result);
 }
 
 function resolveDisplayPublishedAt(rawPublishedAt: string | undefined, contextText?: string, rawDuration?: string): string | undefined {
@@ -366,10 +402,13 @@ function collectVideoRenderers(node: unknown, renderers: YouTubeVideoRenderer[] 
 function parseVideosFromChannelPage(html: string): YouTubeVideo[] {
   const initialData = extractInitialData(html);
   if (!initialData) {
+    console.warn('[parseVideosFromChannelPage] Could not extract initial data from HTML');
     return [];
   }
 
   const renderers = collectVideoRenderers(initialData);
+  console.log(`[parseVideosFromChannelPage] Found ${renderers.length} video renderers`);
+  
   const seenIds = new Set<string>();
   const videos: YouTubeVideo[] = [];
 
@@ -390,6 +429,14 @@ function parseVideosFromChannelPage(html: string): YouTubeVideo[] {
     const publishedAt = resolveDisplayPublishedAt(rawPublishedAt, rendererContext, rawDuration);
     const isLive = publishedAt === '[LIVE]Live';
     const duration = isLive ? undefined : rawDuration;
+    
+    console.log(`[parseVideosFromChannelPage] Video ${videos.length + 1}: ${id}`, {
+      title: title.substring(0, 50),
+      rawPublishedAt,
+      publishedAt,
+      isLive,
+      rawDuration,
+    });
 
     videos.push({
       id,
@@ -422,6 +469,8 @@ function extractValueFromSnippet(snippet: string, patterns: RegExp[]): string | 
 
 function parseVideosFromHtmlFallback(html: string): YouTubeVideo[] {
   const idMatches = Array.from(html.matchAll(/"videoId":"([\w-]{11})"/g));
+  console.log(`[parseVideosFromHtmlFallback] Found ${idMatches.length} potential video IDs`);
+  
   const seenIds = new Set<string>();
   const videos: YouTubeVideo[] = [];
 
@@ -451,6 +500,14 @@ function parseVideosFromHtmlFallback(html: string): YouTubeVideo[] {
     ]);
 
     const publishedAt = resolveDisplayPublishedAt(rawPublishedAt, snippet);
+    const isLive = publishedAt === '[LIVE]Live';
+    
+    console.log(`[parseVideosFromHtmlFallback] Video ${videos.length + 1}: ${id}`, {
+      title: title.substring(0, 50),
+      rawPublishedAt,
+      publishedAt,
+      isLive,
+    });
 
     const duration = extractValueFromSnippet(snippet, [
       /"lengthText":\{"simpleText":"([\s\S]*?)"\}/,
