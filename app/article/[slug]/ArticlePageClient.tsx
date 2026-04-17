@@ -243,19 +243,6 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   // Use translated gallery captions if available, otherwise use original
   const displayGallery = translatedGalleryCaptions || article?.gallery;
 
-  // Helper function to get language display name and badge color
-  const getLanguageBadge = () => {
-    if (language === 'en') {
-      return { label: 'EN - English', color: 'bg-blue-50 dark:bg-blue-950', textColor: 'text-blue-700 dark:text-blue-300' };
-    }
-    if (language === 'sw') {
-      return { label: 'SW - Swahili', color: 'bg-green-50 dark:bg-green-950', textColor: 'text-green-700 dark:text-green-300' };
-    }
-    return { label: 'RW - Kinyarwanda', color: 'bg-amber-50 dark:bg-amber-950', textColor: 'text-amber-700 dark:text-amber-300' };
-  };
-
-  const languageBadge = getLanguageBadge();
-
   const gallerySection = displayGallery && displayGallery.length > 0 ? (
     <div className="mb-8 sm:mb-10 md:mb-12">
       <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white mb-4 sm:mb-6">
@@ -264,7 +251,7 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
       <div className={`grid ${galleryGridClass} gap-4 sm:gap-6`}>
         {displayGallery.map((item, index) => (
           <div key={index} className="rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 hover:shadow-lg transition-shadow">
-            <div className="aspect-square w-full relative">
+            <div className="aspect-square w-full">
               <ArticleImage
                 src={item.url}
                 alt={item.caption || `Gallery image ${index + 1}`}
@@ -272,15 +259,8 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               />
             </div>
             {item.caption && (
-              <div className={`p-3 sm:p-4 ${languageBadge.color}`}>
-                {/* Language Badge */}
-                {isTranslated && (
-                  <div className={`inline-block px-2 py-0.5 rounded text-xs font-semibold mb-2 ${languageBadge.textColor} ${languageBadge.color} border border-current border-opacity-20`}>
-                    {languageBadge.label}
-                  </div>
-                )}
-                {/* Caption Text */}
-                <p className={`text-sm ${isTranslated ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-700 dark:text-neutral-300'}`}>
+              <div className="p-3 sm:p-4 bg-neutral-50 dark:bg-neutral-800">
+                <p className="text-sm text-neutral-700 dark:text-neutral-300">
                   {item.caption}
                 </p>
               </div>
