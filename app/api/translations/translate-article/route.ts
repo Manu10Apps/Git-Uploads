@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       console.warn('[translate-article] ⚠️  Kinyarwanda detected - free services have limited support');
     }
 
-    // Translate using backend service (fallback chain: MyMemory → LibreTranslate → Puter → Mock)
+    // Translate using backend service (fallback chain: MyMemory → LibreTranslate → Puter)
     let result;
     let translationSource = 'mymemory';
     let memoryErrorMsg = '';
@@ -85,7 +85,11 @@ export async function POST(request: NextRequest) {
     
     // 1. Try MyMemory first (most stable, currently only working service)
     try {
-      console.log('[translate-article] → Attempting MyMemory translation...');
+      console.log('[translate-article] → Attempting MyMemory translation...', {
+        from: from as SupportedLanguage,
+        to: to as SupportedLanguage,
+        titleLen: title.length,
+      });
       result = await translateArticleMyMemory(
         {
           title,
@@ -99,7 +103,10 @@ export async function POST(request: NextRequest) {
       console.log('[translate-article] ✓ MyMemory translation successful');
     } catch (memoryError) {
       memoryErrorMsg = memoryError instanceof Error ? memoryError.message : String(memoryError);
-      console.warn('[translate-article] ❌ MyMemory failed:', memoryErrorMsg);
+      console.error('[translate-article] ❌ MyMemory failed:', {
+        error: memoryErrorMsg,
+        stack: memoryError instanceof Error ? memoryError.stack : undefined,
+      });
       console.warn('[translate-article] → Attempting LibreTranslate translation...');
       
       // 2. Try LibreTranslate (free, open-source)
@@ -118,7 +125,10 @@ export async function POST(request: NextRequest) {
         console.log('[translate-article] ✓ LibreTranslate translation successful');
       } catch (libreError) {
         libreErrorMsg = libreError instanceof Error ? libreError.message : String(libreError);
-        console.warn('[translate-article] ❌ LibreTranslate failed:', libreErrorMsg);
+        console.error('[translate-article] ❌ LibreTranslate failed:', {
+          error: libreErrorMsg,
+          stack: libreError instanceof Error ? libreError.stack : undefined,
+        });
         console.warn('[translate-article] → Attempting Puter translation...');
         
         // 3. Try Puter (free AI service)
@@ -137,32 +147,27 @@ export async function POST(request: NextRequest) {
           console.log('[translate-article] ✓ Puter translation successful');
         } catch (puterError) {
           puterErrorMsg = puterError instanceof Error ? puterError.message : String(puterError);
-          console.warn('[translate-article] ❌ Puter failed:', puterErrorMsg);
-          
-          // 4. Fallback: Mock translation (echo with [TEST] prefix - for development only)
-          if (process.env.NODE_ENV === 'development' || process.env.TRANSLATION_MOCK === 'true') {
-            console.warn('[translate-article] → Using MOCK translation (development mode)');
-            result = {
-              title: `[${to.toUpperCase()}] ${title}`,
-              excerpt: `[${to.toUpperCase()}] ${excerpt}`,
-              content: `[${to.toUpperCase()}] ${content}`,
-              galleryCaptions: processedGallery?.map(item => ({
-                url: item.url,
-                caption: `[${to.toUpperCase()}] ${item.caption}`,
-              })),
-            };
-            translationSource = 'mock';
-            console.log('[translate-article] ✓ Mock translation (development mode)');
-          } else {
-            // Production: fail if no real service available
-            console.error('[translate-article] ❌ All translation services failed:');
-            console.error('  MyMemory:', memoryErrorMsg);
-            console.error('  LibreTranslate:', libreErrorMsg);
-            console.error('  Puter:', puterErrorMsg);
-            throw new Error(
-              `All translation services unavailable. Try again in a moment.`
-            );
-          }
+          console.error('[translate-article] ❌ All translation services failed:', {
+            myMemory: {
+              error: memoryErrorMsg,
+              timestamp: new Date().toISOString(),
+            },
+            libretranslate: {
+              error: libreErrorMsg,
+              timestamp: new Date().toISOString(),
+            },
+            puter: {
+              error: puterErrorMsg,
+              timestamp: new Date().toISOString(),
+            },
+            environment: {
+              nodeEnv: process.env.NODE_ENV,
+              hasNextPublicUrl: !!process.env.NEXT_PUBLIC_SITE_URL,
+            },
+          });
+          throw new Error(
+            `All translation services unavailable. Try again in a moment.`
+          );
         }
       }
     }
@@ -186,28 +191,10 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    const errorStack = error instanceof Error ? error.stack : undefined;
-    
-    console.error('[translate-article] ❌ Translation failed - Full error details:', {
-      message: errorMsg,
-      stack: errorStack,
-      type: error instanceof Error ? error.constructor.name : typeof error,
-    });
-    
+    console.error('[translate-article] Translation failed:', error);
+    const message = error instanceof Error ? error.message : 'Translation failed';
     return NextResponse.json(
-      { 
-        error: `Translation failed: ${errorMsg}`,
-        debug: {
-          message: errorMsg,
-          services: {
-            myMemory: memoryErrorMsg,
-            libretranslate: libreErrorMsg,
-            puter: puterErrorMsg,
-          },
-          timestamp: new Date().toISOString(),
-        },
-      },
+      { error: `Translation failed: ${message}` },
       { status: 500 }
     );
   }
