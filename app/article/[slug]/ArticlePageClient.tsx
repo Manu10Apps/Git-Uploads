@@ -243,14 +243,18 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   // Use translated gallery captions if available, otherwise use original
   const displayGallery = translatedGalleryCaptions || article?.gallery;
 
-  // Language code to language name mapping
-  const languageNames: Record<string, string> = {
-    ky: 'Kinyarwanda',
-    en: 'English',
-    sw: 'Swahili',
+  // Helper function to get language display name and badge color
+  const getLanguageBadge = () => {
+    if (language === 'en') {
+      return { label: 'EN - English', color: 'bg-blue-50 dark:bg-blue-950', textColor: 'text-blue-700 dark:text-blue-300' };
+    }
+    if (language === 'sw') {
+      return { label: 'SW - Swahili', color: 'bg-green-50 dark:bg-green-950', textColor: 'text-green-700 dark:text-green-300' };
+    }
+    return { label: 'RW - Kinyarwanda', color: 'bg-amber-50 dark:bg-amber-950', textColor: 'text-amber-700 dark:text-amber-300' };
   };
 
-  const currentLanguageName = languageNames[language] || 'Original';
+  const languageBadge = getLanguageBadge();
 
   const gallerySection = displayGallery && displayGallery.length > 0 ? (
     <div className="mb-8 sm:mb-10 md:mb-12">
@@ -268,36 +272,17 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               />
             </div>
             {item.caption && (
-              <div className={`p-3 sm:p-4 bg-neutral-50 dark:bg-neutral-800 transition-opacity duration-300 ${
-                isTranslating ? 'opacity-75' : 'opacity-100'
-              }`}>
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <p className="text-sm text-neutral-700 dark:text-neutral-300 flex-1">
-                    {item.caption}
-                  </p>
-                  {isTranslated && language !== 'ky' && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 whitespace-nowrap">
-                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                      </svg>
-                      {currentLanguageName}
-                    </span>
-                  )}
-                  {isTranslating && language !== 'ky' && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 whitespace-nowrap animate-pulse">
-                      <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Translating...
-                    </span>
-                  )}
-                </div>
-                {translationSource && language !== 'ky' && !isTranslating && (
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    {translationSource === 'db-cache' ? '📦 Cached translation' : '🤖 AI translated'}
-                  </p>
+              <div className={`p-3 sm:p-4 ${languageBadge.color}`}>
+                {/* Language Badge */}
+                {isTranslated && (
+                  <div className={`inline-block px-2 py-0.5 rounded text-xs font-semibold mb-2 ${languageBadge.textColor} ${languageBadge.color} border border-current border-opacity-20`}>
+                    {languageBadge.label}
+                  </div>
                 )}
+                {/* Caption Text */}
+                <p className={`text-sm ${isTranslated ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-700 dark:text-neutral-300'}`}>
+                  {item.caption}
+                </p>
               </div>
             )}
           </div>
