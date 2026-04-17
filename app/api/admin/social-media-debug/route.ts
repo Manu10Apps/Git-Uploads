@@ -56,33 +56,40 @@ export async function GET(request: NextRequest) {
     let imageAccessError = '';
 
     try {
-      const imgResponse = await fetch(ogImageUrl, {
-        method: 'HEAD',
-        headers: {
-          'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
-        },
-        timeout: 10000,
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      imageStatusCode = imgResponse.status;
-      imageAccessible = imgResponse.ok;
+      try {
+        const imgResponse = await fetch(ogImageUrl, {
+          method: 'HEAD',
+          headers: {
+            'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+          },
+          signal: controller.signal,
+        });
 
-      // Extract useful headers
-      const contentType = imgResponse.headers.get('content-type');
-      const contentLength = imgResponse.headers.get('content-length');
-      const cacheControl = imgResponse.headers.get('cache-control');
-      const lastModified = imgResponse.headers.get('last-modified');
+        imageStatusCode = imgResponse.status;
+        imageAccessible = imgResponse.ok;
 
-      imageHeaders = {
-        'Content-Type': contentType,
-        'Content-Length': contentLength,
-        'Cache-Control': cacheControl,
-        'Last-Modified': lastModified,
-        'X-Accessible-To-Bots': imageStatusCode === 200 ? '✅ YES' : `❌ NO (${imageStatusCode})`,
-      };
+        // Extract useful headers
+        const contentType = imgResponse.headers.get('content-type');
+        const contentLength = imgResponse.headers.get('content-length');
+        const cacheControl = imgResponse.headers.get('cache-control');
+        const lastModified = imgResponse.headers.get('last-modified');
 
-      if (!imgResponse.ok) {
-        imageAccessError = `HTTP ${imageStatusCode}: Image not accessible to social media crawlers`;
+        imageHeaders = {
+          'Content-Type': contentType,
+          'Content-Length': contentLength,
+          'Cache-Control': cacheControl,
+          'Last-Modified': lastModified,
+          'X-Accessible-To-Bots': imageStatusCode === 200 ? '✅ YES' : `❌ NO (${imageStatusCode})`,
+        };
+
+        if (!imgResponse.ok) {
+          imageAccessError = `HTTP ${imageStatusCode}: Image not accessible to social media crawlers`;
+        }
+      } finally {
+        clearTimeout(timeoutId);
       }
     } catch (err: any) {
       imageAccessError = `Failed to fetch: ${err?.message || String(err)}`;
