@@ -43,15 +43,25 @@ export function validateImageUrl(url: string): boolean {
   try {
     const urlObj = new URL(url);
     
-    // Must have file extension
+    // Remove query params and fragments to check file extension
     const pathname = urlObj.pathname.toLowerCase();
+    
+    // Must have image file extension (check before query params)
+    // Handle URLs with or without query parameters/fragments
     const hasImageExtension = /\.(jpg|jpeg|png|gif|webp|avif)$/i.test(pathname);
     if (!hasImageExtension) {
       return false;
     }
     
-    // File should not be suspiciously small (less than 500 bytes)
-    // This is a client-side check; server would need file system check
+    // Additional validation: hostname should be valid
+    if (!urlObj.hostname) {
+      return false;
+    }
+    
+    // Reject localhost/127.0.0.1 for public sharing
+    if (urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') {
+      return false;
+    }
     
     return true;
   } catch {
@@ -62,6 +72,7 @@ export function validateImageUrl(url: string): boolean {
 /**
  * Resolves an article image URL to an absolute, validated URL for social media
  * Falls back to site logo if image is invalid or missing
+ * CRITICAL: Social media crawlers need HTTPS URLs, no auth, 1200x630+ pixels
  */
 export function resolveOgImageUrl(
   image: string | null | undefined,
@@ -69,7 +80,7 @@ export function resolveOgImageUrl(
 ): string {
   // CRITICAL: Validate that image is actually provided
   if (!image) {
-    console.warn('[OG:IMAGE] No featured image provided, using fallback logo.png');
+    console.warn('[OG:IMAGE] ❌ No featured image provided, using fallback');
     return DEFAULT_OG_IMAGE;
   }
   
@@ -77,36 +88,51 @@ export function resolveOgImageUrl(
     // First normalize the path
     const normalized = normalizeFunc(image);
     if (!normalized) {
-      console.warn(`[OG:IMAGE] Failed to normalize image path: "${image}" → null, using fallback`);
+      console.warn(`[OG:IMAGE] ❌ Failed to normalize image path: "${image}" → null`);
       return DEFAULT_OG_IMAGE;
     }
 
     let absoluteUrl: string;
     
-    // If already absolute URL, use it
-    if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+    // If already absolute URL, ensure HTTPS
+    if (normalized.startsWith('http://')) {
+      absoluteUrl = normalized.replace(/^http:/, 'https:');
+      console.log(`[OG:IMAGE] ✅ Upgraded HTTP to HTTPS: "${absoluteUrl}"`);
+    } else if (normalized.startsWith('https://')) {
       absoluteUrl = normalized;
+      console.log(`[OG:IMAGE] ✅ Already HTTPS: "${absoluteUrl}"`);
     } else if (normalized.startsWith('/')) {
-      // Relative path → convert to absolute
+      // Relative path → convert to absolute HTTPS URL
       absoluteUrl = `${SITE_URL}${normalized}`;
+      console.log(`[OG:IMAGE] ✅ Converted relative to absolute: "${image}" → "${absoluteUrl}"`);
     } else {
-      // Fallback for weird edge cases
-      absoluteUrl = `${SITE_URL}/${normalized}`;
+      // Fallback for URLs without leading slash
+      if (normalized.includes('://')) {
+        // Already a URL, just use it
+        absoluteUrl = normalized;
+      } else {
+        // Treat as relative path
+        absoluteUrl = `${SITE_URL}/${normalized}`;
+      }
+      console.log(`[OG:IMAGE] ✅ Resolved ambiguous format: "${image}" → "${absoluteUrl}"`);
     }
     
     // Validate the resolved URL
     if (validateImageUrl(absoluteUrl)) {
-      console.log(`[OG:IMAGE] ✅ Successfully resolved: "${image}" → "${absoluteUrl}"`);
+      console.log(`[OG:IMAGE] ✅ Final URL validated successfully`);
       return absoluteUrl;
     } else {
-      console.warn(`[OG:IMAGE] Validation failed for resolved URL: "${absoluteUrl}", using fallback`);
+      console.warn(`[OG:IMAGE] ❌ URL validation failed: "${absoluteUrl}"`);
+      console.warn(`[OG:IMAGE] Reasons: Not HTTPS, invalid extension, or localhost`);
     }
   } catch (error) {
     // Log the error for debugging
-    console.error(`[OG:IMAGE] Unexpected error resolving "${image}":`, error instanceof Error ? error.message : error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error(`[OG:IMAGE] ❌ Unexpected error resolving image: "${errorMsg}"`);
   }
 
   // Default fallback if all else fails
+  console.warn(`[OG:IMAGE] 🔄 Falling back to default logo: "${DEFAULT_OG_IMAGE}"`);
   return DEFAULT_OG_IMAGE;
 }
 
