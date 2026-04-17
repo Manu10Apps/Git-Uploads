@@ -279,7 +279,21 @@ export default function ArticleTranslationPanel({
           });
 
           if (!apiRes.ok) {
-            const errorData = await apiRes.json();
+            // Handle error responses safely (may be HTML or JSON)
+            let errorData: any = { error: null };
+            const contentType = apiRes.headers.get('content-type');
+            
+            try {
+              if (contentType?.includes('application/json')) {
+                errorData = await apiRes.json();
+              } else {
+                const text = await apiRes.text();
+                errorData = { error: text || `HTTP ${apiRes.status}` };
+              }
+            } catch (parseErr) {
+              errorData = { error: `HTTP ${apiRes.status}` };
+            }
+
             // Rate limit - retry with backoff
             if (apiRes.status === 429 && attempt < maxRetries) {
               const waitTime = Math.pow(2, attempt) * 1000;
@@ -287,6 +301,15 @@ export default function ArticleTranslationPanel({
               await new Promise(resolve => setTimeout(resolve, waitTime));
               continue;
             }
+
+            // 502/503 Gateway errors - retry as they're transient
+            if ((apiRes.status === 502 || apiRes.status === 503) && attempt < maxRetries) {
+              const waitTime = (Math.pow(2, attempt) + 1) * 1000; // 2s, 5s, 11s backoff
+              console.warn(`[ArticleTranslationPanel] Gateway error ${apiRes.status}, retrying ${lang.code} after ${waitTime}ms`);
+              await new Promise(resolve => setTimeout(resolve, waitTime));
+              continue;
+            }
+
             throw new Error(errorData?.error || `Translation API returned ${apiRes.status}`);
           }
 

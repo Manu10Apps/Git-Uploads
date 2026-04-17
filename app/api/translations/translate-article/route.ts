@@ -79,10 +79,13 @@ export async function POST(request: NextRequest) {
     // Translate using backend service (fallback chain: MyMemory → LibreTranslate → Puter)
     let result;
     let translationSource = 'mymemory';
-    let lastError: Error | null = null;
+    let memoryErrorMsg = '';
+    let libreErrorMsg = '';
+    let puterErrorMsg = '';
     
     // 1. Try MyMemory first (most stable, currently only working service)
     try {
+      console.log('[translate-article] → Attempting MyMemory translation...');
       result = await translateArticleMyMemory(
         {
           title,
@@ -95,9 +98,9 @@ export async function POST(request: NextRequest) {
       );
       console.log('[translate-article] ✓ MyMemory translation successful');
     } catch (memoryError) {
-      lastError = memoryError instanceof Error ? memoryError : new Error(String(memoryError));
-      const memoryErrorMsg = lastError.message;
-      console.warn('[translate-article] MyMemory unavailable, trying LibreTranslate');
+      memoryErrorMsg = memoryError instanceof Error ? memoryError.message : String(memoryError);
+      console.warn('[translate-article] ❌ MyMemory failed:', memoryErrorMsg);
+      console.warn('[translate-article] → Attempting LibreTranslate translation...');
       
       // 2. Try LibreTranslate (free, open-source)
       try {
@@ -113,10 +116,10 @@ export async function POST(request: NextRequest) {
         );
         translationSource = 'libretranslate';
         console.log('[translate-article] ✓ LibreTranslate translation successful');
-        lastError = null;
       } catch (libreError) {
-        const libreErrorMsg = libreError instanceof Error ? libreError.message : String(libreError);
-        console.warn('[translate-article] LibreTranslate unavailable, trying Puter');
+        libreErrorMsg = libreError instanceof Error ? libreError.message : String(libreError);
+        console.warn('[translate-article] ❌ LibreTranslate failed:', libreErrorMsg);
+        console.warn('[translate-article] → Attempting Puter translation...');
         
         // 3. Try Puter (free AI service)
         try {
@@ -132,15 +135,14 @@ export async function POST(request: NextRequest) {
           );
           translationSource = 'puter';
           console.log('[translate-article] ✓ Puter translation successful');
-          lastError = null;
         } catch (puterError) {
-          const puterErrorMsg = puterError instanceof Error ? puterError.message : String(puterError);
-          console.error('[translate-article] All translation services failed');
-          console.error('  - MyMemory:', memoryErrorMsg);
-          console.error('  - LibreTranslate:', libreErrorMsg);
-          console.error('  - Puter:', puterErrorMsg);
+          puterErrorMsg = puterError instanceof Error ? puterError.message : String(puterError);
+          console.error('[translate-article] ❌ All translation services failed:');
+          console.error('  MyMemory:', memoryErrorMsg);
+          console.error('  LibreTranslate:', libreErrorMsg);
+          console.error('  Puter:', puterErrorMsg);
           throw new Error(
-            `All translation services failed. MyMemory: ${memoryErrorMsg}. LibreTranslate: ${libreErrorMsg}. Puter: ${puterErrorMsg}`
+            `All translation services unavailable. Try again in a moment.`
           );
         }
       }
