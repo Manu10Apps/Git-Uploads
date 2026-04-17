@@ -212,6 +212,9 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   const [adverts, setAdverts] = useState<any[]>([]);
   const [shareUrl, setShareUrl] = useState('');
   const commentFormRef = React.useRef<HTMLFormElement | null>(null);
+  const [expandedCaptions, setExpandedCaptions] = useState<Set<number>>(new Set());
+  const [captionTranslations, setCaptionTranslations] = useState<Record<number, Record<string, string>>>({});
+  const [loadingCaptionTranslations, setLoadingCaptionTranslations] = useState<Set<number>>(new Set());
 
   // AI Translation hook — translates article content when language changes
   const {
@@ -243,6 +246,50 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
   // Use translated gallery captions if available, otherwise use original
   const displayGallery = translatedGalleryCaptions || article?.gallery;
 
+  const toggleCaptionTranslation = async (index: number, caption: string) => {
+    const isExpanded = expandedCaptions.has(index);
+    
+    if (isExpanded) {
+      // Collapse
+      setExpandedCaptions(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(index);
+        return newSet;
+      });
+    } else {
+      // Expand and fetch translations if not already fetched
+      if (!captionTranslations[index]) {
+        setLoadingCaptionTranslations(prev => new Set(prev).add(index));
+        
+        try {
+          const response = await fetch('/api/translations/text', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: caption }),
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            setCaptionTranslations(prev => ({
+              ...prev,
+              [index]: result.translations || {},
+            }));
+          }
+        } catch (error) {
+          console.error('Failed to translate caption:', error);
+        } finally {
+          setLoadingCaptionTranslations(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(index);
+            return newSet;
+          });
+        }
+      }
+      
+      setExpandedCaptions(prev => new Set(prev).add(index));
+    }
+  };
+
   const gallerySection = displayGallery && displayGallery.length > 0 ? (
     <div className="mb-8 sm:mb-10 md:mb-12">
       <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white mb-4 sm:mb-6">
@@ -259,10 +306,52 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               />
             </div>
             {item.caption && (
-              <div className="p-3 sm:p-4 bg-neutral-50 dark:bg-neutral-800">
-                <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                  {item.caption}
-                </p>
+              <div className="bg-neutral-50 dark:bg-neutral-800">
+                <div className="p-3 sm:p-4">
+                  <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-2">
+                    {item.caption}
+                  </p>
+                  <button
+                    onClick={() => toggleCaptionTranslation(index, item.caption)}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors"
+                  >
+                    {expandedCaptions.has(index) ? (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" transform="rotate(180 12 12)" />
+                        </svg>
+                        {language === 'ky' ? 'Kwirengagiza' : language === 'sw' ? 'Ficha' : 'Hide'}
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                        {language === 'ky' ? 'Iyongereza' : language === 'sw' ? 'Tafsiri' : 'Translate'}
+                      </>
+                    )}
+                  </button>
+                </div>
+                {expandedCaptions.has(index) && (
+                  <div className="border-t border-neutral-200 dark:border-neutral-700 p-3 sm:p-4 space-y-2">
+                    {loadingCaptionTranslations.has(index) ? (
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        {language === 'ky' ? 'Iranslatoshwa...' : language === 'sw' ? 'Inatafsiriwa...' : 'Translating...'}
+                      </p>
+                    ) : captionTranslations[index] ? (
+                      Object.entries(captionTranslations[index]).map(([lang, translatedText]) => (
+                        <div key={lang} className="py-2">
+                          <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1 uppercase">
+                            {lang === 'en' ? 'English' : lang === 'sw' ? 'Swahili' : 'Kinyarwanda'}
+                          </p>
+                          <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                            {translatedText}
+                          </p>
+                        </div>
+                      ))
+                    ) : null}
+                  </div>
+                )}
               </div>
             )}
           </div>
