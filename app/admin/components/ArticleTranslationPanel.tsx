@@ -8,6 +8,7 @@ interface ArticleTranslationPanelProps {
   title: string;
   excerpt: string;
   content: string;
+  gallery?: Array<{ url: string; caption: string }>;
   onTranslationsReady?: (translations: Record<string, { title: string; excerpt: string; content: string }>) => void;
 }
 
@@ -37,6 +38,7 @@ export default function ArticleTranslationPanel({
   title,
   excerpt,
   content,
+  gallery,
   onTranslationsReady,
 }: ArticleTranslationPanelProps) {
   const isPrePublish = !articleId;
@@ -115,7 +117,7 @@ export default function ArticleTranslationPanel({
           title,
           excerpt,
           content,
-          gallery: [],
+          gallery: gallery || [],
           from: 'ky',
           to: langCode,
         }),
@@ -247,90 +249,121 @@ export default function ArticleTranslationPanel({
     console.log('[ArticleTranslationPanel] Starting translateAndSaveAll:', { isPrePublish, articleId, languageCount: LANGUAGES.length });
     setTranslatingAll(true);
     const allResults: Record<string, { title: string; excerpt: string; content: string }> = {};
+    const maxRetries = 2;
+
     for (const lang of LANGUAGES) {
-      // Auto-translate
+      // Auto-translate with retry logic
       console.log(`[ArticleTranslationPanel] Translating to ${lang.code}...`);
       setLangs((prev) => ({
         ...prev,
         [lang.code]: { ...prev[lang.code], status: 'translating' },
       }));
-      try {
-        const apiRes = await fetch('/api/translations/translate-article', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title,
-            excerpt,
-            content,
-            gallery: [],
-            from: 'ky',
-            to: lang.code,
-          }),
-        });
 
-        if (!apiRes.ok) {
-          const errorData = await apiRes.json();
-          throw new Error(errorData?.error || `Translation API returned ${apiRes.status}`);
-        }
+      let lastError: any;
+      let success = false;
 
-        const apiData = await apiRes.json();
-        const result = apiData.data;
-
-        const form = {
-          title: result.title || '',
-          excerpt: result.excerpt || '',
-          content: result.content || '',
-        };
-
-        if (isPrePublish) {
-          // Pre-publish: just fill forms, don't save to DB
-          console.log(`[ArticleTranslationPanel] Pre-publish mode: filling form for ${lang.code}`);
-          setLangs((prev) => ({
-            ...prev,
-            [lang.code]: { status: 'saved', form, error: undefined },
-          }));
-          allResults[lang.code] = form;
-        } else {
-          setLangs((prev) => ({
-            ...prev,
-            [lang.code]: { status: 'saving', form },
-          }));
-          // Save immediately with the result
-          console.log(`[ArticleTranslationPanel] Saving "${lang.code}" translation to database...`);
-          const res = await fetch('/api/translations/cache', {
+      // Retry loop for transient failures
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const apiRes = await fetch('/api/translations/translate-article', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              articleId,
-              language: lang.code,
-              title: form.title.trim(),
-              excerpt: form.excerpt.trim(),
-              content: form.content.trim(),
+              title,
+              excerpt,
+              content,
+              gallery: gallery || [],
+              from: 'ky',
+              to: lang.code,
             }),
           });
 
-          const responseData = await res.json();
-          
-          if (!res.ok) {
-            const errorMsg = responseData?.error || `API returned ${res.status}`;
-            throw new Error(`Failed to save: ${errorMsg}`);
+          if (!apiRes.ok) {
+            const errorData = await apiRes.json();
+            // Rate limit - retry with backoff
+            if (apiRes.status === 429 && attempt < maxRetries) {
+              const waitTime = Math.pow(2, attempt) * 1000;
+              console.warn(`[ArticleTranslationPanel] Rate limited, retrying ${lang.code} after ${waitTime}ms`);
+              await new Promise(resolve => setTimeout(resolve, waitTime));
+              continue;
+            }
+            throw new Error(errorData?.error || `Translation API returned ${apiRes.status}`);
           }
 
-          console.log(`[ArticleTranslationPanel] ✓ Translation saved for ${lang.code}:`, responseData);
-          setLangs((prev) => ({
-            ...prev,
-            [lang.code]: { ...prev[lang.code], status: 'saved', error: undefined },
-          }));
+          const apiData = await apiRes.json();
+          const result = apiData.data;
+
+          const form = {
+            title: result.title || '',
+            excerpt: result.excerpt || '',
+            content: result.content || '',
+          };
+
+          if (isPrePublish) {
+            // Pre-publish: just fill forms, don't save to DB
+            console.log(`[ArticleTranslationPanel] Pre-publish mode: filling form for ${lang.code}`);
+            setLangs((prev) => ({
+              ...prev,
+              [lang.code]: { status: 'saved', form, error: undefined },
+            }));
+            allResults[lang.code] = form;
+          } else {
+            setLangs((prev) => ({
+              ...prev,
+              [lang.code]: { status: 'saving', form },
+            }));
+            // Save immediately with the result
+            console.log(`[ArticleTranslationPanel] Saving "${lang.code}" translation to database...`);
+            const res = await fetch('/api/translations/cache', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                articleId,
+                language: lang.code,
+                title: form.title.trim(),
+                excerpt: form.excerpt.trim(),
+                content: form.content.trim(),
+              }),
+            });
+
+            const responseData = await res.json();
+            
+            if (!res.ok) {
+              const errorMsg = responseData?.error || `API returned ${res.status}`;
+              throw new Error(`Failed to save: ${errorMsg}`);
+            }
+
+            console.log(`[ArticleTranslationPanel] ✓ Translation saved for ${lang.code}:`, responseData);
+            setLangs((prev) => ({
+              ...prev,
+              [lang.code]: { ...prev[lang.code], status: 'saved', error: undefined },
+            }));
+          }
+
+          success = true;
+          break;
+        } catch (err: any) {
+          lastError = err;
+          const errorMsg = err?.message || 'Failed to process translation';
+          if (attempt < maxRetries) {
+            console.warn(`[ArticleTranslationPanel] Attempt ${attempt + 1} failed for ${lang.code}, retrying:`, errorMsg);
+            // Wait before retry
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          } else {
+            console.error(`[ArticleTranslationPanel] Error for ${lang.code} after ${attempt + 1} attempts:`, errorMsg);
+          }
         }
-      } catch (err: any) {
-        const errorMsg = err?.message || 'Failed to process translation';
-        console.error(`[ArticleTranslationPanel] Error for ${lang.code}:`, errorMsg);
+      }
+
+      // If all retries failed, mark as error but preserve any partial form data
+      if (!success) {
+        const errorMsg = lastError?.message || 'Failed to process translation';
         setLangs((prev) => ({
           ...prev,
           [lang.code]: {
             ...prev[lang.code],
             status: 'error',
-            error: err?.message || 'Failed',
+            error: errorMsg,
           },
         }));
       }

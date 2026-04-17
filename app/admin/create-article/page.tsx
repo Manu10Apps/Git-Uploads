@@ -1002,6 +1002,7 @@ export default function CreateArticlePage() {
                   title={form.title.trim()}
                   excerpt={form.excerpt.trim()}
                   content={form.content.trim()}
+                  gallery={form.gallery}
                   onTranslationsReady={(translations) => setPendingTranslations(translations)}
                 />
               </div>
@@ -1045,6 +1046,7 @@ export default function CreateArticlePage() {
                 title={savedArticle.title}
                 excerpt={savedArticle.excerpt}
                 content={savedArticle.content}
+                gallery={form.gallery}
               />
               <div className="mt-4 flex justify-end">
                 <button

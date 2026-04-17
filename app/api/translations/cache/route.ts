@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const articleId = parseInt(request.nextUrl.searchParams.get('articleId') || '', 10);
   const lang = request.nextUrl.searchParams.get('lang');
 
-  if (isNaN(articleId) || articleId <= 0 || !lang || !['en', 'sw'].includes(lang)) {
+  if (isNaN(articleId) || articleId <= 0 || !lang || !['en', 'sw', 'ky'].includes(lang)) {
     return NextResponse.json({ data: null });
   }
 
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Missing required fields: ${missing.join(', ')}` }, { status: 400 });
     }
 
-    if (!['en', 'sw'].includes(language)) {
+    if (!['en', 'sw', 'ky'].includes(language)) {
       return NextResponse.json({ error: 'Invalid language' }, { status: 400 });
     }
 
@@ -186,11 +186,6 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    console.log('[translations/cache POST] ✓ Translation saved successfully:', {
-      resultId: result.id,
-      articleId: id,
-      language,
-    });
     console.log('[translations/cache POST] ✓ Translation saved successfully:', {
       resultId: result.id,
       articleId: id,
