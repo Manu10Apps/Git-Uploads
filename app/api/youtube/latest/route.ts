@@ -54,7 +54,10 @@ function isLiveOrPremiereSignal(value: string | undefined): boolean {
     || text.includes('live now')
     || text.includes('en direct')
     || text.includes('premiered')
+    || text.includes('premiering')
     || text.includes('premiere')
+    || text.includes('premiering now')
+    || text.includes('premiering in')
     || text === 'live'
     || text === 'direct'
   );
@@ -67,14 +70,22 @@ function hasExplicitLiveOrPremiereBadge(contextText: string | undefined): boolea
 
   return (
     /"badgeStyle":"BADGE_STYLE_TYPE_LIVE_NOW"/.test(contextText)
+    || /"badgeStyle":"BADGE_STYLE_TYPE_PREMIERE"/.test(contextText)
     || /"style":"LIVE"/.test(contextText)
+    || /"style":"PREMIERE"/.test(contextText)
     || /"iconType":"LIVE"/.test(contextText)
+    || /"iconType":"PREMIERE"/.test(contextText)
     || /"label":"LIVE"/.test(contextText)
+    || /"label":"PREMIERE"/.test(contextText)
     || /"thumbnailOverlayTimeStatusRenderer"\s*:\s*\{[^}]*"style":"LIVE"/.test(contextText)
+    || /"thumbnailOverlayTimeStatusRenderer"\s*:\s*\{[^}]*"style":"PREMIERE"/.test(contextText)
     || /"upcomingEventData"\s*:\s*\{/.test(contextText)
     || /"scheduledStartTime"\s*:/.test(contextText)
     || /"isUpcoming"\s*:\s*true/.test(contextText)
     || /"isLiveNow"\s*:\s*true/.test(contextText)
+    || /"isLive"\s*:\s*true/.test(contextText)
+    || /"isPremiere"\s*:\s*true/.test(contextText)
+    || /"liveNow"\s*:\s*true/.test(contextText)
   );
 }
 
