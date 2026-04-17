@@ -148,8 +148,8 @@ export async function GET(request: NextRequest) {
       },
       diagnostics: {
         readyForSharing: imageAccessible && isValidUrl,
-        issues: [],
-        recommendations: [],
+        issues: [] as string[],
+        recommendations: [] as string[],
       },
     };
 
