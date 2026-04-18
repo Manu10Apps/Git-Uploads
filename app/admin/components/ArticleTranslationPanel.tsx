@@ -368,36 +368,6 @@ export default function ArticleTranslationPanel({
             },
           }));
         }
-            }));
-          }
-
-          success = true;
-          break;
-        } catch (err: any) {
-          lastError = err;
-          const errorMsg = err?.message || 'Failed to process translation';
-          if (attempt < maxRetries) {
-            console.warn(`[ArticleTranslationPanel] Attempt ${attempt + 1} failed for ${lang.code}, retrying:`, errorMsg);
-            // Wait before retry
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          } else {
-            console.error(`[ArticleTranslationPanel] Error for ${lang.code} after ${attempt + 1} attempts:`, errorMsg);
-          }
-        }
-      }
-
-      // If all retries failed, mark as error but preserve any partial form data
-      if (!success) {
-        const errorMsg = lastError?.message || 'Failed to process translation';
-        setLangs((prev) => ({
-          ...prev,
-          [lang.code]: {
-            ...prev[lang.code],
-            status: 'error',
-            error: errorMsg,
-          },
-        }));
-      }
     }
     if (isPrePublish && onTranslationsReady && Object.keys(allResults).length > 0) {
       console.log('[ArticleTranslationPanel] Pre-publish complete, calling onTranslationsReady with:', Object.keys(allResults));
