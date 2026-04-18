@@ -32,6 +32,7 @@ async function getArticleBySlug(slug: string) {
         title: true,
         excerpt: true,
         image: true,
+        gallery: true,
         author: true,
         seoTitle: true,
         seoDescription: true,
@@ -48,9 +49,35 @@ async function getArticleBySlug(slug: string) {
 /**
  * Resolves article image to absolute URL suitable for social media sharing
  * Uses new validation to ensure images are publicly accessible
+ * Falls back to first gallery image if featured image not available
  */
-function resolveAbsoluteImageUrl(image: string | null | undefined): string {
-  return resolveOgImageUrl(image, normalizeArticleImageUrl);
+function resolveAbsoluteImageUrl(
+  image: string | null | undefined,
+  gallery: string | null | undefined
+): string {
+  // Try featured image first
+  let imageUrl = resolveOgImageUrl(image, normalizeArticleImageUrl);
+  
+  // If featured image is unavailable and we have gallery, try first gallery image
+  if (imageUrl === `${SITE_URL}/logo.png` && gallery) {
+    try {
+      const galleryItems = JSON.parse(gallery);
+      if (Array.isArray(galleryItems) && galleryItems.length > 0) {
+        const firstImageUrl = galleryItems[0]?.url;
+        if (firstImageUrl) {
+          const fallbackUrl = resolveOgImageUrl(firstImageUrl, normalizeArticleImageUrl);
+          if (fallbackUrl !== `${SITE_URL}/logo.png`) {
+            console.log(`[Article Metadata] Using first gallery image as fallback for og:image`);
+            imageUrl = fallbackUrl;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn(`[Article Metadata] Failed to parse gallery for fallback:`, err);
+    }
+  }
+  
+  return imageUrl;
 }
 
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
@@ -91,8 +118,9 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   }
 
   // CRITICAL: Ensure image URL is absolute and valid for social media crawlers
-  const imageUrl = resolveAbsoluteImageUrl(article.image);
-  console.log(`[Article Metadata] Image resolution: ${article.image} → ${imageUrl}`);
+  // Falls back to gallery if featured image unavailable
+  const imageUrl = resolveAbsoluteImageUrl(article.image, article.gallery);
+  console.log(`[Article Metadata] Image resolution: featured="${article.image}" → final="${imageUrl}"`);
   
   const imageMimeType = getOgImageType(imageUrl);
   const articleUrl = validLang
