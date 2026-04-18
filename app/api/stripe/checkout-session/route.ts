@@ -32,9 +32,6 @@ export async function POST(request: NextRequest) {
     const stripe = new Stripe(stripeApiKey);
 
     // Create checkout session with dynamic pricing
-    // Note: RWF is a non-decimal currency, so unit_amount should be in base units (not cents)
-    // USD: amount is in cents (100 = $1.00)
-    // RWF: amount is in base units (5000 = FRw 5,000)
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -45,7 +42,7 @@ export async function POST(request: NextRequest) {
               name: 'Ifatabuguzi Premium Subscription',
               description: 'Access premium content and features',
             },
-            unit_amount: amount, // USD: cents | RWF: base units
+            unit_amount: amount, // Amount in cents
           },
           quantity: 1,
         },
