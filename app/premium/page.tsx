@@ -149,7 +149,7 @@ export default function PremiumPage() {
         </Link>
 
         {/* Stripe Payment Option */}
-        <div className="w-full mb-8 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800 text-center">
+        <div className="w-full mb-8 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
           <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-3">
             {currentLang === 'ky' ? 'Kwishyura ukoresheje (Visa/Mastercard)' : currentLang === 'en' ? 'Pay with Card (Visa/Mastercard)' : 'Lipa kwa Kadi (Visa/Mastercard)'}
           </h3>
@@ -161,6 +161,8 @@ export default function PremiumPage() {
             className="w-full inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-semibold text-white transition-colors hover:opacity-90"
             amount={100}
             currency="usd"
+            showAmountSelector={true}
+            language={currentLang}
           />
         </div>
 
