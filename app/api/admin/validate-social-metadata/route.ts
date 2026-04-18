@@ -26,6 +26,65 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    return validateArticleMetadata(articleId, checkImageAccessibility);
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error('[VALIDATE:SOCIAL] Error:', errorMsg);
+    return NextResponse.json(
+      { error: 'Validation failed', details: errorMsg },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * GET /api/admin/validate-social-metadata?slug=article-slug
+ * 
+ * Validate article by slug (for convenience)
+ */
+export async function GET(request: NextRequest) {
+  const slug = request.nextUrl.searchParams.get('slug');
+  const checkAccessibility = request.nextUrl.searchParams.get('checkAccessibility') !== 'false';
+
+  if (!slug) {
+    return NextResponse.json(
+      { error: 'Missing slug parameter' },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const article = await prisma.article.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+
+    if (!article) {
+      return NextResponse.json(
+        { error: 'Article not found', slug },
+        { status: 404 }
+      );
+    }
+
+    return validateArticleMetadata(article.id, checkAccessibility);
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error('[VALIDATE:SOCIAL] Error:', errorMsg);
+    return NextResponse.json(
+      { error: 'Validation failed', details: errorMsg },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Shared validation logic for both POST and GET handlers
+ */
+async function validateArticleMetadata(
+  articleId: number,
+  checkImageAccessibility: boolean
+): Promise<NextResponse> {
+  try {
     // Fetch article with necessary fields
     const article = await prisma.article.findUnique({
       where: { id: articleId },
@@ -49,7 +108,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const SITE_URL = 'https://intambwemedia.com';
     const issues: string[] = [];
     const warnings: string[] = [];
 
@@ -164,56 +222,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(response, {
       status: isValid ? 200 : 400,
     });
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error('[VALIDATE:SOCIAL] Error:', errorMsg);
-    return NextResponse.json(
-      { error: 'Validation failed', details: errorMsg },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * GET /api/admin/validate-social-metadata?slug=article-slug
- * 
- * Validate article by slug (for convenience)
- */
-export async function GET(request: NextRequest) {
-  const slug = request.nextUrl.searchParams.get('slug');
-  const checkAccessibility = request.nextUrl.searchParams.get('checkAccessibility') !== 'false';
-
-  if (!slug) {
-    return NextResponse.json(
-      { error: 'Missing slug parameter' },
-      { status: 400 }
-    );
-  }
-
-  try {
-    const article = await prisma.article.findUnique({
-      where: { slug },
-      select: { id: true },
-    });
-
-    if (!article) {
-      return NextResponse.json(
-        { error: 'Article not found', slug },
-        { status: 404 }
-      );
-    }
-
-    // Delegate to POST handler
-    const postRequest = new Request(request.url, {
-      method: 'POST',
-      headers: request.headers,
-      body: JSON.stringify({
-        articleId: article.id,
-        checkImageAccessibility: checkAccessibility,
-      }),
-    });
-
-    return POST(postRequest);
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     console.error('[VALIDATE:SOCIAL] Error:', errorMsg);
