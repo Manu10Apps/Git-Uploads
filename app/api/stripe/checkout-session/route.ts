@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const Stripe = require('stripe');
-
 export async function POST(request: NextRequest) {
   try {
-    const { priceId, successUrl, cancelUrl } = await request.json();
+    const { amount, currency = 'usd', successUrl, cancelUrl } = await request.json();
 
-    if (!priceId || !successUrl || !cancelUrl) {
+    // Validate inputs
+    if (!amount || typeof amount !== 'number' || amount < 100) {
       return NextResponse.json(
-        { error: 'Missing required parameters: priceId, successUrl, cancelUrl' },
+        { error: 'Invalid amount. Minimum is $1.00 (100 cents).' },
+        { status: 400 }
+      );
+    }
+
+    if (!successUrl || !cancelUrl) {
+      return NextResponse.json(
+        { error: 'Missing required parameters: successUrl, cancelUrl' },
         { status: 400 }
       );
     }
@@ -21,21 +27,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Lazy-load Stripe inside the handler to avoid module-level env variable issues
+    const Stripe = require('stripe');
     const stripe = new Stripe(stripeApiKey);
 
+    // Create checkout session with dynamic pricing
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
-          price: priceId,
+          price_data: {
+            currency: currency.toLowerCase(),
+            product_data: {
+              name: 'Ifatabuguzi Premium Subscription',
+              description: 'Access premium content and features',
+            },
+            unit_amount: amount, // Amount in cents
+          },
           quantity: 1,
         },
       ],
-      mode: 'subscription', // Use 'subscription' for recurring or 'payment' for one-time
+      mode: 'payment', // Use 'payment' for one-time payment
       success_url: successUrl,
       cancel_url: cancelUrl,
-      billing_address_collection: 'auto',
-      customer_creation: 'always', // Create customer for recurring billing
     });
 
     return NextResponse.json({ sessionId: session.id, url: session.url });

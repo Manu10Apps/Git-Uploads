@@ -6,16 +6,14 @@ import { useState } from 'react';
 interface StripePaymentButtonProps {
   className?: string;
   label?: string;
-  priceId?: string;
-  amount?: number;
+  amount?: number; // Amount in cents (e.g., 2999 = $29.99)
   currency?: string;
 }
 
 export default function StripePaymentButton({
   className = "inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90",
   label = "Premium",
-  priceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
-  amount = 2999,
+  amount = 2999, // Default $29.99
   currency = "usd",
 }: StripePaymentButtonProps) {
   const router = useRouter();
@@ -27,6 +25,10 @@ export default function StripePaymentButton({
     setError(null);
 
     try {
+      if (!amount || amount < 100) {
+        throw new Error('Amount must be at least $1.00');
+      }
+
       const currentUrl = typeof window !== 'undefined' ? window.location.origin : '';
       const successUrl = `${currentUrl}/premium/success?session_id={CHECKOUT_SESSION_ID}`;
       const cancelUrl = `${currentUrl}/premium?canceled=true`;
@@ -37,11 +39,10 @@ export default function StripePaymentButton({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          priceId: priceId || `price_${Date.now()}`, // Use provided priceId or generate a placeholder
-          successUrl,
-          cancelUrl,
           amount,
           currency,
+          successUrl,
+          cancelUrl,
         }),
       });
 
