@@ -326,8 +326,7 @@ export default function ArticleTranslationPanel({
               }
 
               throw new Error(`${errorData?.error || `Translation API returned ${apiRes.status}`}${serviceDetails}`);
-              [lang.code]: { status: 'saved', form, error: undefined },
-            }));
+            }
             allResults[lang.code] = form;
           } else {
             setLangs((prev) => ({
