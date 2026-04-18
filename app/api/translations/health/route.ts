@@ -20,6 +20,9 @@ export async function GET() {
 
   for (const endpoint of libreEndpoints) {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -29,8 +32,10 @@ export async function GET() {
           target: 'sw',
           format: 'text',
         }),
-        signal: AbortSignal.timeout(5000),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       results.services[`libretranslate-${endpoint.split('/')[2]}`] = {
         status: response.status,
@@ -45,13 +50,18 @@ export async function GET() {
 
   // Test MyMemory
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
     const response = await fetch(
       'https://api.mymemory.translated.net/get?q=test&langpair=en|sw',
       {
         headers: { 'User-Agent': 'Mozilla/5.0' },
-        signal: AbortSignal.timeout(5000),
+        signal: controller.signal,
       }
     );
+    
+    clearTimeout(timeoutId);
     results.services.mymemory = {
       status: response.status,
       ok: response.ok,
@@ -64,6 +74,9 @@ export async function GET() {
 
   // Test Puter
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
     const response = await fetch('https://api.puter.com/ai/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -74,8 +87,10 @@ export async function GET() {
         ],
         model: 'gpt-3.5-turbo',
       }),
-      signal: AbortSignal.timeout(5000),
+      signal: controller.signal,
     });
+    
+    clearTimeout(timeoutId);
     results.services.puter = {
       status: response.status,
       ok: response.ok,

@@ -7,9 +7,14 @@ const UAParserModule = require('ua-parser-js');
 // IP to Geolocation (free service - optional)
 const getGeolocation = async (ip: string) => {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
     const response = await fetch(`https://ipapi.co/${ip}/json/`, {
-      signal: AbortSignal.timeout(5000)
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
     const data = await response.json();
     return {
       country: data.country_name,

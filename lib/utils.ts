@@ -339,10 +339,15 @@ export function convertYouTubeTimeToKinyarwanda(timeText: string | undefined): s
  */
 export async function getLiveYouTubeVideoUrl(): Promise<string | null> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    
     const response = await fetch('/api/youtube/latest', {
-      signal: AbortSignal.timeout(8000),
+      signal: controller.signal,
       cache: 'no-store',
     });
+    
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       console.warn('[LIVE] API response not ok:', response.status);

@@ -141,8 +141,17 @@ export async function POST(request: NextRequest) {
           console.error('  MyMemory:', memoryErrorMsg);
           console.error('  LibreTranslate:', libreErrorMsg);
           console.error('  Puter:', puterErrorMsg);
-          throw new Error(
-            `All translation services unavailable. Try again in a moment.`
+
+          return NextResponse.json(
+            {
+              error: 'Translation failed: All translation services unavailable. Try again in a moment.',
+              serviceErrors: {
+                mymemory: memoryErrorMsg || null,
+                libretranslate: libreErrorMsg || null,
+                puter: puterErrorMsg || null,
+              },
+            },
+            { status: 500 }
           );
         }
       }
