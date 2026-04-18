@@ -117,12 +117,12 @@ export default function StripePaymentButton({
   if (showAmountSelector) {
     return (
       <div className="w-full text-center">
-        <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-3">
+        <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-3 text-center">
           {getTranslation('selectAmount')}
         </label>
         
         {/* Preset Amount Buttons */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="grid grid-cols-3 gap-2 mb-4 justify-center mx-auto">
           {presetAmounts.map((amt) => (
             <button
               key={amt}
@@ -144,8 +144,8 @@ export default function StripePaymentButton({
         </div>
 
         {/* Custom Amount Input */}
-        <div className="mb-4">
-          <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2">
+        <div className="mb-4 text-center">
+          <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2 text-center">
             {getTranslation('custom')}
           </label>
           <input
