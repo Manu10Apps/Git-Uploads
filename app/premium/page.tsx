@@ -176,13 +176,13 @@ export default function PremiumPage() {
         </div>
 
         {/* Existing Form */}
-        <form onSubmit={handlePayment} className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-6 sm:p-8 border border-neutral-200 dark:border-neutral-700 text-center">
+        <form onSubmit={handlePayment} className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-6 sm:p-8 border border-neutral-200 dark:border-neutral-700">
               {/* Amount Selection */}
               <div className="mb-8">
-                <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-4 text-center">
+                <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-4">
                   {currentLang === 'ky' ? 'Hitamo ingano y\'amafaranga (RWF)' : currentLang === 'en' ? 'Select Amount (RWF)' : 'Chagua Kiasi (RWF)'}
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 justify-center">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                   {amounts.map((amount) => (
                     <button
                       key={amount}
@@ -204,7 +204,7 @@ export default function PremiumPage() {
                 
                 {/* Custom Amount Input */}
                 <div className="mt-4">
-                  <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2 text-center">
+                  <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                     {currentLang === 'ky' ? 'Cyangwa Wandike Ingano y\'amafaranga arenga 2000 (RWF)' : currentLang === 'en' ? 'Or enter custom amount above 2000 (RWF)' : 'Au ingiza kiasi cha kawaida zaidi ya 2000 (RWF)'}
                   </label>
                   <input
@@ -224,7 +224,7 @@ export default function PremiumPage() {
 
               {/* Phone Number Input */}
               <div className="mb-8">
-                <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2 text-center">
+                <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
                   {currentLang === 'ky' ? 'Nimiro yawe (MTN/Airtel)' : currentLang === 'en' ? 'Phone Number (MTN/Airtel)' : 'Namba ya Simu (MTN/Airtel)'}
                 </label>
                 <input
@@ -236,7 +236,7 @@ export default function PremiumPage() {
                   className="w-full px-4 py-3 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none disabled:opacity-50"
                   required
                 />
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 text-center">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                   {currentLang === 'ky'
                     ? 'Urakira ubutumwa kuri telefone yawe bugusaba Gukomeza'
                     : currentLang === 'en'
@@ -246,7 +246,7 @@ export default function PremiumPage() {
               </div>
 
               {/* Display Selected Amount */}
-              <div className="bg-white dark:bg-neutral-700 rounded-lg p-4 mb-8 border-l-4 border-red-600 text-center">
+              <div className="bg-white dark:bg-neutral-700 rounded-lg p-4 mb-8 border-l-4 border-red-600">
                 <div className="text-sm text-neutral-600 dark:text-neutral-400">
                   {currentLang === 'ky' ? 'Ingano y\'amafaranga wahisemo' : currentLang === 'en' ? 'Amount to Pay' : 'Kiasi cha Kulipa'}
                 </div>
