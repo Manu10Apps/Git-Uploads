@@ -83,13 +83,18 @@ async function translateTextMyMemory(
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         const encoded = encodeURIComponent(chunk);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        
         const response = await fetch(
           `https://api.mymemory.translated.net/get?q=${encoded}&langpair=${sourceLang}|${targetLang}`,
           {
             headers: { 'User-Agent': 'Mozilla/5.0' },
-            signal: AbortSignal.timeout(15000),
+            signal: controller.signal,
           }
         );
+        
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
           // 429 = rate limited, retry with backoff
