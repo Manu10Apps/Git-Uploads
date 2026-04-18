@@ -3,14 +3,16 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
 import { NAV_CATEGORY_ITEMS } from '@/lib/nav-categories';
 import { Menu, X, Search, Moon, Sun, ChevronDown, Globe } from 'lucide-react';
 import { SearchModal } from './SearchModal';
-import StripePaymentButton from './StripePaymentButton';
+
 
 export function Header() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const [isMoreOpen, setIsMoreOpen] = React.useState(false);
@@ -248,10 +250,13 @@ export function Header() {
 
             {/* Premium Button */}
             <div className="hidden xl:flex flex-col items-center">
-              <StripePaymentButton
-                label={language === 'ky' ? 'Ifatabuguzi' : language === 'sw' ? 'Kuchangia' : 'Premium'}
+              <button
+                onClick={() => router.push('/premium')}
                 className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90"
-              />
+                style={{ backgroundColor: '#e3001b' }}
+              >
+                {language === 'ky' ? 'Ifatabuguzi' : language === 'sw' ? 'Kuchangia' : 'Premium'}
+              </button>
             </div>
 
             {/* Mobile Menu Button moved to left side on small devices */}
@@ -274,10 +279,16 @@ export function Header() {
         {isMenuOpen && (
           <nav className="lg:hidden pb-3 sm:pb-4 space-y-1 sm:space-y-2 border-t border-neutral-200 dark:border-neutral-800 mt-2 max-h-[70vh] overflow-y-auto overscroll-contain">
             <div className="px-3 sm:px-4 pt-3">
-              <StripePaymentButton
-                label={language === 'ky' ? 'Ifatabuguzi' : language === 'sw' ? 'Kuchangia' : 'Premium'}
+              <button
+                onClick={() => {
+                  router.push('/premium');
+                  setIsMenuOpen(false);
+                }}
                 className="inline-flex items-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white w-full justify-center"
-              />
+                style={{ backgroundColor: '#e3001b' }}
+              >
+                {language === 'ky' ? 'Ifatabuguzi' : language === 'sw' ? 'Kuchangia' : 'Premium'}
+              </button>
             </div>
             {NAV_CATEGORY_ITEMS.map((item) => {
               const parts = item.key.split('.');
