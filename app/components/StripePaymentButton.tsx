@@ -13,7 +13,7 @@ interface StripePaymentButtonProps {
 export default function StripePaymentButton({
   className = "inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90",
   label = "Premium",
-  amount = 2999, // Default $29.99
+  amount = 100, // Default $1.00
   currency = "usd",
 }: StripePaymentButtonProps) {
   const router = useRouter();
