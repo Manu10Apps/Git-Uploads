@@ -124,8 +124,21 @@ export default function ArticleTranslationPanel({
       });
 
       if (!apiRes.ok) {
-        const errorData = await apiRes.json();
-        throw new Error(errorData?.error || `Translation API returned ${apiRes.status}`);
+        let errorData: any = { error: null };
+        const contentType = apiRes.headers.get('content-type');
+        try {
+          if (contentType?.includes('application/json')) {
+            errorData = await apiRes.json();
+          } else {
+            const text = await apiRes.text();
+            errorData = { error: text || `HTTP ${apiRes.status}` };
+          }
+        } catch (parseErr) {
+          errorData = { error: `HTTP ${apiRes.status}` };
+        }
+
+        const serviceDetails = errorData?.serviceErrors ? ` Details: ${JSON.stringify(errorData.serviceErrors)}` : '';
+        throw new Error(`${errorData?.error || `Translation API returned ${apiRes.status}`}${serviceDetails}`);
       }
 
       const apiData = await apiRes.json();
@@ -294,39 +307,25 @@ export default function ArticleTranslationPanel({
               errorData = { error: `HTTP ${apiRes.status}` };
             }
 
-            // Rate limit - retry with backoff
-            if (apiRes.status === 429 && attempt < maxRetries) {
-              const waitTime = Math.pow(2, attempt) * 1000;
-              console.warn(`[ArticleTranslationPanel] Rate limited, retrying ${lang.code} after ${waitTime}ms`);
-              await new Promise(resolve => setTimeout(resolve, waitTime));
-              continue;
-            }
+              const serviceDetails = errorData?.serviceErrors ? ` Details: ${JSON.stringify(errorData.serviceErrors)}` : '';
 
-            // 502/503 Gateway errors - retry as they're transient
-            if ((apiRes.status === 502 || apiRes.status === 503) && attempt < maxRetries) {
-              const waitTime = (Math.pow(2, attempt) + 1) * 1000; // 2s, 5s, 11s backoff
-              console.warn(`[ArticleTranslationPanel] Gateway error ${apiRes.status}, retrying ${lang.code} after ${waitTime}ms`);
-              await new Promise(resolve => setTimeout(resolve, waitTime));
-              continue;
-            }
+              // Rate limit - retry with backoff
+              if (apiRes.status === 429 && attempt < maxRetries) {
+                const waitTime = Math.pow(2, attempt) * 1000;
+                console.warn(`[ArticleTranslationPanel] Rate limited, retrying ${lang.code} after ${waitTime}ms`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+                continue;
+              }
 
-            throw new Error(errorData?.error || `Translation API returned ${apiRes.status}`);
-          }
+              // 502/503 Gateway errors - retry as they're transient
+              if ((apiRes.status === 502 || apiRes.status === 503) && attempt < maxRetries) {
+                const waitTime = (Math.pow(2, attempt) + 1) * 1000; // 2s, 5s, 11s backoff
+                console.warn(`[ArticleTranslationPanel] Gateway error ${apiRes.status}, retrying ${lang.code} after ${waitTime}ms`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+                continue;
+              }
 
-          const apiData = await apiRes.json();
-          const result = apiData.data;
-
-          const form = {
-            title: result.title || '',
-            excerpt: result.excerpt || '',
-            content: result.content || '',
-          };
-
-          if (isPrePublish) {
-            // Pre-publish: just fill forms, don't save to DB
-            console.log(`[ArticleTranslationPanel] Pre-publish mode: filling form for ${lang.code}`);
-            setLangs((prev) => ({
-              ...prev,
+              throw new Error(`${errorData?.error || `Translation API returned ${apiRes.status}`}${serviceDetails}`);
               [lang.code]: { status: 'saved', form, error: undefined },
             }));
             allResults[lang.code] = form;
