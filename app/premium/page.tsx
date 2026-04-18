@@ -150,8 +150,8 @@ export default function PremiumPage() {
 
         {/* Stripe Payment Option */}
         <div className="w-full mb-8 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
-          <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-3">
-            {currentLang === 'ky' ? 'Kwishyura ukoresheje (Visa/Mastercard)' : currentLang === 'en' ? 'Pay with Card (Visa/Mastercard)' : 'Lipa kwa Kadi (Visa/Mastercard)'}
+          <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-3 text-center">
+            {currentLang === 'ky' ? 'Kwishyura ukoresheje Visa/Mastercard' : currentLang === 'en' ? 'Pay with Card Visa/Mastercard' : 'Lipa kwa Kadi Visa/Mastercard'}
           </h3>
           <p className="text-xs text-blue-800 dark:text-blue-300 mb-4">
             {currentLang === 'ky' ? 'Biroroshye kandi Birihuta' : currentLang === 'en' ? 'Fast, secure, and safe payment option.' : 'Njia ya malipo ya haraka, salama, na yenye usalama.'}
