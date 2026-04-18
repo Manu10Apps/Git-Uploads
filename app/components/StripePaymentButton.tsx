@@ -20,13 +20,18 @@ export default function StripePaymentButton({
   showAmountSelector = false,
   language = "en",
 }: StripePaymentButtonProps) {
+  const [selectedCurrency, setSelectedCurrency] = useState<'usd' | 'rwf'>(currency as 'usd' | 'rwf' || 'usd');
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedAmount, setSelectedAmount] = useState<number>(amount);
   const [customAmount, setCustomAmount] = useState<string>('');
 
-  const presetAmounts = [100, 300, 500]; // $1, $3, $5
+  // Currency presets: USD in cents, RWF in base units
+  const presetAmounts = selectedCurrency === 'usd' ? [100, 300, 500] : [5000, 10000, 25000]; // USD: $1, $3, $5 | RWF: 5k, 10k, 25k
+
+  const getCurrencySymbol = (): string => selectedCurrency === 'usd' ? '$' : 'FRw';
+  const getMinimumAmount = (): number => selectedCurrency === 'usd' ? 100 : 1000; // 100 cents = $1, 1000 RWF
 
   const getTranslation = (key: string): string => {
     const translations: Record<string, Record<string, string>> = {
@@ -36,9 +41,9 @@ export default function StripePaymentButton({
         sw: 'Chagua Kiasi',
       },
       custom: {
-        ky: 'Ingano y\'amafaranga wihitiyemo (USD)',
-        en: 'Custom Amount (USD)',
-        sw: 'Kiasi cha Kawaida (USD)',
+        ky: 'Ingano y\'amafaranga wihitiyemo',
+        en: 'Custom Amount',
+        sw: 'Kiasi cha Kawaida',
       },
       enterAmount: {
         ky: 'Andike ingano',
@@ -56,22 +61,33 @@ export default function StripePaymentButton({
         sw: 'Inaendelea...',
       },
       minimum: {
-        ky: 'Ingano igomba kuva $1.00',
-        en: 'Amount must be at least $1.00',
-        sw: 'Kiasi lazima kuwa angalau $1.00',
+        ky: selectedCurrency === 'usd' ? 'Ingano igomba kuva $1.00' : 'Ingano igomba kuva FRw 1,000',
+        en: selectedCurrency === 'usd' ? 'Amount must be at least $1.00' : 'Amount must be at least FRw 1,000',
+        sw: selectedCurrency === 'usd' ? 'Kiasi lazima kuwa angalau $1.00' : 'Kiasi lazima kuwa angalau FRw 1,000',
+      },
+      usd: {
+        ky: 'USD',
+        en: 'USD',
+        sw: 'USD',
+      },
+      rwf: {
+        ky: 'RWF',
+        en: 'RWF',
+        sw: 'RWF',
       },
     };
     return translations[key]?.[language] || translations[key]?.en || key;
   };
 
-  const finalAmount = customAmount ? Math.round(parseFloat(customAmount) * 100) : selectedAmount;
+  const finalAmount = customAmount ? Math.round(parseFloat(customAmount) * (selectedCurrency === 'usd' ? 100 : 1)) : selectedAmount;
 
   const handlePayment = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      if (!finalAmount || finalAmount < 100) {
+      const minAmount = getMinimumAmount();
+      if (!finalAmount || finalAmount < minAmount) {
         throw new Error(getTranslation('minimum'));
       }
 
@@ -86,7 +102,7 @@ export default function StripePaymentButton({
         },
         body: JSON.stringify({
           amount: finalAmount,
-          currency,
+          currency: selectedCurrency,
           successUrl,
           cancelUrl,
         }),
@@ -117,6 +133,40 @@ export default function StripePaymentButton({
   if (showAmountSelector) {
     return (
       <div className="w-full text-center">
+        {/* Currency Selector */}
+        <div className="flex gap-2 justify-center mb-4">
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedCurrency('usd');
+              setSelectedAmount(100);
+              setCustomAmount('');
+            }}
+            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+              selectedCurrency === 'usd'
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-900 dark:text-white hover:bg-neutral-300'
+            }`}
+          >
+            {getTranslation('usd')}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedCurrency('rwf');
+              setSelectedAmount(5000);
+              setCustomAmount('');
+            }}
+            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+              selectedCurrency === 'rwf'
+                ? 'bg-green-600 text-white shadow-lg'
+                : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-900 dark:text-white hover:bg-neutral-300'
+            }`}
+          >
+            {getTranslation('rwf')}
+          </button>
+        </div>
+
         <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-3 text-center">
           {getTranslation('selectAmount')}
         </label>
@@ -138,7 +188,7 @@ export default function StripePaymentButton({
                   : 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-600 hover:border-red-600 disabled:opacity-50'
               }`}
             >
-              ${(amt / 100).toFixed(2)}
+              {selectedCurrency === 'usd' ? `$${(amt / 100).toFixed(2)}` : `FRw ${(amt).toLocaleString()}`}
             </button>
           ))}
         </div>
@@ -148,19 +198,24 @@ export default function StripePaymentButton({
           <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2 text-center">
             {getTranslation('custom')}
           </label>
-          <input
-            type="number"
-            min="1"
-            step="0.01"
-            placeholder={getTranslation('enterAmount')}
-            value={customAmount}
-            onChange={(e) => {
-              setCustomAmount(e.target.value);
-              setSelectedAmount(0);
-            }}
-            disabled={isLoading}
-            className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none disabled:opacity-50 text-sm"
-          />
+          <div className="flex gap-2">
+            <input
+              type="number"
+              min="1"
+              step={selectedCurrency === 'usd' ? '0.01' : '1'}
+              placeholder={getTranslation('enterAmount')}
+              value={customAmount}
+              onChange={(e) => {
+                setCustomAmount(e.target.value);
+                setSelectedAmount(0);
+              }}
+              disabled={isLoading}
+              className="flex-1 px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none disabled:opacity-50 text-sm"
+            />
+            <span className="flex items-center px-3 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-600 text-neutral-900 dark:text-white font-semibold text-sm">
+              {getCurrencySymbol()}
+            </span>
+          </div>
         </div>
 
         {/* Pay Button */}
@@ -175,7 +230,7 @@ export default function StripePaymentButton({
             width: '100%',
           }}
         >
-          {isLoading ? getTranslation('processing') : `${getTranslation('payButton')} $${(finalAmount / 100).toFixed(2)}`}
+          {isLoading ? getTranslation('processing') : `${getTranslation('payButton')} ${selectedCurrency === 'usd' ? `$${(finalAmount / 100).toFixed(2)}` : `FRw ${(finalAmount).toLocaleString()}`}`}
         </button>
 
         {error && (

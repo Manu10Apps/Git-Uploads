@@ -151,10 +151,10 @@ export default function PremiumPage() {
         {/* Stripe Payment Option */}
         <div className="w-full mb-8 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
           <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-3 text-center">
-            {currentLang === 'ky' ? 'Kwishyura ukoresheje Visa/Mastercard' : currentLang === 'en' ? 'Pay with Card Visa/Mastercard' : 'Lipa kwa Kadi Visa/Mastercard'}
+            {currentLang === 'ky' ? 'Kwishyura ukoresheje Visa/Mastercard (USD • RWF)' : currentLang === 'en' ? 'Pay with Card Visa/Mastercard (USD • RWF)' : 'Lipa kwa Kadi Visa/Mastercard (USD • RWF)'}
           </h3>
           <p className="text-xs text-blue-800 dark:text-blue-300 mb-4 text-center">
-            {currentLang === 'ky' ? 'Biroroshye kandi Birihuta' : currentLang === 'en' ? 'Fast, secure, and safe payment option.' : 'Njia ya malipo ya haraka, salama, na yenye usalama.'}
+            {currentLang === 'ky' ? 'Biroroshye, birihuta kandi Birambuzima - ubishyura mu Dola cyangwa mu Amafaranga y\'u Rwanda' : currentLang === 'en' ? 'Fast, secure, and safe - pay in USD or Rwandan Francs' : 'Haraka, salama, na yenye usalama - lipa kwa USD au Franki za Rwanda'}
           </p>
           <StripePaymentButton
             label={currentLang === 'ky' ? 'Kanda wishyure' : currentLang === 'en' ? 'Pay with Card' : 'Lipa kwa Kadi'}
