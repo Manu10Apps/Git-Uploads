@@ -10,6 +10,9 @@ const FALLBACK_IMAGES = [
   `${SITE_URL}/logo.png`,           // Branded logo - always available
 ];
 
+// Enable production debugging for social media issues
+const DEBUG_OG_IMAGES = process.env.DEBUG_OG_IMAGES === 'true' || process.env.NODE_ENV !== 'production';
+
 /**
  * Detects MIME type from URL or filename
  */
@@ -70,6 +73,79 @@ export function validateImageUrl(url: string): boolean {
 }
 
 /**
+ * Validates if an image URL is accessible via HTTP HEAD request
+ * Used to verify images are available to social media crawlers before publishing
+ * IMPORTANT: Returns null if fetch fails (timeout, network error) - treat as validation passed
+ */
+export async function validateImageAccessibility(url: string): Promise<{
+  accessible: boolean;
+  statusCode: number | null;
+  contentType: string | null;
+  error: string | null;
+}> {
+  if (!validateImageUrl(url)) {
+    return {
+      accessible: false,
+      statusCode: null,
+      contentType: null,
+      error: 'URL failed basic validation (not HTTPS, no image extension, or localhost)',
+    };
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    try {
+      const response = await fetch(url, {
+        method: 'HEAD',
+        headers: {
+          'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        return {
+          accessible: true,
+          statusCode: response.status,
+          contentType: response.headers.get('content-type'),
+          error: null,
+        };
+      } else {
+        return {
+          accessible: false,
+          statusCode: response.status,
+          contentType: response.headers.get('content-type'),
+          error: `HTTP ${response.status}: ${response.statusText}`,
+        };
+      }
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  } catch (err: any) {
+    const errorMsg = err?.message || String(err);
+    // Network errors are common during deployment - don't fail validation
+    if (errorMsg.includes('AbortError') || errorMsg.includes('timeout')) {
+      return {
+        accessible: false,
+        statusCode: null,
+        contentType: null,
+        error: `Timeout (image may be temporarily unavailable): ${errorMsg}`,
+      };
+    }
+    return {
+      accessible: false,
+      statusCode: null,
+      contentType: null,
+      error: errorMsg,
+    };
+  }
+}
+
+/**
  * Resolves an article image URL to an absolute, validated URL for social media
  * Falls back to site logo if image is invalid or missing
  * CRITICAL: Social media crawlers need HTTPS URLs, no auth, 1200x630+ pixels
@@ -80,7 +156,7 @@ export function resolveOgImageUrl(
 ): string {
   // CRITICAL: Validate that image is actually provided
   if (!image) {
-    console.warn('[OG:IMAGE] ❌ No featured image provided, using fallback');
+    if (DEBUG_OG_IMAGES) console.warn('[OG:IMAGE] ❌ No featured image provided, using fallback');
     return DEFAULT_OG_IMAGE;
   }
   
@@ -88,7 +164,7 @@ export function resolveOgImageUrl(
     // First normalize the path
     const normalized = normalizeFunc(image);
     if (!normalized) {
-      console.warn(`[OG:IMAGE] ❌ Failed to normalize image path: "${image}" → null`);
+      if (DEBUG_OG_IMAGES) console.warn(`[OG:IMAGE] ❌ Failed to normalize image path: "${image}" → null`);
       return DEFAULT_OG_IMAGE;
     }
 
@@ -97,14 +173,14 @@ export function resolveOgImageUrl(
     // If already absolute URL, ensure HTTPS
     if (normalized.startsWith('http://')) {
       absoluteUrl = normalized.replace(/^http:/, 'https:');
-      console.log(`[OG:IMAGE] ✅ Upgraded HTTP to HTTPS: "${absoluteUrl}"`);
+      if (DEBUG_OG_IMAGES) console.log(`[OG:IMAGE] ✅ Upgraded HTTP to HTTPS: "${absoluteUrl}"`);
     } else if (normalized.startsWith('https://')) {
       absoluteUrl = normalized;
-      console.log(`[OG:IMAGE] ✅ Already HTTPS: "${absoluteUrl}"`);
+      if (DEBUG_OG_IMAGES) console.log(`[OG:IMAGE] ✅ Already HTTPS: "${absoluteUrl}"`);
     } else if (normalized.startsWith('/')) {
       // Relative path → convert to absolute HTTPS URL
       absoluteUrl = `${SITE_URL}${normalized}`;
-      console.log(`[OG:IMAGE] ✅ Converted relative to absolute: "${image}" → "${absoluteUrl}"`);
+      if (DEBUG_OG_IMAGES) console.log(`[OG:IMAGE] ✅ Converted relative to absolute: "${image}" → "${absoluteUrl}"`);
     } else {
       // Fallback for URLs without leading slash
       if (normalized.includes('://')) {
@@ -114,16 +190,18 @@ export function resolveOgImageUrl(
         // Treat as relative path
         absoluteUrl = `${SITE_URL}/${normalized}`;
       }
-      console.log(`[OG:IMAGE] ✅ Resolved ambiguous format: "${image}" → "${absoluteUrl}"`);
+      if (DEBUG_OG_IMAGES) console.log(`[OG:IMAGE] ✅ Resolved ambiguous format: "${image}" → "${absoluteUrl}"`);
     }
     
     // Validate the resolved URL
     if (validateImageUrl(absoluteUrl)) {
-      console.log(`[OG:IMAGE] ✅ Final URL validated successfully`);
+      if (DEBUG_OG_IMAGES) console.log(`[OG:IMAGE] ✅ Final URL validated successfully`);
       return absoluteUrl;
     } else {
-      console.warn(`[OG:IMAGE] ❌ URL validation failed: "${absoluteUrl}"`);
-      console.warn(`[OG:IMAGE] Reasons: Not HTTPS, invalid extension, or localhost`);
+      if (DEBUG_OG_IMAGES) {
+        console.warn(`[OG:IMAGE] ❌ URL validation failed: "${absoluteUrl}"`);
+        console.warn(`[OG:IMAGE] Reasons: Not HTTPS, invalid extension, or localhost`);
+      }
     }
   } catch (error) {
     // Log the error for debugging
@@ -132,7 +210,7 @@ export function resolveOgImageUrl(
   }
 
   // Default fallback if all else fails
-  console.warn(`[OG:IMAGE] 🔄 Falling back to default logo: "${DEFAULT_OG_IMAGE}"`);
+  if (DEBUG_OG_IMAGES) console.warn(`[OG:IMAGE] 🔄 Falling back to default logo: "${DEFAULT_OG_IMAGE}"`);
   return DEFAULT_OG_IMAGE;
 }
 

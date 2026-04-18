@@ -85,10 +85,11 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   const { lang } = await searchParams;
   const article = await getArticleBySlug(slug);
 
-  console.log(`[Article Metadata] Generating metadata for slug: ${slug}, lang: ${lang}`);
+  const startTime = Date.now();
+  console.log(`[ARTICLE:METADATA] Starting metadata generation for slug: ${slug}, lang: ${lang}`);
 
   if (!article) {
-    console.warn(`[Article Metadata] Article not found for slug: ${slug}`);
+    console.warn(`[ARTICLE:METADATA] Article not found for slug: ${slug}`);
     return {
       title: 'Inkuru Ntiyabonetse | Intambwe Media',
       description: 'Inkuru ushaka ntiyabonetse.',
@@ -111,7 +112,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   if (validLang && article.id) {
     const translation = await getTranslation(article.id, validLang);
     if (translation) {
-      console.log(`[Article Metadata] Using ${validLang} translation for title/description`);
+      console.log(`[ARTICLE:METADATA] Using ${validLang} translation for title/description`);
       title = translation.title || title;
       description = translation.excerpt || description;
     }
@@ -120,7 +121,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   // CRITICAL: Ensure image URL is absolute and valid for social media crawlers
   // Falls back to gallery if featured image unavailable
   const imageUrl = resolveAbsoluteImageUrl(article.image, article.gallery);
-  console.log(`[Article Metadata] Image resolution: featured="${article.image}" → final="${imageUrl}"`);
+  console.log(`[ARTICLE:METADATA] Image resolution: featured="${article.image}" → final="${imageUrl}"`);
   
   const imageMimeType = getOgImageType(imageUrl);
   const articleUrl = validLang
@@ -132,11 +133,12 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     ? description.substring(0, 160).replace(/\s+$/, '')
     : 'Amakuru Agezweho | Igihe Cyose';
 
-  console.log(`[Article Metadata] ✅ Metadata generated successfully for ${slug}:`, {
+  console.log(`[ARTICLE:METADATA] ✅ Metadata generated successfully for ${slug}:`, {
     title,
     imageUrl,
     ogType: 'article',
     lang: validLang || 'ky',
+    generationTimeMs: Date.now() - startTime,
   });
 
   return {
