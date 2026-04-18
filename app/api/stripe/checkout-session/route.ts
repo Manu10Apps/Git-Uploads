@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const stripe = require('stripe');
-
-const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY);
+const Stripe = require('stripe');
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +13,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const session = await stripeClient.checkout.sessions.create({
+    const stripeApiKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeApiKey) {
+      return NextResponse.json(
+        { error: 'Stripe API key not configured' },
+        { status: 500 }
+      );
+    }
+
+    const stripe = new Stripe(stripeApiKey);
+
+    const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
