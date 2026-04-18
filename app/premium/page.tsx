@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
+import StripePaymentButton from '@/app/components/StripePaymentButton';
 
 export default function PremiumPage() {
   const { language, setLanguage } = useAppStore();
@@ -147,7 +148,30 @@ export default function PremiumPage() {
           </div>
         </Link>
 
-        {/* Payment Form */}
+        {/* Stripe Payment Option */}
+        <div className="w-full mb-8 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
+          <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-3">
+            {currentLang === 'ky' ? 'Kubikira mu Kadi (Visa/Mastercard)' : currentLang === 'en' ? 'Pay with Card (Visa/Mastercard)' : 'Lipa kwa Kadi (Visa/Mastercard)'}
+          </h3>
+          <p className="text-xs text-blue-800 dark:text-blue-300 mb-4">
+            {currentLang === 'ky' ? 'Byishyura byihuse, neza, kandi muganga.' : currentLang === 'en' ? 'Fast, secure, and safe payment option.' : 'Njia ya malipo ya haraka, salama, na yenye usalama.'}
+          </p>
+          <StripePaymentButton
+            label={currentLang === 'ky' ? 'Kubikira mu Kadi' : currentLang === 'en' ? 'Pay with Card' : 'Lipa kwa Kadi'}
+            className="w-full inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-semibold text-white transition-colors hover:opacity-90"
+          />
+        </div>
+
+        {/* Divider */}
+        <div className="w-full flex items-center gap-4 mb-8">
+          <div className="flex-1 h-px bg-neutral-300 dark:bg-neutral-600"></div>
+          <span className="text-sm text-neutral-600 dark:text-neutral-400">
+            {currentLang === 'ky' ? 'CYANGWA' : currentLang === 'en' ? 'OR' : 'AU'}
+          </span>
+          <div className="flex-1 h-px bg-neutral-300 dark:bg-neutral-600"></div>
+        </div>
+
+        {/* Existing Form */}
         <form onSubmit={handlePayment} className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-6 sm:p-8 border border-neutral-200 dark:border-neutral-700">
               {/* Amount Selection */}
               <div className="mb-8">

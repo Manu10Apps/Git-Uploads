@@ -8,6 +8,7 @@ import { getTranslation } from '@/lib/translations';
 import { NAV_CATEGORY_ITEMS } from '@/lib/nav-categories';
 import { Menu, X, Search, Moon, Sun, ChevronDown, Globe } from 'lucide-react';
 import { SearchModal } from './SearchModal';
+import StripePaymentButton from './StripePaymentButton';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -247,13 +248,10 @@ export function Header() {
 
             {/* Premium Button */}
             <div className="hidden xl:flex flex-col items-center">
-              <Link
-                href="/premium"
+              <StripePaymentButton
+                label={language === 'ky' ? 'Ifatabuguzi' : language === 'sw' ? 'Kuchangia' : 'Premium'}
                 className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90"
-                style={{ backgroundColor: '#e3001b' }}
-              >
-                {language === 'ky' ? 'Ifatabuguzi' : language === 'sw' ? 'Kuchangia' : 'Premium'}
-              </Link>
+              />
             </div>
 
             {/* Mobile Menu Button moved to left side on small devices */}
@@ -276,14 +274,10 @@ export function Header() {
         {isMenuOpen && (
           <nav className="lg:hidden pb-3 sm:pb-4 space-y-1 sm:space-y-2 border-t border-neutral-200 dark:border-neutral-800 mt-2 max-h-[70vh] overflow-y-auto overscroll-contain">
             <div className="px-3 sm:px-4 pt-3">
-              <Link
-                href="/premium"
-                className="inline-flex items-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white"
-                style={{ backgroundColor: '#e3001b' }}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {language === 'ky' ? 'Ifatabuguzi' : language === 'sw' ? 'Kuchangia' : 'Premium'}
-              </Link>
+              <StripePaymentButton
+                label={language === 'ky' ? 'Ifatabuguzi' : language === 'sw' ? 'Kuchangia' : 'Premium'}
+                className="inline-flex items-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white w-full justify-center"
+              />
             </div>
             {NAV_CATEGORY_ITEMS.map((item) => {
               const parts = item.key.split('.');
