@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface StripePaymentButtonProps {
   className?: string;
@@ -25,24 +25,6 @@ export default function StripePaymentButton({
   const [error, setError] = useState<string | null>(null);
   const [selectedAmount, setSelectedAmount] = useState<number>(amount);
   const [customAmount, setCustomAmount] = useState<string>('');
-  const [exchangeRate, setExchangeRate] = useState<number>(1300); // Default USD to RWF rate
-
-  // Fetch current exchange rate on component mount
-  useEffect(() => {
-    const fetchExchangeRate = async () => {
-      try {
-        const response = await fetch('/api/exchange-rates?from=USD&to=RWF');
-        if (response.ok) {
-          const data = await response.json();
-          setExchangeRate(data.rate || 1300);
-        }
-      } catch (err) {
-        console.warn('Failed to fetch exchange rate, using default:', err);
-        setExchangeRate(1300); // Fallback to default rate
-      }
-    };
-    fetchExchangeRate();
-  }, []);
 
   const presetAmounts = [100, 300, 500]; // $1, $3, $5
 
@@ -78,30 +60,14 @@ export default function StripePaymentButton({
         en: 'Amount must be at least $1.00',
         sw: 'Kiasi lazima kuwa angalau $1.00',
       },
-      orInRwf: {
-        ky: 'cyangwa',
-        en: 'or',
-        sw: 'au',
-      },
-      rwf: {
-        ky: 'RWF',
-        en: 'RWF',
-        sw: 'RWF',
-      },
     };
     return translations[key]?.[language] || translations[key]?.en || key;
   };
 
+  // Exchange rate: 1 USD = 1,350 RWF (Rwandan Francs)
+  const exchangeRate = 1350;
   const finalAmount = customAmount ? Math.round(parseFloat(customAmount) * 100) : selectedAmount;
-  const amountInUSD = finalAmount / 100;
-  const amountInRWF = Math.round(amountInUSD * exchangeRate);
-
-  const formatCurrency = (amount: number, curr: string): string => {
-    if (curr.toLowerCase() === 'rwf') {
-      return `₨${amount.toLocaleString()}`;
-    }
-    return `$${amount.toFixed(2)}`;
-  };
+  const finalAmountRWF = Math.round((finalAmount / 100) * exchangeRate);
 
   const handlePayment = async () => {
     setIsLoading(true);
@@ -174,11 +140,10 @@ export default function StripePaymentButton({
                   ? 'bg-red-600 text-white shadow-lg'
                   : 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-600 hover:border-red-600 disabled:opacity-50'
               }`}
+              title={`${(amt / 100).toFixed(2)} USD = ${Math.round((amt / 100) * exchangeRate).toLocaleString()} RWF`}
             >
-              <div>${(amt / 100).toFixed(2)}</div>
-              <div className="text-xs opacity-75">
-                ≈ ₨{Math.round((amt / 100) * exchangeRate).toLocaleString()}
-              </div>
+              <div className="text-sm">${(amt / 100).toFixed(2)}</div>
+              <div className="text-xs opacity-75">{Math.round((amt / 100) * exchangeRate).toLocaleString()} RWF</div>
             </button>
           ))}
         </div>
@@ -201,11 +166,6 @@ export default function StripePaymentButton({
             disabled={isLoading}
             className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none disabled:opacity-50 text-sm"
           />
-          {customAmount && (
-            <div className="mt-2 text-xs text-neutral-600 dark:text-neutral-400">
-              ${parseFloat(customAmount).toFixed(2)} {getTranslation('orInRwf')} ₨{Math.round(parseFloat(customAmount) * exchangeRate).toLocaleString()}
-            </div>
-          )}
         </div>
 
         {/* Pay Button */}
@@ -220,13 +180,13 @@ export default function StripePaymentButton({
             width: '100%',
           }}
         >
-          <div>
-            {isLoading ? getTranslation('processing') : getTranslation('payButton')}
-          </div>
-          <div className="text-xs opacity-90">
-            ${amountInUSD.toFixed(2)} {getTranslation('orInRwf')} ₨{amountInRWF.toLocaleString()}
-          </div>
+          {isLoading ? getTranslation('processing') : `${getTranslation('payButton')} $${(finalAmount / 100).toFixed(2)} / ${finalAmountRWF.toLocaleString()} RWF`}
         </button>
+
+        {/* Exchange Rate Info */}
+        <div className="text-xs text-neutral-500 dark:text-neutral-400 text-center mt-2">
+          Exchange rate: 1 USD = {exchangeRate.toLocaleString()} RWF
+        </div>
 
         {error && (
           <div className="text-red-600 dark:text-red-400 text-sm mt-3 p-2 bg-red-50 dark:bg-red-900/20 rounded">
@@ -248,12 +208,8 @@ export default function StripePaymentButton({
           opacity: isLoading ? 0.7 : 1,
           cursor: isLoading ? 'not-allowed' : 'pointer',
         }}
-        title={`$${amountInUSD.toFixed(2)} ${getTranslation('orInRwf')} ₨${amountInRWF.toLocaleString()}`}
       >
-        <div className="flex items-center justify-center gap-2">
-          <span>{isLoading ? 'Processing...' : label}</span>
-          <span className="text-xs opacity-75">($${amountInUSD.toFixed(2)} / ₨{amountInRWF.toLocaleString()})</span>
-        </div>
+        {isLoading ? 'Processing...' : label}
       </button>
       {error && (
         <div className="text-red-600 text-sm mt-2">
