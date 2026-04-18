@@ -159,7 +159,7 @@ export default function PremiumPage() {
           <StripePaymentButton
             label={currentLang === 'ky' ? 'Kanda wishyure' : currentLang === 'en' ? 'Pay with Card' : 'Lipa kwa Kadi'}
             className="w-full inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-semibold text-white transition-colors hover:opacity-90"
-            amount={2999}
+            amount={100}
             currency="usd"
           />
         </div>
