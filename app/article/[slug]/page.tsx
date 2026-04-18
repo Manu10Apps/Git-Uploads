@@ -219,7 +219,7 @@ export default async function ArticlePage({ params, searchParams }: PageProps) {
       }
     }
     
-    const imageUrl = resolveAbsoluteImageUrl(article.image);
+    const imageUrl = resolveAbsoluteImageUrl(article.image, article.gallery);
     const articleUrl = validLang
       ? `${SITE_URL}/article/${slug}?lang=${validLang}`
       : `${SITE_URL}/article/${slug}`;
