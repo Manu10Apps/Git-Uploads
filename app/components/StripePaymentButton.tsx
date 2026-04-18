@@ -36,17 +36,17 @@ export default function StripePaymentButton({
         sw: 'Chagua Kiasi',
       },
       custom: {
-        ky: 'Ingano y\'umwaka (USD)',
+        ky: 'Ingano y\'amafaranga wihitiyemo (USD)',
         en: 'Custom Amount (USD)',
         sw: 'Kiasi cha Kawaida (USD)',
       },
       enterAmount: {
-        ky: 'Wandike ingano',
+        ky: 'Andike ingano',
         en: 'Enter custom amount',
         sw: 'Ingiza kiasi cha kawaida',
       },
       payButton: {
-        ky: 'Kwishyura',
+        ky: 'Ishyura',
         en: 'Pay Now',
         sw: 'Lipa Sasa',
       },
@@ -116,7 +116,7 @@ export default function StripePaymentButton({
 
   if (showAmountSelector) {
     return (
-      <div className="w-full">
+      <div className="w-full text-center">
         <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-3">
           {getTranslation('selectAmount')}
         </label>
