@@ -101,6 +101,9 @@ async function translateWithPuterOrFallback(
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       // Try Puter.ai HTTP API endpoint
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      
       const response = await fetch('https://api.puter.com/ai/chat', {
         method: 'POST',
         headers: {
@@ -119,8 +122,10 @@ async function translateWithPuterOrFallback(
           ],
           model: 'gpt-3.5-turbo',
         }),
-        signal: AbortSignal.timeout(30000),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();

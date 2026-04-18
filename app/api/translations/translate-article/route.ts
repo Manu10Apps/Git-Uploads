@@ -85,11 +85,7 @@ export async function POST(request: NextRequest) {
     
     // 1. Try MyMemory first (most stable, currently only working service)
     try {
-      console.log('[translate-article] → Attempting MyMemory translation...', {
-        from: from as SupportedLanguage,
-        to: to as SupportedLanguage,
-        titleLen: title.length,
-      });
+      console.log('[translate-article] → Attempting MyMemory translation...');
       result = await translateArticleMyMemory(
         {
           title,
@@ -103,10 +99,7 @@ export async function POST(request: NextRequest) {
       console.log('[translate-article] ✓ MyMemory translation successful');
     } catch (memoryError) {
       memoryErrorMsg = memoryError instanceof Error ? memoryError.message : String(memoryError);
-      console.error('[translate-article] ❌ MyMemory failed:', {
-        error: memoryErrorMsg,
-        stack: memoryError instanceof Error ? memoryError.stack : undefined,
-      });
+      console.warn('[translate-article] ❌ MyMemory failed:', memoryErrorMsg);
       console.warn('[translate-article] → Attempting LibreTranslate translation...');
       
       // 2. Try LibreTranslate (free, open-source)
@@ -125,10 +118,7 @@ export async function POST(request: NextRequest) {
         console.log('[translate-article] ✓ LibreTranslate translation successful');
       } catch (libreError) {
         libreErrorMsg = libreError instanceof Error ? libreError.message : String(libreError);
-        console.error('[translate-article] ❌ LibreTranslate failed:', {
-          error: libreErrorMsg,
-          stack: libreError instanceof Error ? libreError.stack : undefined,
-        });
+        console.warn('[translate-article] ❌ LibreTranslate failed:', libreErrorMsg);
         console.warn('[translate-article] → Attempting Puter translation...');
         
         // 3. Try Puter (free AI service)
@@ -147,24 +137,10 @@ export async function POST(request: NextRequest) {
           console.log('[translate-article] ✓ Puter translation successful');
         } catch (puterError) {
           puterErrorMsg = puterError instanceof Error ? puterError.message : String(puterError);
-          console.error('[translate-article] ❌ All translation services failed:', {
-            myMemory: {
-              error: memoryErrorMsg,
-              timestamp: new Date().toISOString(),
-            },
-            libretranslate: {
-              error: libreErrorMsg,
-              timestamp: new Date().toISOString(),
-            },
-            puter: {
-              error: puterErrorMsg,
-              timestamp: new Date().toISOString(),
-            },
-            environment: {
-              nodeEnv: process.env.NODE_ENV,
-              hasNextPublicUrl: !!process.env.NEXT_PUBLIC_SITE_URL,
-            },
-          });
+          console.error('[translate-article] ❌ All translation services failed:');
+          console.error('  MyMemory:', memoryErrorMsg);
+          console.error('  LibreTranslate:', libreErrorMsg);
+          console.error('  Puter:', puterErrorMsg);
           throw new Error(
             `All translation services unavailable. Try again in a moment.`
           );
