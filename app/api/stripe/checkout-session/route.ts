@@ -31,15 +31,6 @@ export async function POST(request: NextRequest) {
     const Stripe = require('stripe');
     const stripe = new Stripe(stripeApiKey);
 
-    // Exchange rate for RWF (Rwandan Francs)
-    // 1 USD = ~1,350 RWF (approximate current rate)
-    const exchangeRate = 1350;
-    const amountUSD = (amount / 100).toFixed(2);
-    const amountRWF = Math.round((amount / 100) * exchangeRate);
-    
-    // Create product description with RWF conversion
-    const description = `Access premium content and features\n💵 USD ${amountUSD} / 🇷🇼 RWF ${amountRWF.toLocaleString()} (1 USD = ${exchangeRate} RWF)`;
-
     // Create checkout session with dynamic pricing
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -49,7 +40,7 @@ export async function POST(request: NextRequest) {
             currency: currency.toLowerCase(),
             product_data: {
               name: 'Ifatabuguzi Premium Subscription',
-              description: description,
+              description: 'Access premium content and features',
             },
             unit_amount: amount, // Amount in cents
           },

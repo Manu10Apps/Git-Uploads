@@ -3,6 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+// Current USD to RWF exchange rate (updated: April 19, 2026)
+const USD_TO_RWF_RATE = 1300; // 1 USD = 1,300 RWF (approximately)
+
 interface StripePaymentButtonProps {
   className?: string;
   label?: string;
@@ -10,6 +13,7 @@ interface StripePaymentButtonProps {
   currency?: string;
   showAmountSelector?: boolean;
   language?: 'ky' | 'en' | 'sw';
+  showRwfExchange?: boolean; // Show RWF equivalent
 }
 
 export default function StripePaymentButton({
@@ -18,6 +22,7 @@ export default function StripePaymentButton({
   amount = 100, // Default $1.00
   currency = "usd",
   showAmountSelector = false,
+  showRwfExchange = true, // Show RWF by default
   language = "en",
 }: StripePaymentButtonProps) {
   const router = useRouter();
@@ -27,6 +32,10 @@ export default function StripePaymentButton({
   const [customAmount, setCustomAmount] = useState<string>('');
 
   const presetAmounts = [100, 300, 500]; // $1, $3, $5
+
+  const convertToRWF = (usdCents: number): number => {
+    return Math.round((usdCents / 100) * USD_TO_RWF_RATE);
+  };
 
   const getTranslation = (key: string): string => {
     const translations: Record<string, Record<string, string>> = {
@@ -60,14 +69,21 @@ export default function StripePaymentButton({
         en: 'Amount must be at least $1.00',
         sw: 'Kiasi lazima kuwa angalau $1.00',
       },
+      exchangeRate: {
+        ky: 'Igipimo cy\'iyipidi',
+        en: 'Exchange Rate',
+        sw: 'Kiwango cha Ubadilishanaji',
+      },
+      approximately: {
+        ky: 'Inzira',
+        en: 'Approximately',
+        sw: 'Takribani',
+      },
     };
     return translations[key]?.[language] || translations[key]?.en || key;
   };
 
-  // Exchange rate: 1 USD = 1,350 RWF (Rwandan Francs)
-  const exchangeRate = 1350;
   const finalAmount = customAmount ? Math.round(parseFloat(customAmount) * 100) : selectedAmount;
-  const finalAmountRWF = Math.round((finalAmount / 100) * exchangeRate);
 
   const handlePayment = async () => {
     setIsLoading(true);
@@ -124,6 +140,15 @@ export default function StripePaymentButton({
           {getTranslation('selectAmount')}
         </label>
         
+        {/* Exchange Rate Info */}
+        {showRwfExchange && (
+          <div className="mb-4 p-2 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
+            <p className="text-xs text-blue-700 dark:text-blue-300 font-medium">
+              {getTranslation('exchangeRate')}: 1 USD = {USD_TO_RWF_RATE.toLocaleString()} RWF
+            </p>
+          </div>
+        )}
+        
         {/* Preset Amount Buttons */}
         <div className="grid grid-cols-3 gap-2 mb-4 justify-center mx-auto">
           {presetAmounts.map((amt) => (
@@ -140,10 +165,13 @@ export default function StripePaymentButton({
                   ? 'bg-red-600 text-white shadow-lg'
                   : 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-600 hover:border-red-600 disabled:opacity-50'
               }`}
-              title={`${(amt / 100).toFixed(2)} USD = ${Math.round((amt / 100) * exchangeRate).toLocaleString()} RWF`}
             >
-              <div className="text-sm">${(amt / 100).toFixed(2)}</div>
-              <div className="text-xs opacity-75">{Math.round((amt / 100) * exchangeRate).toLocaleString()} RWF</div>
+              <div>${(amt / 100).toFixed(2)}</div>
+              {showRwfExchange && (
+                <div className="text-xs opacity-75">
+                  {getTranslation('approximately')} {convertToRWF(amt).toLocaleString()} RWF
+                </div>
+              )}
             </button>
           ))}
         </div>
@@ -166,6 +194,12 @@ export default function StripePaymentButton({
             disabled={isLoading}
             className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none disabled:opacity-50 text-sm"
           />
+          {customAmount && showRwfExchange && (
+            <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
+              {getTranslation('approximately')} {convertToRWF(Math.round(parseFloat(customAmount) * 100)).toLocaleString()} RWF
+            </p>
+          )}
+        </div>
         </div>
 
         {/* Pay Button */}
@@ -180,13 +214,15 @@ export default function StripePaymentButton({
             width: '100%',
           }}
         >
-          {isLoading ? getTranslation('processing') : `${getTranslation('payButton')} $${(finalAmount / 100).toFixed(2)} / ${finalAmountRWF.toLocaleString()} RWF`}
+          <div>
+            {isLoading ? getTranslation('processing') : `${getTranslation('payButton')} $${(finalAmount / 100).toFixed(2)}`}
+          </div>
+          {!isLoading && showRwfExchange && (
+            <div className="text-xs opacity-90">
+              ({getTranslation('approximately')} {convertToRWF(finalAmount).toLocaleString()} RWF)
+            </div>
+          )}
         </button>
-
-        {/* Exchange Rate Info */}
-        <div className="text-xs text-neutral-500 dark:text-neutral-400 text-center mt-2">
-          Exchange rate: 1 USD = {exchangeRate.toLocaleString()} RWF
-        </div>
 
         {error && (
           <div className="text-red-600 dark:text-red-400 text-sm mt-3 p-2 bg-red-50 dark:bg-red-900/20 rounded">
