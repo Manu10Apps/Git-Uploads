@@ -71,7 +71,7 @@ export default function StripePaymentButton({
         sw: 'Kiasi cha Kawaida (USD)',
       },
       enterAmount: {
-        ky: 'Andike ingano',
+        ky: 'Andika ingano',
         en: 'Enter custom amount',
         sw: 'Ingiza kiasi cha kawaida',
       },
@@ -203,9 +203,6 @@ export default function StripePaymentButton({
         {/* Exchange Rate Display */}
         {!exchangeLoading && rwfAmount && (
           <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-            <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-1">
-              {getTranslation('exchangeRate')}
-            </p>
             <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
               {rwfAmount.toLocaleString()} RWF
             </p>
