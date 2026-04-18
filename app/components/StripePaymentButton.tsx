@@ -1,10 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-
-// Current USD to RWF exchange rate (updated: April 19, 2026)
-const USD_TO_RWF_RATE = 1300; // 1 USD = 1,300 RWF (approximately)
+import { useState, useEffect } from 'react';
 
 interface StripePaymentButtonProps {
   className?: string;
@@ -13,7 +10,6 @@ interface StripePaymentButtonProps {
   currency?: string;
   showAmountSelector?: boolean;
   language?: 'ky' | 'en' | 'sw';
-  showRwfExchange?: boolean; // Show RWF equivalent
 }
 
 export default function StripePaymentButton({
@@ -22,7 +18,6 @@ export default function StripePaymentButton({
   amount = 100, // Default $1.00
   currency = "usd",
   showAmountSelector = false,
-  showRwfExchange = true, // Show RWF by default
   language = "en",
 }: StripePaymentButtonProps) {
   const router = useRouter();
@@ -30,12 +25,38 @@ export default function StripePaymentButton({
   const [error, setError] = useState<string | null>(null);
   const [selectedAmount, setSelectedAmount] = useState<number>(amount);
   const [customAmount, setCustomAmount] = useState<string>('');
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
+  const [exchangeLoading, setExchangeLoading] = useState(true);
 
   const presetAmounts = [100, 300, 500]; // $1, $3, $5
 
-  const convertToRWF = (usdCents: number): number => {
-    return Math.round((usdCents / 100) * USD_TO_RWF_RATE);
-  };
+  // Fetch USD to RWF exchange rate
+  useEffect(() => {
+    const fetchExchangeRate = async () => {
+      try {
+        setExchangeLoading(true);
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        const data = await response.json();
+        if (data.rates && data.rates.RWF) {
+          setExchangeRate(data.rates.RWF);
+        } else {
+          // Fallback rate if API fails
+          setExchangeRate(1300);
+        }
+      } catch (err) {
+        console.error('Failed to fetch exchange rate:', err);
+        // Fallback rate
+        setExchangeRate(1300);
+      } finally {
+        setExchangeLoading(false);
+      }
+    };
+
+    fetchExchangeRate();
+    // Refresh exchange rate every 6 hours
+    const interval = setInterval(fetchExchangeRate, 6 * 60 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const getTranslation = (key: string): string => {
     const translations: Record<string, Record<string, string>> = {
@@ -70,20 +91,17 @@ export default function StripePaymentButton({
         sw: 'Kiasi lazima kuwa angalau $1.00',
       },
       exchangeRate: {
-        ky: 'Igipimo cy\'iyipidi',
-        en: 'Exchange Rate',
-        sw: 'Kiwango cha Ubadilishanaji',
-      },
-      approximately: {
-        ky: 'Inzira',
-        en: 'Approximately',
-        sw: 'Takribani',
+        ky: 'Ibisesero (FRW)',
+        en: 'Equivalent (RWF)',
+        sw: 'Sawa na (RWF)',
       },
     };
     return translations[key]?.[language] || translations[key]?.en || key;
   };
 
   const finalAmount = customAmount ? Math.round(parseFloat(customAmount) * 100) : selectedAmount;
+  const finalAmountUSD = finalAmount / 100;
+  const rwfAmount = exchangeRate ? Math.round(finalAmountUSD * exchangeRate) : null;
 
   const handlePayment = async () => {
     setIsLoading(true);
@@ -140,15 +158,6 @@ export default function StripePaymentButton({
           {getTranslation('selectAmount')}
         </label>
         
-        {/* Exchange Rate Info */}
-        {showRwfExchange && (
-          <div className="mb-4 p-2 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
-            <p className="text-xs text-blue-700 dark:text-blue-300 font-medium">
-              {getTranslation('exchangeRate')}: 1 USD = {USD_TO_RWF_RATE.toLocaleString()} RWF
-            </p>
-          </div>
-        )}
-        
         {/* Preset Amount Buttons */}
         <div className="grid grid-cols-3 gap-2 mb-4 justify-center mx-auto">
           {presetAmounts.map((amt) => (
@@ -166,12 +175,7 @@ export default function StripePaymentButton({
                   : 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-600 hover:border-red-600 disabled:opacity-50'
               }`}
             >
-              <div>${(amt / 100).toFixed(2)}</div>
-              {showRwfExchange && (
-                <div className="text-xs opacity-75">
-                  {getTranslation('approximately')} {convertToRWF(amt).toLocaleString()} RWF
-                </div>
-              )}
+              ${(amt / 100).toFixed(2)}
             </button>
           ))}
         </div>
@@ -194,13 +198,22 @@ export default function StripePaymentButton({
             disabled={isLoading}
             className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none disabled:opacity-50 text-sm"
           />
-          {customAmount && showRwfExchange && (
-            <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
-              {getTranslation('approximately')} {convertToRWF(Math.round(parseFloat(customAmount) * 100)).toLocaleString()} RWF
+        </div>
+
+        {/* Exchange Rate Display */}
+        {!exchangeLoading && rwfAmount && (
+          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-1">
+              {getTranslation('exchangeRate')}
             </p>
-          )}
-        </div>
-        </div>
+            <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+              {rwfAmount.toLocaleString()} RWF
+            </p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+              ${finalAmountUSD.toFixed(2)} USD ≈ {rwfAmount.toLocaleString()} RWF
+            </p>
+          </div>
+        )}
 
         {/* Pay Button */}
         <button
@@ -214,14 +227,7 @@ export default function StripePaymentButton({
             width: '100%',
           }}
         >
-          <div>
-            {isLoading ? getTranslation('processing') : `${getTranslation('payButton')} $${(finalAmount / 100).toFixed(2)}`}
-          </div>
-          {!isLoading && showRwfExchange && (
-            <div className="text-xs opacity-90">
-              ({getTranslation('approximately')} {convertToRWF(finalAmount).toLocaleString()} RWF)
-            </div>
-          )}
+          {isLoading ? getTranslation('processing') : `${getTranslation('payButton')} $${(finalAmount / 100).toFixed(2)}`}
         </button>
 
         {error && (
