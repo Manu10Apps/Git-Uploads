@@ -280,7 +280,7 @@ export async function GET(request: NextRequest) {
       where.slug = slug;
     }
 
-    const take = limit ? parseInt(limit) : includeAll ? 100 : 10;
+    const take = limit ? parseInt(limit) : includeAll ? 100 : 1000;
     const skip = (page - 1) * take;
 
     const articlesPromise = summary
