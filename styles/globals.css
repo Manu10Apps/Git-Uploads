@@ -32,6 +32,11 @@ html {
   overflow-x: hidden;
   
   @apply antialiased;
+  
+  /* Fallback for browsers that don't support smooth scroll */
+  @supports not (scroll-behavior: smooth) {
+    scroll-behavior: auto;
+  }
 }
 
 body {
@@ -97,6 +102,88 @@ code {
 
 pre {
   @apply bg-neutral-900 dark:bg-neutral-950 text-neutral-50 p-4 rounded-lg overflow-x-auto;
+}
+
+/* Cross-Browser Compatibility Enhancements */
+
+/* Ensure box-sizing is consistent across all browsers */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Touch action for better mobile interaction */
+button,
+[role="button"],
+input[type="submit"],
+input[type="reset"],
+input[type="button"],
+a {
+  touch-action: manipulation;
+}
+
+/* Improve form input rendering on mobile browsers */
+input,
+button,
+textarea,
+select {
+  font-size: 16px; /* Prevents zoom on iOS when focusing input */
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+/* Ensure proper video element behavior */
+video {
+  display: block;
+  height: auto;
+}
+
+/* Fix sticky positioning fallback for older browsers */
+.sticky {
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+}
+
+/* Improve text rendering on all browsers */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Ensure proper flex behavior on older Safari */
+.flex {
+  display: -webkit-flex;
+  display: flex;
+}
+
+.flex-col {
+  -webkit-flex-direction: column;
+  flex-direction: column;
+}
+
+.flex-wrap {
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+
+/* Ensure grid layout works with fallbacks */
+.grid {
+  display: -ms-grid; /* IE 10-11 fallback */
+  display: grid;
+}
+
+/* Prevent layout shift from scrollbars appearing/disappearing */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Fix mobile viewport units (100vh issues on mobile) */
+.min-h-screen {
+  /* Fallback for mobile browsers where 100vh includes address bar */
+  min-height: 100vh;
+  min-height: 100dvh; /* Modern browsers support dynamic viewport height */
 }
 
 /* Selection */
