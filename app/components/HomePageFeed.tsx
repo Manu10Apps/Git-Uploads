@@ -24,9 +24,8 @@ type HomePageFeedProps = {
   mostViewed: HomepageArticle[];
 };
 
-const LATEST_PAGE_SIZE = 6;
-const MOST_VIEWED_PAGE_SIZE = 3;
 
+<<<<<<< Updated upstream
 function getPageItems<T>(items: T[], page: number, pageSize: number) {
   const start = page * pageSize;
   return items.slice(start, start + pageSize);
@@ -93,25 +92,15 @@ function PagerControls({
     </div>
   );
 }
+=======
+>>>>>>> Stashed changes
 
 export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
   const language = useAppStore((s) => s.language);
   const t = getTranslation(language);
-  const [latestPage, setLatestPage] = React.useState(0);
-  const [mostViewedPage, setMostViewedPage] = React.useState(0);
   const [youtubeVideos, setYouTubeVideos] = React.useState<YouTubeVideo[]>([]);
   const [youtubeLoading, setYouTubeLoading] = React.useState(true);
   const [translations, setTranslations] = React.useState<TranslationMap>({});
-
-  const latestTotalPages = Math.max(1, Math.ceil(articles.length / LATEST_PAGE_SIZE));
-  const mostViewedTotalPages = Math.max(1, Math.ceil(mostViewed.length / MOST_VIEWED_PAGE_SIZE));
-  const latestPageArticles = getPageItems(articles, latestPage, LATEST_PAGE_SIZE);
-  const mostViewedPageArticles = getPageItems(mostViewed, mostViewedPage, MOST_VIEWED_PAGE_SIZE);
-
-  React.useEffect(() => {
-    setLatestPage(0);
-    setMostViewedPage(0);
-  }, [articles.length, mostViewed.length]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -216,7 +205,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
     <>
       <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-4 flex flex-col items-center justify-center gap-3 lg:min-h-10 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+          <div className="mb-4">
             <div className="text-center lg:text-left">
               <div className="imv-header-nav mb-2">
                 <div className="imv-header-nav-title">
@@ -228,20 +217,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 </div>
               </div>
             </div>
-            <PagerControls
-              page={latestPage}
-              totalPages={latestTotalPages}
-              onFirst={() => setLatestPage(0)}
-              onPrevious={() => setLatestPage((prev) => Math.max(0, prev - 1))}
-              onNext={() => setLatestPage((prev) => Math.min(latestTotalPages - 1, prev + 1))}
-              onLast={() => setLatestPage(Math.max(0, latestTotalPages - 1))}
-              label="Latest section pagination"
-            />
           </div>
 
-          {latestPageArticles.length > 0 ? (
+          {articles.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-              {latestPageArticles.map((article) => (
+              {articles.map((article) => (
                 <article
                   key={article.id}
                   className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-200 dark:hover:border-red-900/50 transition-all duration-300 cursor-pointer hover:shadow-lg"
@@ -284,7 +264,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
 
       <section className="py-8 bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-4 flex flex-col items-center justify-center gap-3 lg:min-h-10 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+          <div className="mb-4">
             <div className="text-center lg:text-left">
               <div className="imv-header-nav mb-2">
                 <div className="imv-header-nav-title">
@@ -296,20 +276,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 </div>
               </div>
             </div>
-            <PagerControls
-              page={mostViewedPage}
-              totalPages={mostViewedTotalPages}
-              onFirst={() => setMostViewedPage(0)}
-              onPrevious={() => setMostViewedPage((prev) => Math.max(0, prev - 1))}
-              onNext={() => setMostViewedPage((prev) => Math.min(mostViewedTotalPages - 1, prev + 1))}
-              onLast={() => setMostViewedPage(Math.max(0, mostViewedTotalPages - 1))}
-              label="Most viewed section pagination"
-            />
           </div>
 
-          {mostViewedPageArticles.length > 0 ? (
+          {mostViewed.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-              {mostViewedPageArticles.map((article) => (
+              {mostViewed.map((article) => (
                 <article
                   key={article.id}
                   className="group border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden bg-white dark:bg-neutral-800 hover:shadow-lg transition-all duration-300"
