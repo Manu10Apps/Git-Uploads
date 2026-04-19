@@ -26,7 +26,7 @@ type HomePageFeedProps = {
 
 const LATEST_PAGE_SIZE = 6;
 const MOST_VIEWED_PAGE_SIZE = 3;
-const OLD_NEWS_PAGE_SIZE = 4;
+const OLD_NEWS_PAGE_SIZE = 12;
 
 function getPageItems<T>(items: T[], page: number, pageSize: number) {
   const start = page * pageSize;
@@ -455,14 +455,14 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
             </div>
 
             {oldNewsPageArticles.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 lg:gap-8">
                 {oldNewsPageArticles.map((article) => (
                   <article
                     key={article.id}
-                    className="group border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden bg-white dark:bg-neutral-800 hover:shadow-lg transition-all duration-300"
+                    className="group border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden bg-white dark:bg-neutral-800 hover:shadow-lg transition-all duration-300 flex flex-col"
                   >
                     <Link href={`/article/${article.slug}`}>
-                      <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-700 h-48 cursor-pointer">
+                      <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-700 aspect-video cursor-pointer">
                         <ArticleImage
                           src={article.image}
                           alt={getTitle(article)}
@@ -470,21 +470,12 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                         />
                       </div>
                     </Link>
-                    <div className="p-4">
-                      <div className="text-red-600 dark:text-red-500 text-xs font-semibold tracking-widest mb-2 uppercase">
-                        {getCategoryLabel(article.category)}
-                      </div>
-                      <h3 className="text-sm font-serif font-bold text-neutral-900 dark:text-white mb-2 line-clamp-2">
+                    <div className="p-3 flex-grow flex flex-col">
+                      <h3 className="text-sm font-serif font-bold text-neutral-900 dark:text-white line-clamp-2 flex-grow">
                         <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
                           {getTitle(article)}
                         </Link>
                       </h3>
-                      <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-3 line-clamp-2">
-                        {getExcerpt(article)}
-                      </p>
-                      <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
-                        <span>{article.publishedAt}</span>
-                      </div>
                     </div>
                   </article>
                 ))}
