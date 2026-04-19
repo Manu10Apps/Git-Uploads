@@ -50,90 +50,55 @@ function PagerControls({
   onLast: () => void;
   label: string;
 }) {
+  const buttonBaseClass = "flex items-center justify-center h-9 w-9 sm:h-8 sm:w-8 rounded-md font-semibold transition-all duration-200 text-sm";
+  const activeButtonClass = `${buttonBaseClass} bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900`;
+  const disabledButtonClass = `${buttonBaseClass} bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-600 cursor-not-allowed`;
+
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-end" aria-label={label}>
+    <div className="flex flex-wrap items-center justify-center gap-1 lg:justify-end" aria-label={label}>
       <button
         type="button"
         onClick={onFirst}
         disabled={page === 0}
-        className="inline-flex h-10 min-w-10 sm:h-8 sm:min-w-8 px-1 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-        style={{ color: '#ff2000' }}
-        onMouseEnter={(event) => {
-          if (!event.currentTarget.disabled) {
-            event.currentTarget.style.backgroundColor = '#ff2000';
-            event.currentTarget.style.color = '#ffffff';
-          }
-        }}
-        onMouseLeave={(event) => {
-          event.currentTarget.style.backgroundColor = '';
-          event.currentTarget.style.color = '#ff2000';
-        }}
+        className={page === 0 ? disabledButtonClass : activeButtonClass}
         aria-label="First page"
+        title="Go to first page"
       >
-        {'<<'}
+        ⟨⟨
       </button>
       <button
         type="button"
         onClick={onPrevious}
         disabled={page === 0}
-        className="inline-flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-        style={{ color: '#ff2000' }}
-        onMouseEnter={(event) => {
-          if (!event.currentTarget.disabled) {
-            event.currentTarget.style.backgroundColor = '#ff2000';
-            event.currentTarget.style.color = '#ffffff';
-          }
-        }}
-        onMouseLeave={(event) => {
-          event.currentTarget.style.backgroundColor = '';
-          event.currentTarget.style.color = '#ff2000';
-        }}
+        className={page === 0 ? disabledButtonClass : activeButtonClass}
         aria-label="Previous articles"
+        title="Previous page"
       >
-        {'<'}
+        ⟨
       </button>
-      <span className="text-xs text-neutral-500 dark:text-neutral-400 min-w-14 text-center">
-        {page + 1}/{totalPages}
+      <span className="px-3 py-2 text-xs font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-800 rounded-md min-w-12 text-center">
+        <span className="font-bold text-red-600 dark:text-red-400">{page + 1}</span>
+        <span className="text-neutral-500 dark:text-neutral-500">/{totalPages}</span>
       </span>
       <button
         type="button"
         onClick={onNext}
         disabled={page >= totalPages - 1}
-        className="inline-flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-        style={{ color: '#ff2000' }}
-        onMouseEnter={(event) => {
-          if (!event.currentTarget.disabled) {
-            event.currentTarget.style.backgroundColor = '#ff2000';
-            event.currentTarget.style.color = '#ffffff';
-          }
-        }}
-        onMouseLeave={(event) => {
-          event.currentTarget.style.backgroundColor = '';
-          event.currentTarget.style.color = '#ff2000';
-        }}
+        className={page >= totalPages - 1 ? disabledButtonClass : activeButtonClass}
         aria-label="Next articles"
+        title="Next page"
       >
-        {'>'}
+        ⟩
       </button>
       <button
         type="button"
         onClick={onLast}
         disabled={page >= totalPages - 1}
-        className="inline-flex h-10 min-w-10 sm:h-8 sm:min-w-8 px-1 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-        style={{ color: '#ff2000' }}
-        onMouseEnter={(event) => {
-          if (!event.currentTarget.disabled) {
-            event.currentTarget.style.backgroundColor = '#ff2000';
-            event.currentTarget.style.color = '#ffffff';
-          }
-        }}
-        onMouseLeave={(event) => {
-          event.currentTarget.style.backgroundColor = '';
-          event.currentTarget.style.color = '#ff2000';
-        }}
+        className={page >= totalPages - 1 ? disabledButtonClass : activeButtonClass}
         aria-label="Last page"
+        title="Go to last page"
       >
-        {'>>'}
+        ⟩⟩
       </button>
     </div>
   );
