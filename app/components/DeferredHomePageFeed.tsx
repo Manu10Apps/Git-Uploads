@@ -23,7 +23,7 @@ export function DeferredHomePageFeed({ articles = [], mostViewed = [] }: Deferre
     // Load articles on client side
     async function fetchData() {
       try {
-        const response = await fetch('/api/articles?limit=24');
+        const response = await fetch('/api/articles');
         const data = await response.json();
         const allArticles = data.data || [];
         setLoadedArticles(allArticles);
