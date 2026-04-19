@@ -24,8 +24,9 @@ type HomePageFeedProps = {
   mostViewed: HomepageArticle[];
 };
 
-const LATEST_PAGE_SIZE = 6;
+const LATEST_PAGE_SIZE = 4;
 const MOST_VIEWED_PAGE_SIZE = 3;
+const OLD_NEWS_PAGE_SIZE = 4;
 
 function getPageItems<T>(items: T[], page: number, pageSize: number) {
   const start = page * pageSize;
@@ -143,18 +144,25 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
   const t = getTranslation(language);
   const [latestPage, setLatestPage] = React.useState(0);
   const [mostViewedPage, setMostViewedPage] = React.useState(0);
+  const [oldNewsPage, setOldNewsPage] = React.useState(0);
   const [youtubeVideos, setYouTubeVideos] = React.useState<YouTubeVideo[]>([]);
   const [youtubeLoading, setYouTubeLoading] = React.useState(true);
   const [translations, setTranslations] = React.useState<TranslationMap>({});
 
-  const latestTotalPages = Math.max(1, Math.ceil(articles.length / LATEST_PAGE_SIZE));
-  const mostViewedTotalPages = Math.max(1, Math.ceil(mostViewed.length / MOST_VIEWED_PAGE_SIZE));
-  const latestPageArticles = getPageItems(articles, latestPage, LATEST_PAGE_SIZE);
-  const mostViewedPageArticles = getPageItems(mostViewed, mostViewedPage, MOST_VIEWED_PAGE_SIZE);
+  const latestTotalPages = articles?.length ? Math.max(1, Math.ceil(articles.length / LATEST_PAGE_SIZE)) : 1;
+  const mostViewedTotalPages = mostViewed?.length ? Math.max(1, Math.ceil(mostViewed.length / MOST_VIEWED_PAGE_SIZE)) : 1;
+  const latestPageArticles = articles ? getPageItems(articles, latestPage, LATEST_PAGE_SIZE) : [];
+  const mostViewedPageArticles = mostViewed ? getPageItems(mostViewed, mostViewedPage, MOST_VIEWED_PAGE_SIZE) : [];
+
+  // Old news: all articles minus the 6 latest
+  const oldNewsArticles = articles && articles.length > LATEST_PAGE_SIZE ? articles.slice(LATEST_PAGE_SIZE) : [];
+  const oldNewsTotalPages = oldNewsArticles.length ? Math.max(1, Math.ceil(oldNewsArticles.length / OLD_NEWS_PAGE_SIZE)) : 1;
+  const oldNewsPageArticles = getPageItems(oldNewsArticles, oldNewsPage, OLD_NEWS_PAGE_SIZE);
 
   React.useEffect(() => {
     setLatestPage(0);
     setMostViewedPage(0);
+    setOldNewsPage(0);
   }, [articles.length, mostViewed.length]);
 
   React.useEffect(() => {
@@ -408,32 +416,103 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="mt-8 border-t border-neutral-200 dark:border-neutral-800 pt-6">
-            <div className="mb-4 flex flex-wrap items-center justify-center gap-3 lg:justify-between">
-              <div className="imv-header-nav">
-                <div className="imv-header-nav-title">
-                  {t.home.latestVideos}
-                  <span className="a1" />
-                  <span className="a2" />
-                  <span className="a3" />
-                  <span className="a4" />
+      {/* Old News Section */}
+      {oldNewsArticles.length > 0 && (
+        <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-4 flex flex-col items-center justify-center gap-3 lg:min-h-10 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+              <div className="text-center lg:text-left">
+                <div className="imv-header-nav mb-2">
+                  <div className="imv-header-nav-title">
+                    {t.home.oldNews}
+                    <span className="a1" />
+                    <span className="a2" />
+                    <span className="a3" />
+                    <span className="a4" />
+                  </div>
                 </div>
               </div>
+              <PagerControls
+                page={oldNewsPage}
+                totalPages={oldNewsTotalPages}
+                onFirst={() => setOldNewsPage(0)}
+                onPrevious={() => setOldNewsPage((prev) => Math.max(0, prev - 1))}
+                onNext={() => setOldNewsPage((prev) => Math.min(oldNewsTotalPages - 1, prev + 1))}
+                onLast={() => setOldNewsPage(Math.max(0, oldNewsTotalPages - 1))}
+                label="Old news section pagination"
+              />
             </div>
 
-            {youtubeLoading ? (
-              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                {Array.from({ length: 4 }, (_, index) => (
-                  <div key={`youtube-skeleton-${index}`} className="animate-pulse">
-                    <div className="aspect-video rounded-lg bg-neutral-200 dark:bg-neutral-800" />
-                    <div className="mt-3 h-4 rounded bg-neutral-200 dark:bg-neutral-800" />
-                    <div className="mt-2 h-3 w-1/2 rounded bg-neutral-200 dark:bg-neutral-800" />
-                  </div>
+            {oldNewsPageArticles.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                {oldNewsPageArticles.map((article) => (
+                  <article
+                    key={article.id}
+                    className="group border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden bg-white dark:bg-neutral-800 hover:shadow-lg transition-all duration-300"
+                  >
+                    <Link href={`/article/${article.slug}`}>
+                      <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-700 h-48 cursor-pointer">
+                        <ArticleImage
+                          src={article.image}
+                          alt={getTitle(article)}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    </Link>
+                    <div className="p-4">
+                      <div className="text-red-600 dark:text-red-500 text-xs font-semibold tracking-widest mb-2 uppercase">
+                        {getCategoryLabel(article.category)}
+                      </div>
+                      <h3 className="text-sm font-serif font-bold text-neutral-900 dark:text-white mb-2 line-clamp-2">
+                        <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
+                          {getTitle(article)}
+                        </Link>
+                      </h3>
+                      <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-3 line-clamp-2">
+                        {getExcerpt(article)}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
+                        <span>{article.publishedAt}</span>
+                      </div>
+                    </div>
+                  </article>
                 ))}
               </div>
-            ) : youtubeVideos.length > 0 ? (
-              <div className="grid grid-cols-1 min-[400px]:grid-cols-2 md:grid-cols-4 gap-4">
+            ) : null}
+          </div>
+        </section>
+      )}
+
+      {/* Latest Videos Section */}
+      <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-4 flex flex-wrap items-center justify-center gap-3 lg:justify-between">
+            <div className="imv-header-nav">
+              <div className="imv-header-nav-title">
+                {t.home.latestVideos}
+                <span className="a1" />
+                <span className="a2" />
+                <span className="a3" />
+                <span className="a4" />
+              </div>
+            </div>
+          </div>
+
+          {youtubeLoading ? (
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }, (_, index) => (
+                <div key={`youtube-skeleton-${index}`} className="animate-pulse">
+                  <div className="aspect-video rounded-lg bg-neutral-200 dark:bg-neutral-800" />
+                  <div className="mt-3 h-4 rounded bg-neutral-200 dark:bg-neutral-800" />
+                  <div className="mt-2 h-3 w-1/2 rounded bg-neutral-200 dark:bg-neutral-800" />
+                </div>
+              ))}
+            </div>
+          ) : youtubeVideos.length > 0 ? (
+            <div className="grid grid-cols-1 min-[400px]:grid-cols-2 md:grid-cols-4 gap-4">
                 {youtubeVideos.map((video) => (
                   <a
                     key={video.id}
@@ -515,12 +594,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 ))}
               </div>
             ) : (
-              <div className="rounded-lg border border-neutral-200 bg-white p-4 text-sm text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
-                {t.home.noVideos}
-              </div>
-            )}
+            <div className="rounded-lg border border-neutral-200 bg-white p-4 text-sm text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+              {t.home.noVideos}
+            </div>
+          )}
           </div>
-        </div>
       </section>
     </>
   );
