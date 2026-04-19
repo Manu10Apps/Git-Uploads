@@ -71,7 +71,53 @@ const getHomepageArticles = unstable_cache(
     }
   },
   ['homepage-articles'],
-  { revalidate: 60, tags: ['articles'] },
+  { revalidate: 10, tags: ['articles'] }, // Reduced from 60s to 10s for faster updates
+);
+
+const getFeaturedArticles = unstable_cache(
+  async (): Promise<HomepageArticle[]> => {
+    try {
+      const now = new Date();
+      const articles = await prisma.article.findMany({
+        where: {
+          status: 'published',
+          publishedAt: { lte: now },
+        },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          image: true,
+          author: true,
+          publishedAt: true,
+          readTime: true,
+          featured: true,
+          category: { select: { slug: true } },
+        },
+        orderBy: { publishedAt: 'desc' },
+        take: 5, // Only load featured articles for initial render
+      });
+      return articles.map((a) => ({
+        id: a.id,
+        title: a.title,
+        slug: a.slug,
+        excerpt: a.excerpt,
+        image: resolveArticleImage(a.image, ''),
+        category: a.category.slug,
+        author: a.author,
+        publishedAt: a.publishedAt?.toLocaleDateString(),
+        publishedAtRaw: a.publishedAt?.toISOString(),
+        readTime: a.readTime,
+        featured: a.featured,
+        views: 0,
+      }));
+    } catch {
+      return [];
+    }
+  },
+  ['homepage-featured-articles'],
+  { revalidate: 10, tags: ['articles'] },
 );
 
 const getHomepageAdverts = unstable_cache(
@@ -97,12 +143,20 @@ const getHomepageAdverts = unstable_cache(
     }
   },
   ['homepage-adverts'],
-  { revalidate: 300, tags: ['adverts'] },
+  { revalidate: 60, tags: ['adverts'] },
 );
 
 export async function getHomepageData() {
   const [articles, adverts] = await Promise.all([
     getHomepageArticles(),
+    getHomepageAdverts(),
+  ]);
+  return { articles, adverts };
+}
+
+export async function getFeaturedHomepageData() {
+  const [articles, adverts] = await Promise.all([
+    getFeaturedArticles(),
     getHomepageAdverts(),
   ]);
   return { articles, adverts };
