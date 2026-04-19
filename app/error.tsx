@@ -17,9 +17,8 @@ export default function Error({
   }, [error]);
 
   return (
-    <html>
-      <body>
-        <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950 px-4">
+    <>
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950 px-4">
           <div className="max-w-md w-full text-center">
             <div className="mb-8">
               <AlertCircle className="w-20 h-20 mx-auto text-red-600 dark:text-red-500 mb-4" />
@@ -61,7 +60,6 @@ export default function Error({
             </div>
           </div>
         </div>
-      </body>
-    </html>
+      </>
   );
 }
