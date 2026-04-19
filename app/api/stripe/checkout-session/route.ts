@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Lazy-load Stripe inside the handler to avoid module-level env variable issues
-    const Stripe = require('stripe');
+    const Stripe = (await import('stripe')).default;
     const stripe = new Stripe(stripeApiKey);
 
     // Create checkout session with dynamic pricing

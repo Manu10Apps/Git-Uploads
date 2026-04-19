@@ -425,7 +425,10 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
         const response = await fetch('/api/adverts');
         const data = await response.json();
         setAdverts(data.data || []);
-      } catch {}
+      } catch (error) {
+        // Failed to fetch adverts
+        console.error('Failed to fetch adverts:', error);
+      }
     };
     fetchAdverts();
   }, []);

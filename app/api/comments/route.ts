@@ -160,7 +160,7 @@ export async function POST(req: NextRequest) {
   if (trimmedName.length < 3 || trimmedName.length > 50) {
     return NextResponse.json({ error: 'Izina rigomba kuba intera 3-50' }, { status: 400 });
   }
-  if (!/^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/i.test(trimmedEmail)) {
+  if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(trimmedEmail)) {
     return NextResponse.json({ error: 'Imeli si yo' }, { status: 400 });
   }
   if (trimmedComment.length < 5 || trimmedComment.length > 2000) {

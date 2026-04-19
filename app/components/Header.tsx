@@ -77,7 +77,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-        <div className="relative flex items-center justify-between h-24 sm:h-20">
+        <div className="relative flex items-center justify-between h-20 sm:h-24">
           {/* Mobile Menu Button (left side) */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -134,7 +134,7 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1" style={{ marginLeft: '138px' }}>
+          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 lg:ml-8 xl:ml-12">
             {visibleItems.map((item) => {
               const parts = item.key.split('.');
               const label = (t as any)[parts[0]]?.[parts[1]] || item.key;

@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Lookup user
-    let user = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
       select: {
         id: true,

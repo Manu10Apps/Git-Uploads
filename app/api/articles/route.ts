@@ -213,7 +213,7 @@ function generateUniqueSlug(title: string, usedSlugs: Set<string>) {
   const baseSlug = title
     .toLowerCase()
     .replace(/\s+/g, '-')
-    .replace(/[^\w\-]/g, '')
+    .replace(/[^\w-]/g, '')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '') || `article-${Date.now()}`;
 
@@ -254,7 +254,7 @@ export async function GET(request: NextRequest) {
 
     const now = new Date();
 
-    let where: any = {};
+    const where: any = {};
 
     if (!includeAll) {
       where.status = 'published';
@@ -671,7 +671,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate slug
-    const slug = (title).toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]/g, '');
+    const slug = (title).toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
 
     const article = await prisma.article.create({
       data: {

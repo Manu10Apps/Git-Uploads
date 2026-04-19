@@ -18,7 +18,9 @@ function extractYouTubeId(url: string): string | null {
     if ((u.hostname === 'www.youtube.com' || u.hostname === 'youtube.com') && u.searchParams.get('v')) {
       return u.searchParams.get('v');
     }
-  } catch {}
+  } catch (e) {
+    // Invalid URL
+  }
   return null;
 }
 
@@ -28,7 +30,7 @@ function YouTubeThumbnail({ url, videoId }: { url: string; videoId: string }) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group block relative rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 my-4 max-w-2xl"
+      className="group block relative rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 my-4 max-w-full sm:max-w-2xl"
     >
       <img
         src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
@@ -63,7 +65,7 @@ export function ArticleContent({ content }: ArticleContentProps) {
   if (looksLikeHtml(content)) {
     return (
       <div
-        className="text-sm sm:text-base text-neutral-700 dark:text-neutral-300 leading-relaxed text-justify [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mb-4 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mb-4 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mb-3 [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_blockquote]:border-l-4 [&_blockquote]:border-red-600 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_a]:text-red-700 [&_a]:underline dark:[&_a]:text-red-500"
+        className="text-sm sm:text-base text-neutral-700 dark:text-neutral-300 leading-relaxed text-justify [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mb-4 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mb-4 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mb-3 [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_blockquote]:border-l-4 [&_blockquote]:border-red-600 [&_blockquote]:pl-2 [&_blockquote]:sm:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_a]:text-red-700 [&_a]:underline dark:[&_a]:text-red-500"
         dangerouslySetInnerHTML={{ __html: transformYouTubeLinksInHtml(content) }}
       />
     );
@@ -82,7 +84,7 @@ export function ArticleContent({ content }: ArticleContentProps) {
           ul: ({ children }) => <ul className="mb-4 list-disc pl-6">{children}</ul>,
           ol: ({ children }) => <ol className="mb-4 list-decimal pl-6">{children}</ol>,
           li: ({ children }) => <li className="mb-1">{children}</li>,
-          blockquote: ({ children }) => <blockquote className="my-4 border-l-4 border-red-600 pl-4 italic">{children}</blockquote>,
+          blockquote: ({ children }) => <blockquote className="my-4 border-l-4 border-red-600 pl-2 sm:pl-4 italic">{children}</blockquote>,
           a: ({ href, children }) => {
             const videoId = href ? extractYouTubeId(href) : null;
             if (videoId && href) {
