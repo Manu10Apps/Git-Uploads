@@ -45,7 +45,7 @@ export default function CategoryPage({ params: paramsPromise }: { params: Promis
 
   // Sort articles when sort option changes
   useEffect(() => {
-    let sorted = [...allArticles];
+    const sorted = [...allArticles];
     
     switch (sortOption) {
       case 'latest':

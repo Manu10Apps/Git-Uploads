@@ -142,7 +142,7 @@ export function NewsCard({
           />
 
           {/* Badge */}
-          <div className="absolute top-2 sm:top-4 left-2 sm:left-4">
+          <div className="absolute top-2 sm:top-3 md:top-4 left-2 sm:left-3 md:left-4">
             <span
               className={`inline-flex px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
                 categoryColors[category] ||
@@ -155,7 +155,7 @@ export function NewsCard({
 
           {/* Breaking Badge */}
           {featured && (
-            <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
+            <div className="absolute top-2 sm:top-3 md:top-4 right-2 sm:right-3 md:right-4">
               <span className="inline-flex px-2 sm:px-3 py-1 rounded-full text-xs font-bold bg-red-500 text-white animate-pulse">
                 {t.home.breakingNews}
               </span>
@@ -189,7 +189,7 @@ export function NewsCard({
               e.stopPropagation();
               setIsSaved(!isSaved);
             }}
-            className="p-2 sm:p-2.5 hover:bg-white/50 dark:hover:bg-neutral-700/50 rounded transition-colors"
+            className="p-3 sm:p-2.5 hover:bg-white/50 dark:hover:bg-neutral-700/50 rounded transition-colors"
             aria-label={t.article.bookmark}
             title="Save article"
           >
@@ -204,7 +204,7 @@ export function NewsCard({
                 e.stopPropagation();
                 handleShare();
               }}
-              className="p-2 sm:p-2.5 hover:bg-white/50 dark:hover:bg-neutral-700/50 rounded transition-colors"
+              className="p-3 sm:p-3 md:p-2.5 hover:bg-white/50 dark:hover:bg-neutral-700/50 rounded transition-colors"
               aria-label="Share article"
               title="Share"
             >

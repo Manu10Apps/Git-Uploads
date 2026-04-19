@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-
-// Use dynamic import for ua-parser-js (works with both ESM and CommonJS)
-const UAParserModule = require('ua-parser-js');
+import * as UAParserModule from 'ua-parser-js';
 
 // IP to Geolocation (free service - optional)
 const getGeolocation = async (ip: string) => {

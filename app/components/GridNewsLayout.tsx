@@ -106,7 +106,7 @@ export function GridNewsLayout({ articles }: GridNewsLayoutProps) {
               
               {/* FEATURED ARTICLE - Full Width */}
               <article 
-                className="article-card article-card__featured article-card--type-featured u-clickable-card article-card--with-image group relative overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 h-96 md:h-[500px] bg-neutral-100 dark:bg-neutral-800 cursor-pointer"
+                className="article-card article-card__featured article-card--type-featured u-clickable-card article-card--with-image group relative overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 aspect-video md:h-[500px] bg-neutral-100 dark:bg-neutral-800 cursor-pointer"
               >
                 <Link href={`/article/${featuredArticle.slug}`} className="u-clickable-card__link block w-full h-full">
                   <div className="article-card__image-wrap article-card__featured-image relative w-full h-full" tabIndex={-1} aria-hidden="true">
@@ -165,7 +165,7 @@ export function GridNewsLayout({ articles }: GridNewsLayoutProps) {
 
               {/* SECONDARY & SIDEBAR SECTION */}
               {secondaryArticle && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mt-8 md:mt-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mt-8 md:mt-12">
                   
                   {/* Secondary Large Article */}
                   <article className="md:col-span-2 article-card article-card--large article-card--type-post u-clickable-card article-card--with-image group cursor-pointer">
