@@ -360,11 +360,18 @@ export async function getLiveYouTubeVideoUrl(): Promise<string | null> {
     console.log('[LIVE] YouTube videos fetched:', videos.length, 'videos');
     console.log('[LIVE] Video details:', videos.map((v) => ({ title: v.title, publishedAt: v.publishedAt })));
 
+    // First, try to find a video explicitly marked as live
     const liveVideo = videos.find((video) => video.publishedAt?.startsWith('[LIVE]'));
 
     if (liveVideo?.url) {
       console.log('[LIVE] Found live video:', liveVideo.title, '- URL:', liveVideo.url);
       return liveVideo.url;
+    }
+
+    // If no explicit live video, return the most recent video
+    if (videos.length > 0 && videos[0]?.url) {
+      console.log('[LIVE] No explicitly marked live videos. Using most recent video:', videos[0].title);
+      return videos[0].url;
     }
 
     console.log('[LIVE] No live videos found');
