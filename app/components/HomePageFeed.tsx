@@ -24,7 +24,7 @@ type HomePageFeedProps = {
   mostViewed: HomepageArticle[];
 };
 
-const LATEST_PAGE_SIZE = 4;
+const LATEST_PAGE_SIZE = 6;
 const MOST_VIEWED_PAGE_SIZE = 3;
 const OLD_NEWS_PAGE_SIZE = 4;
 
@@ -149,10 +149,12 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
   const [youtubeLoading, setYouTubeLoading] = React.useState(true);
   const [translations, setTranslations] = React.useState<TranslationMap>({});
 
-  const latestTotalPages = articles?.length ? Math.max(1, Math.ceil(articles.length / LATEST_PAGE_SIZE)) : 1;
-  const mostViewedTotalPages = mostViewed?.length ? Math.max(1, Math.ceil(mostViewed.length / MOST_VIEWED_PAGE_SIZE)) : 1;
-  const latestPageArticles = articles ? getPageItems(articles, latestPage, LATEST_PAGE_SIZE) : [];
-  const mostViewedPageArticles = mostViewed ? getPageItems(mostViewed, mostViewedPage, MOST_VIEWED_PAGE_SIZE) : [];
+  const latestLimited = articles ? articles.slice(0, 6) : [];
+  const latestTotalPages = latestLimited.length ? Math.max(1, Math.ceil(latestLimited.length / LATEST_PAGE_SIZE)) : 1;
+  const mostViewedLimited = mostViewed ? mostViewed.slice(0, 10) : [];
+  const mostViewedTotalPages = mostViewedLimited.length ? Math.max(1, Math.ceil(mostViewedLimited.length / MOST_VIEWED_PAGE_SIZE)) : 1;
+  const latestPageArticles = getPageItems(latestLimited, latestPage, LATEST_PAGE_SIZE);
+  const mostViewedPageArticles = getPageItems(mostViewedLimited, mostViewedPage, MOST_VIEWED_PAGE_SIZE);
 
   // Old news: all articles minus the 6 latest
   const oldNewsArticles = articles && articles.length > LATEST_PAGE_SIZE ? articles.slice(LATEST_PAGE_SIZE) : [];
@@ -280,15 +282,17 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 </div>
               </div>
             </div>
-            <PagerControls
-              page={latestPage}
-              totalPages={latestTotalPages}
-              onFirst={() => setLatestPage(0)}
-              onPrevious={() => setLatestPage((prev) => Math.max(0, prev - 1))}
-              onNext={() => setLatestPage((prev) => Math.min(latestTotalPages - 1, prev + 1))}
-              onLast={() => setLatestPage(Math.max(0, latestTotalPages - 1))}
-              label="Latest section pagination"
-            />
+            {latestTotalPages > 1 && (
+              <PagerControls
+                page={latestPage}
+                totalPages={latestTotalPages}
+                onFirst={() => setLatestPage(0)}
+                onPrevious={() => setLatestPage((prev) => Math.max(0, prev - 1))}
+                onNext={() => setLatestPage((prev) => Math.min(latestTotalPages - 1, prev + 1))}
+                onLast={() => setLatestPage(Math.max(0, latestTotalPages - 1))}
+                label="Latest section pagination"
+              />
+            )}
           </div>
 
           {latestPageArticles.length > 0 ? (
@@ -348,15 +352,17 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 </div>
               </div>
             </div>
-            <PagerControls
-              page={mostViewedPage}
-              totalPages={mostViewedTotalPages}
-              onFirst={() => setMostViewedPage(0)}
-              onPrevious={() => setMostViewedPage((prev) => Math.max(0, prev - 1))}
-              onNext={() => setMostViewedPage((prev) => Math.min(mostViewedTotalPages - 1, prev + 1))}
-              onLast={() => setMostViewedPage(Math.max(0, mostViewedTotalPages - 1))}
-              label="Most viewed section pagination"
-            />
+            {mostViewedTotalPages > 1 && (
+              <PagerControls
+                page={mostViewedPage}
+                totalPages={mostViewedTotalPages}
+                onFirst={() => setMostViewedPage(0)}
+                onPrevious={() => setMostViewedPage((prev) => Math.max(0, prev - 1))}
+                onNext={() => setMostViewedPage((prev) => Math.min(mostViewedTotalPages - 1, prev + 1))}
+                onLast={() => setMostViewedPage(Math.max(0, mostViewedTotalPages - 1))}
+                label="Most viewed section pagination"
+              />
+            )}
           </div>
 
           {mostViewedPageArticles.length > 0 ? (
@@ -435,15 +441,17 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   </div>
                 </div>
               </div>
-              <PagerControls
-                page={oldNewsPage}
-                totalPages={oldNewsTotalPages}
-                onFirst={() => setOldNewsPage(0)}
-                onPrevious={() => setOldNewsPage((prev) => Math.max(0, prev - 1))}
-                onNext={() => setOldNewsPage((prev) => Math.min(oldNewsTotalPages - 1, prev + 1))}
-                onLast={() => setOldNewsPage(Math.max(0, oldNewsTotalPages - 1))}
-                label="Old news section pagination"
-              />
+              {oldNewsTotalPages > 1 && (
+                <PagerControls
+                  page={oldNewsPage}
+                  totalPages={oldNewsTotalPages}
+                  onFirst={() => setOldNewsPage(0)}
+                  onPrevious={() => setOldNewsPage((prev) => Math.max(0, prev - 1))}
+                  onNext={() => setOldNewsPage((prev) => Math.min(oldNewsTotalPages - 1, prev + 1))}
+                  onLast={() => setOldNewsPage(Math.max(0, oldNewsTotalPages - 1))}
+                  label="Old news section pagination"
+                />
+              )}
             </div>
 
             {oldNewsPageArticles.length > 0 ? (
