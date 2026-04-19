@@ -25,7 +25,7 @@ export function DeferredHomePageFeed({ articles = [], mostViewed = [] }: Deferre
       try {
         const response = await fetch('/api/articles?limit=24');
         const data = await response.json();
-        const allArticles = data.articles || [];
+        const allArticles = data.data || [];
         setLoadedArticles(allArticles);
         setLoadedMostViewed(
           [...allArticles].sort((a: any, b: any) => (b.views || 0) - (a.views || 0))

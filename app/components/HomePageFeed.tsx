@@ -55,7 +55,18 @@ function PagerControls({
         type="button"
         onClick={onFirst}
         disabled={page === 0}
-        className="inline-flex h-10 min-w-10 sm:h-11 sm:min-w-11 md:h-10 md:min-w-10 px-1 items-center justify-center rounded shadow font-bold transition-colors text-red-500 hover:bg-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-red-500"
+        className="inline-flex h-10 min-w-10 sm:h-8 sm:min-w-8 px-1 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+        style={{ color: '#ff2000' }}
+        onMouseEnter={(event) => {
+          if (!event.currentTarget.disabled) {
+            event.currentTarget.style.backgroundColor = '#ff2000';
+            event.currentTarget.style.color = '#ffffff';
+          }
+        }}
+        onMouseLeave={(event) => {
+          event.currentTarget.style.backgroundColor = '';
+          event.currentTarget.style.color = '#ff2000';
+        }}
         aria-label="First page"
       >
         {'<<'}
@@ -64,7 +75,18 @@ function PagerControls({
         type="button"
         onClick={onPrevious}
         disabled={page === 0}
-        className="inline-flex h-10 min-w-10 sm:h-11 sm:min-w-11 md:h-10 md:min-w-10 items-center justify-center rounded shadow font-bold transition-colors text-red-500 hover:bg-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-red-500"
+        className="inline-flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+        style={{ color: '#ff2000' }}
+        onMouseEnter={(event) => {
+          if (!event.currentTarget.disabled) {
+            event.currentTarget.style.backgroundColor = '#ff2000';
+            event.currentTarget.style.color = '#ffffff';
+          }
+        }}
+        onMouseLeave={(event) => {
+          event.currentTarget.style.backgroundColor = '';
+          event.currentTarget.style.color = '#ff2000';
+        }}
         aria-label="Previous articles"
       >
         {'<'}
@@ -76,7 +98,18 @@ function PagerControls({
         type="button"
         onClick={onNext}
         disabled={page >= totalPages - 1}
-        className="inline-flex h-10 min-w-10 sm:h-11 sm:min-w-11 md:h-10 md:min-w-10 items-center justify-center rounded shadow font-bold transition-colors text-red-500 hover:bg-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-red-500"
+        className="inline-flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+        style={{ color: '#ff2000' }}
+        onMouseEnter={(event) => {
+          if (!event.currentTarget.disabled) {
+            event.currentTarget.style.backgroundColor = '#ff2000';
+            event.currentTarget.style.color = '#ffffff';
+          }
+        }}
+        onMouseLeave={(event) => {
+          event.currentTarget.style.backgroundColor = '';
+          event.currentTarget.style.color = '#ff2000';
+        }}
         aria-label="Next articles"
       >
         {'>'}
@@ -85,7 +118,18 @@ function PagerControls({
         type="button"
         onClick={onLast}
         disabled={page >= totalPages - 1}
-        className="inline-flex h-10 min-w-10 sm:h-11 sm:min-w-11 md:h-10 md:min-w-10 px-1 items-center justify-center rounded shadow font-bold transition-colors text-red-500 hover:bg-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-red-500"
+        className="inline-flex h-10 min-w-10 sm:h-8 sm:min-w-8 px-1 items-center justify-center rounded shadow font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+        style={{ color: '#ff2000' }}
+        onMouseEnter={(event) => {
+          if (!event.currentTarget.disabled) {
+            event.currentTarget.style.backgroundColor = '#ff2000';
+            event.currentTarget.style.color = '#ffffff';
+          }
+        }}
+        onMouseLeave={(event) => {
+          event.currentTarget.style.backgroundColor = '';
+          event.currentTarget.style.color = '#ff2000';
+        }}
         aria-label="Last page"
       >
         {'>>'}

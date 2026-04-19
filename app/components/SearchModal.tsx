@@ -136,7 +136,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       >
         <div className="w-full max-w-2xl mx-4 bg-white dark:bg-neutral-900 rounded-lg shadow-lg">
           {/* Header */}
-          <div className="flex items-center justify-between p-3 sm:p-4 md:p-6 border-b border-neutral-200 dark:border-neutral-800">
+          <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
             <h2
               id="search-modal-title"
               className="text-lg font-semibold text-neutral-900 dark:text-white"
@@ -154,7 +154,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           </div>
 
           {/* Search Form */}
-          <form onSubmit={handleSearch} className="p-3 sm:p-4 md:p-6">
+          <form onSubmit={handleSearch} className="p-6">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-5 h-5" aria-hidden="true" />
               <input
@@ -185,7 +185,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     Ibyo ushaka ntibibashije kuboneka
                   </div>
                 ) : (
-                  <ul className="max-h-48 sm:max-h-64 overflow-y-auto">
+                  <ul className="max-h-64 overflow-y-auto">
                     {relatedResults.map((result) => (
                       <li key={result.id}>
                         <button
