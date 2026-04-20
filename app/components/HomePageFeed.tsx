@@ -25,7 +25,6 @@ type HomePageFeedProps = {
 };
 
 
-<<<<<<< Updated upstream
 function getPageItems<T>(items: T[], page: number, pageSize: number) {
   const start = page * pageSize;
   return items.slice(start, start + pageSize);
@@ -92,8 +91,6 @@ function PagerControls({
     </div>
   );
 }
-=======
->>>>>>> Stashed changes
 
 export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
   const language = useAppStore((s) => s.language);
