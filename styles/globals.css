@@ -608,6 +608,147 @@ button:disabled {
   animation: expandBar 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
+/* Branded Bar with Red Left Indicator */
+.branded--bar {
+  position: relative;
+  margin: 0;
+  padding: 0 0 0 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  color: #1a1a1a;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  font-family: var(--font-roboto-condensed), 'Arial Narrow', Arial, sans-serif;
+}
+
+.dark .branded--bar {
+  color: #f5f5f5;
+}
+
+/* Red bar before text */
+.branded--bar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #e2001a 0%, #c41016 50%, #d41018 100%);
+  border-radius: 2px;
+  animation: slideInVertical 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes slideInVertical {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: 100%;
+    opacity: 1;
+  }
+}
+
+/* Collection title variants */
+.collection-title--plain {
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.collection-title--small {
+  font-size: clamp(0.95rem, 2vw, 1.25rem);
+  letter-spacing: 0.05em;
+}
+
+/* Branded Bar with Point Marker (using ::after) - Enhanced Effects */
+.branded--bar-underline {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  color: #1a1a1a;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  font-family: var(--font-roboto-condensed), 'Arial Narrow', Arial, sans-serif;
+  text-shadow: 0 3px 12px rgba(226, 0, 26, 0.25);
+}
+
+.dark .branded--bar-underline {
+  color: #f5f5f5;
+  text-shadow: 0 2px 12px rgba(226, 0, 26, 0.3);
+}
+
+.branded--bar-underline:hover {
+  transform: scale(1.08);
+  text-shadow: 0 5px 20px rgba(226, 0, 26, 0.4);
+}
+
+/* Red point marker with enhanced glow */
+.branded--bar-underline::after {
+  content: '•';
+  display: inline-block;
+  margin-left: 8px;
+  color: #e2001a;
+  font-size: 1.8em;
+  line-height: 0.8;
+  vertical-align: middle;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 0 6px rgba(226, 0, 26, 0.8));
+}
+
+.branded--bar-underline:hover::after {
+  font-size: 2.2em;
+  filter: drop-shadow(0 0 12px rgba(226, 0, 26, 1));
+  transform: scale(1.15);
+}
+
+/* Pulse fade-in animation for text */
+@keyframes pulseFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Bounce-in animation for point */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0) translateY(-10px);
+  }
+  50% {
+    transform: scale(1.2) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Continuous bounce on hover */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  25% {
+    transform: translateY(-6px) scale(1.1);
+  }
+  50% {
+    transform: translateY(0) scale(1);
+  }
+}
+
 .branded-collection-title--plain {
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -653,9 +794,9 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
   flex-wrap: wrap;
-  padding: 0.5rem;
+  padding: 0.25rem;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(226, 0, 26, 0.03));
   border-radius: 12px;
   border: 1px solid rgba(226, 0, 26, 0.1);
@@ -679,12 +820,12 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.5rem 1rem;
+  padding: 0.25rem 0.5rem;
   background: linear-gradient(135deg, rgba(226, 0, 26, 0.05), rgba(196, 16, 22, 0.03));
   border-radius: 8px;
   border: 1px solid rgba(226, 0, 26, 0.15);
   margin: 0 0.25rem;
-  font-size: 0.875rem;
+  font-size: 0.7rem;
   font-weight: 600;
   transition: all 0.3s ease;
   animation: fadeInScale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -694,6 +835,20 @@ button:disabled {
   background: linear-gradient(135deg, rgba(226, 0, 26, 0.1), rgba(196, 16, 22, 0.08));
   border-color: rgba(226, 0, 26, 0.25);
   transform: scale(1.05);
+}
+
+/* Reduce pagination button sizes */
+.modern-pagination button {
+  height: 1.75rem !important;
+  width: 1.75rem !important;
+  font-size: 0.65rem !important;
+}
+
+@media (max-width: 640px) {
+  .modern-pagination button {
+    height: 1.5rem !important;
+    width: 1.5rem !important;
+  }
 }
 
 .modern-page-number {

@@ -93,11 +93,9 @@ export function HomepageHero({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative grid grid-cols-1 gap-6 pb-10 md:grid-cols-4">
           <div className="absolute bottom-0 left-1/2 z-10 -translate-x-1/2 lg:left-auto lg:right-0 lg:translate-x-0">
-            <div className="modern-header-section shrink-0">
-              <h2 className="modern-header-title">
-                {t.home.featured}
-              </h2>
-            </div>
+            <h3 className="branded--bar-underline collection-title--plain collection-title--small" data-testid="branded-collection-title-bar">
+              {t.home.featured}
+            </h3>
           </div>
 
           <div className="md:col-span-2">
