@@ -50,12 +50,12 @@ function PagerControls({
   onLast: () => void;
   label: string;
 }) {
-  const buttonBaseClass = "flex items-center justify-center h-9 w-9 sm:h-8 sm:w-8 rounded-md font-semibold transition-all duration-200 text-sm";
-  const activeButtonClass = `${buttonBaseClass} bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900`;
-  const disabledButtonClass = `${buttonBaseClass} bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-600 cursor-not-allowed`;
+  const buttonBaseClass = "relative h-10 w-10 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg font-semibold transition-all duration-300 text-sm overflow-hidden group";
+  const activeButtonClass = `${buttonBaseClass} bg-gradient-to-br from-red-500 to-red-700 text-white shadow-md hover:shadow-lg hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 dark:focus:ring-offset-neutral-900`;
+  const disabledButtonClass = `${buttonBaseClass} bg-neutral-200 dark:bg-neutral-700 text-neutral-400 dark:text-neutral-500 cursor-not-allowed opacity-50`;
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-1 lg:justify-end" aria-label={label}>
+    <div className="modern-pagination" aria-label={label}>
       <button
         type="button"
         onClick={onFirst}
@@ -64,7 +64,7 @@ function PagerControls({
         aria-label="First page"
         title="Go to first page"
       >
-        ⟨⟨
+        <span className="relative z-10 leading-none">⟨⟨</span>
       </button>
       <button
         type="button"
@@ -74,12 +74,13 @@ function PagerControls({
         aria-label="Previous articles"
         title="Previous page"
       >
-        ⟨
+        <span className="relative z-10 leading-none">⟨</span>
       </button>
-      <span className="px-3 py-2 text-xs font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-800 rounded-md min-w-12 text-center">
-        <span className="font-bold text-red-600 dark:text-red-400">{page + 1}</span>
-        <span className="text-neutral-500 dark:text-neutral-500">/{totalPages}</span>
-      </span>
+      <div className="modern-page-indicator">
+        <span className="modern-page-number">{page + 1}</span>
+        <span className="modern-page-separator">/</span>
+        <span className="modern-page-total">{totalPages}</span>
+      </div>
       <button
         type="button"
         onClick={onNext}
@@ -88,7 +89,7 @@ function PagerControls({
         aria-label="Next articles"
         title="Next page"
       >
-        ⟩
+        <span className="relative z-10 leading-none">⟩</span>
       </button>
       <button
         type="button"
@@ -98,7 +99,7 @@ function PagerControls({
         aria-label="Last page"
         title="Go to last page"
       >
-        ⟩⟩
+        <span className="relative z-10 leading-none">⟩⟩</span>
       </button>
     </div>
   );
@@ -235,17 +236,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
     <>
       <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-4 flex flex-col items-center justify-center gap-3 lg:min-h-10 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
-            <div className="text-center lg:text-left">
-              <div className="imv-header-nav mb-2">
-                <div className="imv-header-nav-title">
-                  {t.home.latestArticles}
-                  <span className="a1" />
-                  <span className="a2" />
-                  <span className="a3" />
-                  <span className="a4" />
-                </div>
-              </div>
+          <div className="mb-6 flex flex-col items-center justify-center gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="modern-header-section">
+              <h2 className="modern-header-title">
+                {t.home.latestArticles}
+              </h2>
             </div>
             {latestTotalPages > 1 && (
               <PagerControls
@@ -305,17 +300,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
 
       <section className="py-8 bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-4 flex flex-col items-center justify-center gap-3 lg:min-h-10 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
-            <div className="text-center lg:text-left">
-              <div className="imv-header-nav mb-2">
-                <div className="imv-header-nav-title">
-                  {t.home.mostViewedArticles}
-                  <span className="a1" />
-                  <span className="a2" />
-                  <span className="a3" />
-                  <span className="a4" />
-                </div>
-              </div>
+          <div className="mb-6 flex flex-col items-center justify-center gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="modern-header-section">
+              <h2 className="modern-header-title">
+                {t.home.mostViewedArticles}
+              </h2>
             </div>
             {mostViewedTotalPages > 1 && (
               <PagerControls
@@ -394,17 +383,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
       {oldNewsArticles.length > 0 && (
         <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-4 flex flex-col items-center justify-center gap-3 lg:min-h-10 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
-              <div className="text-center lg:text-left">
-                <div className="imv-header-nav mb-2">
-                  <div className="imv-header-nav-title">
-                    {t.home.oldNews}
-                    <span className="a1" />
-                    <span className="a2" />
-                    <span className="a3" />
-                    <span className="a4" />
-                  </div>
-                </div>
+            <div className="mb-6 flex flex-col items-center justify-center gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="modern-header-section">
+                <h2 className="modern-header-title">
+                  {t.home.oldNews}
+                </h2>
               </div>
               {oldNewsTotalPages > 1 && (
                 <PagerControls
@@ -453,15 +436,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
       {/* Latest Videos Section */}
       <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-4 flex flex-wrap items-center justify-center gap-3 lg:justify-between">
-            <div className="imv-header-nav">
-              <div className="imv-header-nav-title">
+          <div className="mb-6 flex flex-col items-center justify-center gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="modern-header-section">
+              <h2 className="modern-header-title">
                 {t.home.latestVideos}
-                <span className="a1" />
-                <span className="a2" />
-                <span className="a3" />
-                <span className="a4" />
-              </div>
+              </h2>
             </div>
           </div>
 
