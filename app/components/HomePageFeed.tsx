@@ -427,6 +427,113 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
         </section>
       )}
 
+      {/* Sports Section */}
+      <section className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        {/* Featured Header with Background Image */}
+        <div className="relative w-[770px] h-[880px] overflow-hidden flex items-center justify-center group">
+          <div className="absolute w-[715px] h-[300px] opacity-85 bg-cover bg-center" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', marginLeft: '7px', marginTop: '40px', marginBottom: '120px', borderRadius: '10px'}}></div>
+          <div className="absolute bg-neutral-100 dark:bg-neutral-800 flex gap-3" style={{width: '630px', height: '385px', marginTop: '380px', marginLeft: '10px', marginBottom: '50px', borderRadius: '20px', padding: '8px'}}>
+            <div className="absolute z-10" style={{top: '5px', left: '10px', marginLeft: '-45px'}}>
+              <div className="mb-2 h-1 w-4 bg-[#f61f00] rounded-full shadow-md"></div>
+              <h2 className="text-3xl font-bold text-white tracking-widest drop-shadow-lg" style={{writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontFamily: 'Roboto Condensed', WebkitTextStroke: '1px black'}}>
+                {t.nav.sports || 'SIPORO'}
+              </h2>
+            </div>
+            {/* Left column: First 4 articles stacked vertically */}
+            <div className="flex flex-col gap-2 relative" style={{width: '305px', height: '319px', overflow: 'hidden'}}>
+              {/* Article 1 */}
+              <article className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '305px', height: '83px'}}>
+                <div className="gc__image-wrap flex-shrink-0" style={{width: '116px', height: '83px', overflow: 'hidden', borderRadius: '4px'}}>
+                  <ArticleImage
+                    src="/uploads/article-fallback.svg"
+                    alt="Several injured as fans clash with police in Paraguay's Superclasico match"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="gc__content flex-grow">
+                  <h3 className="gc__title text-xs font-bold leading-tight">
+                    <Link href="/sports/2026/4/20/several-injured-as-fans-clash-with-police-in-paraguays-superclasico-match" className="text-neutral-900 dark:text-white hover:text-blue-600 line-clamp-3">
+                      Several injured as fans clash with police in Paraguay&apos;s Superclasico match
+                    </Link>
+                  </h3>
+                </div>
+              </article>
+              {/* Article 2 */}
+              <article className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '305px', height: '83px'}}>
+                <div className="gc__image-wrap flex-shrink-0" style={{width: '116px', height: '83px', overflow: 'hidden', borderRadius: '4px'}}>
+                  <ArticleImage
+                    src="/uploads/article-fallback.svg"
+                    alt="Eight runners hospitalised after collapsing during South Korea marathon"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="gc__content flex-grow">
+                  <h3 className="gc__title text-xs font-bold leading-tight">
+                    <Link href="/sports/2026/4/20/eight-runners-hospitalised-after-collapsing-during-south-korea-marathon" className="text-neutral-900 dark:text-white hover:text-blue-600 line-clamp-3">
+                      Eight runners hospitalised after collapsing during South Korea marathon
+                    </Link>
+                  </h3>
+                </div>
+              </article>
+              {/* Article 3 */}
+              <article className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '305px', height: '83px'}}>
+                <div className="gc__image-wrap flex-shrink-0" style={{width: '116px', height: '83px', overflow: 'hidden', borderRadius: '4px'}}>
+                  <ArticleImage
+                    src="/uploads/article-fallback.svg"
+                    alt="Kane scores as Bayern Munich claim Bundesliga title with Stuttgart victory"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="gc__content flex-grow">
+                  <h3 className="gc__title text-xs font-bold leading-tight">
+                    <Link href="/sports/2026/4/20/kane-scores-as-bayern-munich-claim-bundesliga-title-with-stuttgart-victory" className="text-neutral-900 dark:text-white hover:text-blue-600 line-clamp-3">
+                      Kane scores as Bayern Munich claim Bundesliga title
+                    </Link>
+                  </h3>
+                </div>
+              </article>
+              {/* Article 4 */}
+              <article className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '305px', height: '83px'}}>
+                <div className="gc__image-wrap flex-shrink-0" style={{width: '116px', height: '83px', overflow: 'hidden', borderRadius: '4px'}}>
+                  <ArticleImage
+                    src="/uploads/article-fallback.svg"
+                    alt="Victor Wembanyama makes history as Spurs defeat Blazers in Game 1"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="gc__content flex-grow">
+                  <h3 className="gc__title text-xs font-bold leading-tight">
+                    <Link href="/sports/2026/4/20/wembanyama-makes-history-as-spurs-defeat-blazers-in-game-1" className="text-neutral-900 dark:text-white hover:text-blue-600 line-clamp-3">
+                      Wembanyama makes history as Spurs defeat Blazers in Game 1
+                    </Link>
+                  </h3>
+                </div>
+              </article>
+            </div>
+            {/* Right column: Last article */}
+            <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col flex-shrink-0" style={{width: '305px', height: '319px'}}>
+              <div className="gc__image-wrap flex-shrink-0" style={{width: '305px', height: '120px', overflow: 'hidden', borderRadius: '4px'}}>
+                <ArticleImage
+                  src="/uploads/article-fallback.svg"
+                  alt="Premier League: Man City beat Arsenal 2-1"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="gc__content p-2 flex-grow flex flex-col justify-between">
+                <h3 className="gc__title text-xs font-bold leading-tight">
+                  <Link href="/sports/2026/4/19/man-city-beat-arsenal-2-1-cut-premier-league-race-to-three-points" className="text-neutral-900 dark:text-white hover:text-blue-600 line-clamp-2">
+                    Premier League: Man City beat Arsenal 2-1
+                  </Link>
+                </h3>
+                <div className="gc__excerpt text-xs text-neutral-600 dark:text-neutral-400 line-clamp-2 mt-1">
+                  <p>City edge the Gunners, thanks to a second-half Haaland winner, in a heated top-of-the-table league game in Manchester.</p>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
       {/* Latest Videos Section */}
       <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -534,115 +641,6 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
             </div>
           )}
           </div>
-      </section>
-
-      {/* Sports Section */}
-      <section className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-        {/* Featured Header with Background Image */}
-        <div className="relative w-[770px] h-[880px] overflow-hidden flex items-center justify-center group">
-          <div className="absolute w-[715px] h-[300px] opacity-85 bg-cover bg-center" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', marginLeft: '7px', marginTop: '40px', marginBottom: '120px', borderRadius: '10px'}}></div>
-          <div className="absolute bg-neutral-100 dark:bg-neutral-800 flex gap-3" style={{width: '630px', height: '385px', marginTop: '380px', marginLeft: '10px', marginBottom: '50px', borderRadius: '20px', padding: '8px'}}>
-            <div className="absolute z-10" style={{top: '5px', left: '10px', marginLeft: '-45px'}}>
-              <div className="mb-2 h-1 w-4 bg-white/70 rounded-full shadow-md"></div>
-              <h2 className="text-3xl font-bold text-white tracking-widest drop-shadow-lg" style={{writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontFamily: 'Roboto Condensed'}}>
-                {t.nav.sports || 'SIPORO'}
-              </h2>
-            </div>
-            {/* Left column: First 4 articles stacked vertically */}
-            <div className="flex flex-col gap-2 relative" style={{width: '305px', height: '319px', overflow: 'hidden'}}>
-              {/* Article 1 */}
-              <article className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '305px', height: '83px'}}>
-                <div className="gc__image-wrap flex-shrink-0" style={{width: '116px', height: '83px', overflow: 'hidden', borderRadius: '4px'}}>
-                  <ArticleImage
-                    src="/uploads/article-fallback.svg"
-                    alt="Several injured as fans clash with police in Paraguay's Superclasico match"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="gc__content flex-grow">
-                  <h3 className="gc__title text-xs font-bold leading-tight">
-                    <Link href="/sports/2026/4/20/several-injured-as-fans-clash-with-police-in-paraguays-superclasico-match" className="text-neutral-900 dark:text-white hover:text-blue-600 line-clamp-3">
-                      Several injured as fans clash with police in Paraguay&apos;s Superclasico match
-                    </Link>
-                  </h3>
-                </div>
-              </article>
-              {/* Article 2 */}
-              <article className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '305px', height: '83px'}}>
-                <div className="gc__image-wrap flex-shrink-0" style={{width: '116px', height: '83px', overflow: 'hidden', borderRadius: '4px'}}>
-                  <ArticleImage
-                    src="/uploads/article-fallback.svg"
-                    alt="Eight runners hospitalised after collapsing during South Korea marathon"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="gc__content flex-grow">
-                  <h3 className="gc__title text-xs font-bold leading-tight">
-                    <Link href="/sports/2026/4/20/eight-runners-hospitalised-after-collapsing-during-south-korea-marathon" className="text-neutral-900 dark:text-white hover:text-blue-600 line-clamp-3">
-                      Eight runners hospitalised after collapsing during South Korea marathon
-                    </Link>
-                  </h3>
-                </div>
-              </article>
-              {/* Article 3 */}
-              <article className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '305px', height: '83px'}}>
-                <div className="gc__image-wrap flex-shrink-0" style={{width: '116px', height: '83px', overflow: 'hidden', borderRadius: '4px'}}>
-                  <ArticleImage
-                    src="/uploads/article-fallback.svg"
-                    alt="Kane scores as Bayern Munich claim Bundesliga title with Stuttgart victory"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="gc__content flex-grow">
-                  <h3 className="gc__title text-xs font-bold leading-tight">
-                    <Link href="/sports/2026/4/20/kane-scores-as-bayern-munich-claim-bundesliga-title-with-stuttgart-victory" className="text-neutral-900 dark:text-white hover:text-blue-600 line-clamp-3">
-                      Kane scores as Bayern Munich claim Bundesliga title
-                    </Link>
-                  </h3>
-                </div>
-              </article>
-              {/* Article 4 */}
-              <article className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '305px', height: '83px'}}>
-                <div className="gc__image-wrap flex-shrink-0" style={{width: '116px', height: '83px', overflow: 'hidden', borderRadius: '4px'}}>
-                  <ArticleImage
-                    src="/uploads/article-fallback.svg"
-                    alt="Victor Wembanyama makes history as Spurs defeat Blazers in Game 1"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="gc__content flex-grow">
-                  <h3 className="gc__title text-xs font-bold leading-tight">
-                    <Link href="/sports/2026/4/20/wembanyama-makes-history-as-spurs-defeat-blazers-in-game-1" className="text-neutral-900 dark:text-white hover:text-blue-600 line-clamp-3">
-                      Wembanyama makes history as Spurs defeat Blazers in Game 1
-                    </Link>
-                  </h3>
-                </div>
-              </article>
-            </div>
-            {/* Right column: Last article */}
-            <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col flex-shrink-0" style={{width: '305px', height: '319px'}}>
-              <div className="gc__image-wrap flex-shrink-0" style={{width: '305px', height: '120px', overflow: 'hidden', borderRadius: '4px'}}>
-                <ArticleImage
-                  src="/uploads/article-fallback.svg"
-                  alt="Premier League: Man City beat Arsenal 2-1"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="gc__content p-2 flex-grow flex flex-col justify-between">
-                <h3 className="gc__title text-xs font-bold leading-tight">
-                  <Link href="/sports/2026/4/19/man-city-beat-arsenal-2-1-cut-premier-league-race-to-three-points" className="text-neutral-900 dark:text-white hover:text-blue-600 line-clamp-2">
-                    Premier League: Man City beat Arsenal 2-1
-                  </Link>
-                </h3>
-                <div className="gc__excerpt text-xs text-neutral-600 dark:text-neutral-400 line-clamp-2 mt-1">
-                  <p>City edge the Gunners, thanks to a second-half Haaland winner, in a heated top-of-the-table league game in Manchester.</p>
-                </div>
-              </div>
-            </article>
-          </div>
-        </div>
-
-
       </section>
     </>
   );
