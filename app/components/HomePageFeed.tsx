@@ -430,9 +430,9 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
       {/* Sports Section */}
       <section className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
         {/* Featured Header with Background Image */}
-        <div className="relative w-[770px] h-[880px] overflow-hidden flex items-center justify-center group">
-          <div className="absolute w-[715px] h-[300px] opacity-85 bg-cover bg-center" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', marginLeft: '7px', marginTop: '40px', marginBottom: '120px', borderRadius: '10px'}}></div>
-          <div className="absolute bg-neutral-100 dark:bg-neutral-800 flex gap-3" style={{width: '630px', height: '385px', marginTop: '380px', marginLeft: '10px', marginBottom: '50px', borderRadius: '20px', padding: '8px'}}>
+        <div className="relative w-[770px] h-[625px] overflow-hidden flex items-center justify-center group">
+          <div className="absolute w-[715px] h-[300px] opacity-85 bg-cover bg-center" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', marginLeft: '7px', marginTop: '-30px', marginBottom: '120px', borderRadius: '10px'}}></div>
+          <div className="absolute bg-neutral-100 dark:bg-neutral-800 flex gap-3" style={{width: '630px', height: '385px', marginTop: '150px', marginLeft: '10px', marginBottom: '25px', borderRadius: '20px', padding: '8px'}}>
             <div className="absolute z-10" style={{top: '5px', left: '10px', marginLeft: '-45px'}}>
               <div className="mb-2 h-1 w-4 bg-[#f61f00] rounded-full shadow-md"></div>
               <h2 className="text-3xl font-bold text-white tracking-widest drop-shadow-lg" style={{writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontFamily: 'Roboto Condensed', WebkitTextStroke: '1px black'}}>
