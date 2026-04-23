@@ -94,7 +94,7 @@ export function HomepageHero({
         <div className="relative grid grid-cols-1 gap-6 pb-10 md:grid-cols-4">
           <div className="absolute bottom-0 left-1/2 z-10 -translate-x-1/2 lg:left-auto lg:right-0 lg:translate-x-0">
             <div className="modern-header-section shrink-0">
-              <h2 className="modern-header-title">
+              <h2 className="red-bar-title-after" data-section="featured">
                 {t.home.featured}
               </h2>
             </div>
