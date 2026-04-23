@@ -398,7 +398,7 @@ export const ky = {
     latestArticles: 'INKURU ZIHERUKA',
     mostViewedArticles: 'IZIKUNZWE CYANE',
     latestVideos: 'AMASHUSHO AHERUKA',
-    oldNews: 'IZABANJE',
+    oldNews: 'IZA KERA',
     noArticles: 'Nta nkuru zirashyirwaho',
     noVideos: 'Nta mashusho abonetse muri aka kanya.',
   },

@@ -21,21 +21,9 @@ export function DeferredHomePageFeed({ articles = [], mostViewed = [] }: Deferre
     }
 
     // Load articles on client side
-    async function fetchData(retries = 3) {
+    async function fetchData() {
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-        const response = await fetch('/api/articles', {
-          signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
+        const response = await fetch('/api/articles');
         const data = await response.json();
         const allArticles = data.data || [];
         setLoadedArticles(allArticles);
@@ -43,18 +31,7 @@ export function DeferredHomePageFeed({ articles = [], mostViewed = [] }: Deferre
           [...allArticles].sort((a: any, b: any) => (b.views || 0) - (a.views || 0))
         );
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        console.error('Failed to load articles:', errorMsg);
-
-        // Retry on network errors
-        if (retries > 0 && (errorMsg.includes('Failed to fetch') || errorMsg.includes('AbortError'))) {
-          console.log(`Retrying... (${retries} attempts remaining)`);
-          setTimeout(() => fetchData(retries - 1), 1000);
-          return;
-        }
-
-        // If all retries exhausted, stop loading but don't crash
-        setLoading(false);
+        console.error('Failed to load articles:', error);
       } finally {
         setLoading(false);
       }
