@@ -487,6 +487,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
 
       {/* Sports Section */}
       <section className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 pt-6">
+          <h2 className="branded--bar collection-title--plain collection-title--small" data-testid="branded-collection-title-bar">
+            {t.home.mustRead}
+          </h2>
+        </div>
         <div className="flex gap-6">
           {/* Left: Featured Sports */}
           <div className="relative w-[770px] h-[625px] overflow-hidden flex items-center justify-center group">
@@ -548,7 +553,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
           <div className="w-[450px] h-[625px] bg-neutral-100 dark:bg-neutral-800 rounded-lg p-6 overflow-y-auto" style={{marginTop: '30px', marginBottom: '50px'}}>
             <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
               <span className="h-1 w-4 bg-[#f61f00] rounded-full inline-block"></span>
-              10 Headlines
+              {t.home.topHeadlines}
             </h3>
             <ol className="space-y-3">
               {categoryArticles.length > 0 ? (
