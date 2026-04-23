@@ -627,30 +627,6 @@ button:disabled {
   color: #f5f5f5;
 }
 
-/* Red bar before text */
-.branded--bar::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: linear-gradient(180deg, #e2001a 0%, #c41016 50%, #d41018 100%);
-  border-radius: 2px;
-  animation: slideInVertical 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-@keyframes slideInVertical {
-  from {
-    height: 0;
-    opacity: 0;
-  }
-  to {
-    height: 100%;
-    opacity: 1;
-  }
-}
-
 /* Collection title variants */
 .collection-title--plain {
   font-weight: 600;
