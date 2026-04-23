@@ -499,22 +499,22 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 </div>
               </div>
               <div className="flex flex-row gap-3">
-              {/* Left column: 3 specific featured sports articles */}
-              <div className="flex flex-col relative" style={{width: '335px', height: '350px', overflow: 'hidden'}}>
+              {/* Left column: 3 specific featured sports articles in 4 equal horizontal grid */}
+              <div className="flex flex-col relative" style={{width: '335px', height: '350px', overflow: 'hidden', display: 'grid', gridTemplateRows: 'repeat(4, 1fr)', gap: '0'}}>
                 {sportsArticles.filter((article) => 
                   ['rayon-sports-yanganyije-na-gorilla-fc-mu-mukino-wigikombe-cyamahoro', 
                    'apr-fc-yatsinze-etincelles-fc-iyihanangirije-ikoza-ikirenge-ku-mukino-wa-nyuma-wigikombe-cyamahoro',
                    'umutekano-wabakinnyi-wibajijwe-nyuma-yigitero-cyahitanye-rutahizamu-wo-muri-ghana'].includes(article.slug)
                 ).map((article) => (
-                  <article key={article.id} className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '305px', height: '83px'}}>
-                    <div className="gc__image-wrap flex-shrink-0" style={{width: '113px', height: '83px', overflow: 'hidden', borderRadius: '10px'}}>
+                  <article key={article.id} className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '100%', height: '87.5px', overflow: 'hidden'}}>
+                    <div className="gc__image-wrap flex-shrink-0" style={{width: '80px', height: '87.5px', overflow: 'hidden', borderRadius: '4px'}}>
                       <ArticleImage
                         src={article.image}
                         alt={article.title}
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div className="gc__content flex-grow">
+                    <div className="gc__content flex-grow px-2">
                       <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
                         <Link href={`/${article.category}/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
                           {article.title}
@@ -524,6 +524,30 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   </article>
                 ))}
               </div>
+              {/* Right column: Featured article thumbnail with title and summary */}
+              {sportsArticles.length > 0 && (
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-2" style={{width: '300px'}}>
+                    <div className="flex-shrink-0" style={{width: '300px', height: '205px', overflow: 'hidden', borderRadius: '10px'}}>
+                      <ArticleImage
+                        src={sportsArticles[0].image}
+                        alt={sportsArticles[0].title}
+                        className="w-full h-full object-cover hover:scale-105 transition"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2 px-2">
+                      <h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-2 transition">
+                        <Link href={`/${sportsArticles[0].category}/${sportsArticles[0].slug}`} className="hover:text-[#f61f00] transition">
+                          {sportsArticles[0].title}
+                        </Link>
+                      </h3>
+                      <p className="text-xs text-neutral-600 dark:text-neutral-400 line-clamp-3">
+                        {sportsArticles[0].excerpt}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
               </div>
               {/* Right column: Last article */}
               {sportsArticles.length > 4 && (
