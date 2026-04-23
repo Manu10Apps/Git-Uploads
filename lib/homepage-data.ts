@@ -161,3 +161,42 @@ export async function getFeaturedHomepageData() {
   ]);
   return { articles, adverts };
 }
+
+const getSportsArticles = unstable_cache(
+  async (limit: number = 3): Promise<{ title: string; image: string | null; slug: string }[]> => {
+    try {
+      const now = new Date();
+      const articles = await prisma.article.findMany({
+        where: {
+          status: 'published',
+          publishedAt: { lte: now },
+          category: { slug: 'siporo' },
+        },
+        select: {
+          title: true,
+          slug: true,
+          image: true,
+        },
+        orderBy: { publishedAt: 'desc' },
+        take: limit,
+      });
+      return articles.map((a) => ({
+        title: a.title,
+        slug: a.slug,
+        image: resolveArticleImage(a.image, ''),
+      }));
+    } catch {
+      return [];
+    }
+  },
+  ['sports-articles'],
+  { revalidate: 10, tags: ['articles'] },
+);
+
+export async function getLatestSportsArticles(limit: number = 3) {
+  return getSportsArticles(limit);
+}
+
+export async function getLatestSportsArticlesSidebar() {
+  return getSportsArticles(1);
+}
