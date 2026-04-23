@@ -36,10 +36,9 @@ export default async function Home() {
 
         <HomepageAdverts topAdverts={homepageTopAdverts} bottomAdverts={homepageBottomAdverts} />
 
+        <SportsArticlesRow />
+
         {/* Deferred loading for full feed */}
-          <section className="my-8 flex justify-center">
-            <SportsArticlesRow />
-          </section>
         <DeferredHomePageFeed />
 
         <HomepageAdverts topAdverts={homepageTopAdverts} bottomAdverts={homepageBottomAdverts} section="bottom" />
