@@ -156,12 +156,12 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
       return;
     }
 
-    // Get top article from each category
+    // Get most viewed article from each category
     const topByCategory: Record<string, HomepageArticle> = {};
     articles.forEach((article) => {
       const categorySlug = article.category.toLowerCase();
       if (CATEGORY_HEADLINES.includes(categorySlug)) {
-        if (!topByCategory[categorySlug]) {
+        if (!topByCategory[categorySlug] || (article.views || 0) > (topByCategory[categorySlug].views || 0)) {
           topByCategory[categorySlug] = article;
         }
       }
