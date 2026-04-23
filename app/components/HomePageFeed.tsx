@@ -492,9 +492,9 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
             {t.home.mustRead}
           </h2>
         </div>
-        <div className="flex gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Left: Featured Sports */}
-          <div className="relative w-[770px] h-[625px] overflow-hidden flex items-center justify-center group">
+          <div className="relative w-full lg:w-[770px] h-[400px] md:h-[500px] lg:h-[625px] overflow-hidden flex items-center justify-center group">
             <div className="absolute w-[715px] h-[300px] opacity-85 bg-cover bg-center" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', marginLeft: '7px', marginTop: '-30px', marginBottom: '150px', borderRadius: '10px'}}></div>
             <div className="absolute bg-neutral-100 dark:bg-neutral-800 flex gap-3" style={{width: '630px', height: '350px', marginTop: '280px', marginLeft: '10px', marginBottom: '25px', borderRadius: '20px', padding: '8px'}}>
               <div className="absolute z-10" style={{top: '5px', left: '10px', marginLeft: '-45px', marginTop: '-10px'}}>
@@ -506,8 +506,8 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               {/* Left column: First 4 articles stacked vertically */}
               <div className="flex flex-col relative" style={{width: '305px', height: '319px', overflow: 'hidden'}}>
                 {sportsArticles.slice(0, 4).map((article) => (
-                  <article key={article.id} className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '305px', height: '83px'}}>
-                    <div className="gc__image-wrap flex-shrink-0" style={{width: '116px', height: '83px', overflow: 'hidden', borderRadius: '10px'}}>
+                  <article key={article.id} className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0 border border-neutral-300 dark:border-neutral-700" style={{width: '305px', height: '83px', borderRadius: '8px'}}>
+                    <div className="gc__image-wrap flex-shrink-0" style={{width: '116px', height: '83px', overflow: 'hidden', borderRadius: '6px'}}>
                       <ArticleImage
                         src={article.image}
                         alt={article.title}
@@ -526,8 +526,8 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               </div>
               {/* Right column: Last article */}
               {sportsArticles.length > 4 && (
-                <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col flex-shrink-0" style={{width: '305px', height: '392px'}}>
-                  <div className="gc__image-wrap flex-shrink-0" style={{width: '305px', height: '203px', overflow: 'hidden', borderRadius: '10px'}}>
+                <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col flex-shrink-0 border border-neutral-300 dark:border-neutral-700" style={{width: '305px', height: '392px', borderRadius: '8px'}}>
+                  <div className="gc__image-wrap flex-shrink-0" style={{width: '305px', height: '203px', overflow: 'hidden', borderRadius: '6px'}}>
                     <ArticleImage
                       src={sportsArticles[4].image}
                       alt={sportsArticles[4].title}
@@ -550,7 +550,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
           </div>
 
           {/* Right: 10 Categories Headlines Grid */}
-          <div className="w-[450px] h-[625px] bg-neutral-100 dark:bg-neutral-800 rounded-lg p-6 overflow-y-auto" style={{marginTop: '30px', marginBottom: '50px'}}>
+          <div className="w-full lg:w-[450px] h-[500px] lg:h-[650px] bg-neutral-100 dark:bg-neutral-800 rounded-lg p-6 overflow-y-auto" style={{marginTop: '20px', marginBottom: '50px'}}>
             <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
               <span className="h-1 w-4 bg-[#f61f00] rounded-full inline-block"></span>
               {t.home.topHeadlines}
