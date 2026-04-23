@@ -336,12 +336,6 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                         {getTitle(article)}
                       </Link>
                     </h3>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 line-clamp-2 font-light">
-                      {getExcerpt(article)}
-                    </p>
-                    <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-500">
-                      <span>{article.publishedAt}</span>
-                    </div>
                   </div>
                 </article>
               ))}
@@ -390,21 +384,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                     </div>
                   </Link>
                   <div className="p-5">
-                    <div className="text-red-600 dark:text-red-500 text-xs font-semibold tracking-widest mb-2 uppercase">
-                      {getCategoryLabel(article.category)}
-                    </div>
                     <h3 className="text-base font-serif font-bold text-neutral-900 dark:text-white mb-2 line-clamp-2">
                       <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
                         {getTitle(article)}
                       </Link>
                     </h3>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3 line-clamp-2">
-                      {getExcerpt(article)}
-                    </p>
-                    <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
-                      <span>{article.author}</span>
-                      <span>{article.publishedAt}</span>
-                    </div>
                   </div>
                 </article>
               ))}
@@ -504,6 +488,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   {t.nav.sports || 'SIPORO'}
                 </h2>
               </div>
+              <div className="flex flex-row gap-3">
               {/* Left column: First 4 articles stacked vertically */}
               <div className="flex flex-col relative" style={{width: '335px', height: '350px', overflow: 'hidden'}}>
                 {sportsArticles.slice(0, 4).map((article) => (
@@ -525,24 +510,46 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   </article>
                 ))}
               </div>
+              {/* Right column: Second set of 4 articles stacked vertically */}
+              <div className="flex flex-col relative" style={{width: '335px', height: '350px', overflow: 'hidden'}}>
+                {sportsArticles.slice(4, 8).map((article) => (
+                  <article key={article.id} className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '335px', height: '83px'}}>
+                    <div className="gc__image-wrap flex-shrink-0" style={{width: '113px', height: '83px', overflow: 'hidden', borderRadius: '10px'}}>
+                      <ArticleImage
+                        src={article.image}
+                        alt={article.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="gc__content flex-grow">
+                      <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
+                        <Link href={`/${article.category}/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
+                          {article.title}
+                        </Link>
+                      </h3>
+                    </div>
+                  </article>
+                ))}
+              </div>
+              </div>
               {/* Right column: Last article */}
-              {sportsArticles.length > 4 && (
+              {sportsArticles.length > 8 && (
                 <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col flex-shrink-0" style={{width: '335px', height: '385px'}}>
                   <div className="gc__image-wrap flex-shrink-0" style={{width: '330px', height: '220px', overflow: 'hidden', borderRadius: '10px'}}>
                     <ArticleImage
-                      src={sportsArticles[4].image}
-                      alt={sportsArticles[4].title}
+                      src={sportsArticles[8].image}
+                      alt={sportsArticles[8].title}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="gc__content p-2 flex-grow flex flex-col">
                     <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
-                      <Link href={`/${sportsArticles[4].category}/${sportsArticles[4].slug}`} className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
-                        {sportsArticles[4].title}
+                      <Link href={`/${sportsArticles[8].category}/${sportsArticles[8].slug}`} className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
+                        {sportsArticles[8].title}
                       </Link>
                     </h3>
                     <div className="gc__excerpt text-xs text-neutral-600 dark:text-neutral-400 line-clamp-4 mt-2">
-                      <p>{sportsArticles[4].excerpt}</p>
+                      <p>{sportsArticles[8].excerpt}</p>
                     </div>
                   </div>
                 </article>
