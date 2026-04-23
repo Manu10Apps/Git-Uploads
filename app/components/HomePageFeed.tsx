@@ -295,9 +295,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
       <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6 flex flex-col items-center justify-center gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <h2 className="branded--bar collection-title--plain collection-title--small" data-testid="branded-collection-title-bar">
-              {t.home.latestArticles}
-            </h2>
+            <div className="modern-header-section">
+              <h2 className="modern-header-title">
+                {t.home.latestArticles}
+              </h2>
+            </div>
             {latestTotalPages > 1 && (
               <PagerControls
                 page={latestPage}
@@ -351,9 +353,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
       <section className="py-8 bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6 flex flex-col items-center justify-center gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <h2 className="branded--bar collection-title--plain collection-title--small" data-testid="branded-collection-title-bar">
-              {t.home.mostViewedArticles}
-            </h2>
+            <div className="modern-header-section">
+              <h2 className="modern-header-title">
+                {t.home.mostViewedArticles}
+              </h2>
+            </div>
             {mostViewedTotalPages > 1 && (
               <PagerControls
                 page={mostViewedPage}
@@ -422,9 +426,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
         <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-6 flex flex-col items-center justify-center gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <h2 className="branded--bar collection-title--plain collection-title--small" data-testid="branded-collection-title-bar">
-                {t.home.oldNews}
-              </h2>
+              <div className="modern-header-section">
+                <h2 className="modern-header-title">
+                  {t.home.oldNews}
+                </h2>
+              </div>
               {oldNewsTotalPages > 1 && (
                 <PagerControls
                   page={oldNewsPage}
@@ -578,7 +584,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
       <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h2 className="branded--bar collection-title--plain collection-title--small" data-testid="branded-collection-title-bar">
+            <h2 className="branded-collection-title branded-collection-title--bar branded-collection-title--plain">
               {t.home.latestVideos}
             </h2>
           </div>
