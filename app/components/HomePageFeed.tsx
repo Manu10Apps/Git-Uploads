@@ -499,32 +499,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 </div>
               </div>
               <div className="flex flex-row gap-3">
-              {/* Left column: 3 specific featured sports articles in 4 equal horizontal grid */}
-              <div className="flex flex-col relative" style={{width: '335px', height: '350px', overflow: 'hidden', display: 'grid', gridTemplateRows: 'repeat(4, 1fr)', gap: '0'}}>
-                {sportsArticles.filter((article) => 
-                  ['rayon-sports-yanganyije-na-gorilla-fc-mu-mukino-wigikombe-cyamahoro', 
-                   'apr-fc-yatsinze-etincelles-fc-iyihanangirije-ikoza-ikirenge-ku-mukino-wa-nyuma-wigikombe-cyamahoro',
-                   'umutekano-wabakinnyi-wibajijwe-nyuma-yigitero-cyahitanye-rutahizamu-wo-muri-ghana'].includes(article.slug)
-                ).map((article) => (
-                  <article key={article.id} className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '100%', height: '87.5px', overflow: 'hidden'}}>
-                    <div className="gc__image-wrap flex-shrink-0" style={{width: '80px', height: '87.5px', overflow: 'hidden', borderRadius: '4px'}}>
-                      <ArticleImage
-                        src={article.image}
-                        alt={article.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="gc__content flex-grow px-2">
-                      <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
-                        <Link href={`/${article.category}/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
-                          {article.title}
-                        </Link>
-                      </h3>
-                    </div>
-                  </article>
-                ))}
-              </div>
-              {/* Right column: Featured article thumbnail with title and summary */}
+              {/* Featured article thumbnail with title and summary */}
               {sportsArticles.length > 0 && (
                 <div className="flex flex-col gap-3">
                   <div className="flex flex-col gap-2" style={{width: '300px'}}>
