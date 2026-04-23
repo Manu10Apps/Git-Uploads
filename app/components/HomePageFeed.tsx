@@ -488,6 +488,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   {t.nav.sports || 'SIPORO'}
                 </h2>
               </div>
+              <div className="flex flex-row gap-3">
               {/* Left column: First 4 articles stacked vertically */}
               <div className="flex flex-col relative" style={{width: '335px', height: '350px', overflow: 'hidden'}}>
                 {sportsArticles.slice(0, 4).map((article) => (
@@ -509,24 +510,46 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   </article>
                 ))}
               </div>
+              {/* Right column: Second set of 4 articles stacked vertically */}
+              <div className="flex flex-col relative" style={{width: '335px', height: '350px', overflow: 'hidden'}}>
+                {sportsArticles.slice(4, 8).map((article) => (
+                  <article key={article.id} className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '335px', height: '83px'}}>
+                    <div className="gc__image-wrap flex-shrink-0" style={{width: '113px', height: '83px', overflow: 'hidden', borderRadius: '10px'}}>
+                      <ArticleImage
+                        src={article.image}
+                        alt={article.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="gc__content flex-grow">
+                      <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
+                        <Link href={`/${article.category}/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
+                          {article.title}
+                        </Link>
+                      </h3>
+                    </div>
+                  </article>
+                ))}
+              </div>
+              </div>
               {/* Right column: Last article */}
-              {sportsArticles.length > 4 && (
+              {sportsArticles.length > 8 && (
                 <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col flex-shrink-0" style={{width: '335px', height: '385px'}}>
                   <div className="gc__image-wrap flex-shrink-0" style={{width: '330px', height: '220px', overflow: 'hidden', borderRadius: '10px'}}>
                     <ArticleImage
-                      src={sportsArticles[4].image}
-                      alt={sportsArticles[4].title}
+                      src={sportsArticles[8].image}
+                      alt={sportsArticles[8].title}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="gc__content p-2 flex-grow flex flex-col">
                     <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
-                      <Link href={`/${sportsArticles[4].category}/${sportsArticles[4].slug}`} className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
-                        {sportsArticles[4].title}
+                      <Link href={`/${sportsArticles[8].category}/${sportsArticles[8].slug}`} className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
+                        {sportsArticles[8].title}
                       </Link>
                     </h3>
                     <div className="gc__excerpt text-xs text-neutral-600 dark:text-neutral-400 line-clamp-4 mt-2">
-                      <p>{sportsArticles[4].excerpt}</p>
+                      <p>{sportsArticles[8].excerpt}</p>
                     </div>
                   </div>
                 </article>
