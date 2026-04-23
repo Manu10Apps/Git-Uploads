@@ -612,7 +612,7 @@ button:disabled {
 .branded--bar {
   position: relative;
   margin: 0;
-  padding: 0 0 0 16px;
+  padding: 0 0 0 8px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -670,7 +670,7 @@ button:disabled {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   line-height: 1.2;
-  color: #ffffff;
+  color: #000000;
   font-family: var(--font-roboto-condensed), 'Arial Narrow', Arial, sans-serif;
   display: inline-flex;
   align-items: center;
@@ -680,7 +680,7 @@ button:disabled {
 }
 
 .dark .branded--bar-underline {
-  color: #ffffff;
+  color: #000000;
   box-shadow: 0 4px 16px rgba(230, 0, 26, 0.35);
 }
 
@@ -692,39 +692,6 @@ button:disabled {
   box-shadow: 0 6px 20px rgba(230, 0, 26, 0.45);
 }
 
-/* Modern gradient pill-shaped background with arrow */
-.branded--bar-underline::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #e2001a 0%, #d00016 100%);
-  border-radius: 5px 0 0 5px;
-  z-index: -1;
-}
-
-.branded--bar-underline:hover::before {
-  background: linear-gradient(135deg, #f22f2f 0%, #e2001a 100%);
-}
-
-/* Modern arrow with gradient */
-.branded--bar-underline::after {
-  content: '';
-  position: absolute;
-  right: -8px;
-  top: 0;
-  bottom: 0;
-  width: 16px;
-  background: linear-gradient(135deg, #e2001a 0%, #d00016 100%);
-  clip-path: polygon(0 0, 100% 50%, 0 100%);
-  z-index: -1;
-}
-
-.branded--bar-underline:hover::after {
-  background: linear-gradient(135deg, #f22f2f 0%, #e2001a 100%);
-}
 
 /* Pulse fade-in animation for text */
 @keyframes pulseFadeIn {
