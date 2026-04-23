@@ -1,5 +1,6 @@
 import { Header, Footer, BreakingNewsCarousel } from './components';
 import { DeferredHomePageFeed } from '@/app/components/DeferredHomePageFeed';
+import SportsArticlesRow from '@/app/components/SportsArticlesRow';
 import { HomepageHero } from '@/app/components/HomepageHero';
 import { NewsletterSignup } from '@/app/components/NewsletterSignup';
 import { getFeaturedHomepageData, getHomepageData } from '@/lib/homepage-data';
@@ -36,6 +37,9 @@ export default async function Home() {
         <HomepageAdverts topAdverts={homepageTopAdverts} bottomAdverts={homepageBottomAdverts} />
 
         {/* Deferred loading for full feed */}
+          <section className="my-8 flex justify-center">
+            <SportsArticlesRow />
+          </section>
         <DeferredHomePageFeed />
 
         <HomepageAdverts topAdverts={homepageTopAdverts} bottomAdverts={homepageBottomAdverts} section="bottom" />
