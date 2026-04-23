@@ -105,6 +105,20 @@ function PagerControls({
   );
 }
 
+// Categories to display in the headlines grid
+const CATEGORY_HEADLINES = [
+  'politiki',
+  'ubuzima', 
+  'uburezi',
+  'ubukungu',
+  'ikoranabuhanga',
+  'imyidagaduro',
+  'ubutabera',
+  'ibidukikije',
+  'imyemerere',
+  'africa-ylburasirazuba',
+];
+
 export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
   const language = useAppStore((s) => s.language);
   const t = getTranslation(language);
@@ -114,6 +128,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
   const [youtubeVideos, setYouTubeVideos] = React.useState<YouTubeVideo[]>([]);
   const [youtubeLoading, setYouTubeLoading] = React.useState(true);
   const [translations, setTranslations] = React.useState<TranslationMap>({});
+  const [categoryArticles, setCategoryArticles] = React.useState<HomepageArticle[]>([]);
 
   const latestLimited = articles ? articles.slice(0, 6) : [];
   const latestTotalPages = latestLimited.length ? Math.max(1, Math.ceil(latestLimited.length / LATEST_PAGE_SIZE)) : 1;
@@ -132,6 +147,33 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
     setMostViewedPage(0);
     setOldNewsPage(0);
   }, [articles.length, mostViewed.length]);
+
+  // Fetch category articles
+  React.useEffect(() => {
+    if (!articles || articles.length === 0) {
+      setCategoryArticles([]);
+      return;
+    }
+
+    // Get top article from each category
+    const topByCategory: Record<string, HomepageArticle> = {};
+    articles.forEach((article) => {
+      const categorySlug = article.category.toLowerCase();
+      if (CATEGORY_HEADLINES.includes(categorySlug)) {
+        if (!topByCategory[categorySlug]) {
+          topByCategory[categorySlug] = article;
+        }
+      }
+    });
+
+    // Build array in the order of CATEGORY_HEADLINES
+    const orderedArticles = CATEGORY_HEADLINES
+      .map((cat) => topByCategory[cat])
+      .filter((article): article is HomepageArticle => article !== undefined)
+      .slice(0, 10);
+
+    setCategoryArticles(orderedArticles);
+  }, [articles]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -452,8 +494,8 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                     />
                   </div>
                   <div className="gc__content flex-grow">
-                    <h3 className="gc__title text-xs font-bold leading-tight">
-                      <Link href="/sports/2026/4/20/several-injured-as-fans-clash-with-police-in-paraguays-superclasico-match" className="text-neutral-900 dark:text-white hover:text-blue-600 line-clamp-3">
+                    <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
+                      <Link href="/sports/2026/4/20/several-injured-as-fans-clash-with-police-in-paraguays-superclasico-match" className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
                         Several injured as fans clash with police in Paraguay&apos;s Superclasico match
                       </Link>
                     </h3>
@@ -469,8 +511,8 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                     />
                   </div>
                   <div className="gc__content flex-grow">
-                    <h3 className="gc__title text-xs font-bold leading-tight">
-                      <Link href="/sports/2026/4/20/eight-runners-hospitalised-after-collapsing-during-south-korea-marathon" className="text-neutral-900 dark:text-white hover:text-blue-600 line-clamp-3">
+                    <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
+                      <Link href="/sports/2026/4/20/eight-runners-hospitalised-after-collapsing-during-south-korea-marathon" className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
                         Eight runners hospitalised after collapsing during South Korea marathon
                       </Link>
                     </h3>
@@ -486,8 +528,8 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                     />
                   </div>
                   <div className="gc__content flex-grow">
-                    <h3 className="gc__title text-xs font-bold leading-tight">
-                      <Link href="/sports/2026/4/20/kane-scores-as-bayern-munich-claim-bundesliga-title-with-stuttgart-victory" className="text-neutral-900 dark:text-white hover:text-blue-600 line-clamp-3">
+                    <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
+                      <Link href="/sports/2026/4/20/kane-scores-as-bayern-munich-claim-bundesliga-title-with-stuttgart-victory" className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
                         Kane scores as Bayern Munich claim Bundesliga title
                       </Link>
                     </h3>
@@ -503,8 +545,8 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                     />
                   </div>
                   <div className="gc__content flex-grow">
-                    <h3 className="gc__title text-xs font-bold leading-tight">
-                      <Link href="/sports/2026/4/20/wembanyama-makes-history-as-spurs-defeat-blazers-in-game-1" className="text-neutral-900 dark:text-white hover:text-blue-600 line-clamp-3">
+                    <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
+                      <Link href="/sports/2026/4/20/wembanyama-makes-history-as-spurs-defeat-blazers-in-game-1" className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
                         Wembanyama makes history as Spurs defeat Blazers in Game 1
                       </Link>
                     </h3>
@@ -521,8 +563,8 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   />
                 </div>
                 <div className="gc__content p-2 flex-grow flex flex-col">
-                  <h3 className="gc__title text-xs font-bold leading-tight">
-                    <Link href="/sports/2026/4/19/man-city-beat-arsenal-2-1-cut-premier-league-race-to-three-points" className="text-neutral-900 dark:text-white hover:text-blue-600 line-clamp-3">
+                  <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
+                    <Link href="/sports/2026/4/19/man-city-beat-arsenal-2-1-cut-premier-league-race-to-three-points" className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
                       Premier League: Man City beat Arsenal 2-1
                     </Link>
                   </h3>
@@ -534,53 +576,37 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
             </div>
           </div>
 
-          {/* Right: 10 Headlines Grid */}
-          <div className="w-[450px] h-[525px] bg-neutral-100 dark:bg-neutral-800 rounded-lg p-6 overflow-y-auto" style={{marginTop: '70px', marginBottom: '50px'}}>
+          {/* Right: 10 Categories Headlines Grid */}
+          <div className="w-[450px] h-[625px] bg-neutral-100 dark:bg-neutral-800 rounded-lg p-6 overflow-y-auto" style={{marginTop: '30px', marginBottom: '50px'}}>
             <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
               <span className="h-1 w-4 bg-[#f61f00] rounded-full inline-block"></span>
               10 Headlines
             </h3>
             <ol className="space-y-3">
-              <li className="flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
-                <span className="flex-shrink-0 text-sm font-bold text-[#f61f00] w-6">1.</span>
-                <a href="#" className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-blue-600 line-clamp-2">Breaking: New sports championship announced</a>
-              </li>
-              <li className="flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
-                <span className="flex-shrink-0 text-sm font-bold text-[#f61f00] w-6">2.</span>
-                <a href="#" className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-blue-600 line-clamp-2">Athletes set new world record</a>
-              </li>
-              <li className="flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
-                <span className="flex-shrink-0 text-sm font-bold text-[#f61f00] w-6">3.</span>
-                <a href="#" className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-blue-600 line-clamp-2">League finals scheduled for next month</a>
-              </li>
-              <li className="flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
-                <span className="flex-shrink-0 text-sm font-bold text-[#f61f00] w-6">4.</span>
-                <a href="#" className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-blue-600 line-clamp-2">Team announces new player signing</a>
-              </li>
-              <li className="flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
-                <span className="flex-shrink-0 text-sm font-bold text-[#f61f00] w-6">5.</span>
-                <a href="#" className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-blue-600 line-clamp-2">Injury update for top athletes</a>
-              </li>
-              <li className="flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
-                <span className="flex-shrink-0 text-sm font-bold text-[#f61f00] w-6">6.</span>
-                <a href="#" className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-blue-600 line-clamp-2">Championship trophy unveiled</a>
-              </li>
-              <li className="flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
-                <span className="flex-shrink-0 text-sm font-bold text-[#f61f00] w-6">7.</span>
-                <a href="#" className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-blue-600 line-clamp-2">Coach shares tactical insights</a>
-              </li>
-              <li className="flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
-                <span className="flex-shrink-0 text-sm font-bold text-[#f61f00] w-6">8.</span>
-                <a href="#" className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-blue-600 line-clamp-2">Training camp begins next week</a>
-              </li>
-              <li className="flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
-                <span className="flex-shrink-0 text-sm font-bold text-[#f61f00] w-6">9.</span>
-                <a href="#" className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-blue-600 line-clamp-2">Fan voting opens for awards</a>
-              </li>
-              <li className="flex gap-3">
-                <span className="flex-shrink-0 text-sm font-bold text-[#f61f00] w-6">10.</span>
-                <a href="#" className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-blue-600 line-clamp-2">Season highlights compilation released</a>
-              </li>
+              {categoryArticles.length > 0 ? (
+                categoryArticles.map((article, index) => (
+                  <li key={article.id} className={index < categoryArticles.length - 1 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
+                    <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 1}</span>
+                    <Link href={`/${article.category}/${article.slug}`} className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2">
+                      {article.title}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                // Fallback static headlines if no articles loaded
+                <>
+                  <li className="flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
+                    <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">1</span>
+                    <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 line-clamp-2">Loading headlines...</span>
+                  </li>
+                  {Array.from({ length: 9 }).map((_, i) => (
+                    <li key={i} className={i < 8 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
+                      <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{i + 2}</span>
+                      <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500 line-clamp-2">—</span>
+                    </li>
+                  ))}
+                </>
+              )}
             </ol>
           </div>
         </div>
