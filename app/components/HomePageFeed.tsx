@@ -485,7 +485,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               <div className="absolute z-10 w-full" style={{top: '0px', left: '0px', right: '0px'}}>
                 <div className="flex items-center gap-2 px-3 py-2">
                   <div className="h-1 w-4 bg-[#f61f00] rounded-full shadow-md"></div>
-                  <h2 className="text-2xl font-bold text-white tracking-widest drop-shadow-lg" style={{fontFamily: 'Roboto Condensed', WebkitTextStroke: '0.6px black', textShadow: 'black 0.6px 0, black -0.6px 0, black 0 0.6px, black 0 -0.6px'}}>
+                  <h2 className="text-2xl font-bold text-white tracking-widest drop-shadow-lg" style={{fontFamily: 'Roboto Condensed', WebkitTextStroke: '0.6px black', textShadow: 'black 0.6px 0, black -0.6px 0, black 0 0.6px, black 0 -0.6px', fontSize: '1.65rem'}}>
                     {t.nav.sports || 'SIPORO'}
                   </h2>
                 </div>
