@@ -37,6 +37,8 @@ export const en = {
     latestNews: 'Latest News',
     latestInvestigations: 'Latest Investigations',
     latestUpdates: 'Latest Updates',
+    mustRead: 'MUST READ',
+    topHeadlines: '10 Headlines',
     viewMore: 'View More',
     featured: 'FEATURED',
     latestArticles: 'LATEST NEWS',
@@ -389,6 +391,8 @@ export const ky = {
     latestNews: 'Inkuru Zanyuma',
     latestInvestigations: 'Ubushakashatsi Bushya',
     latestUpdates: 'Amakuru Agezweho',
+    mustRead: 'UKWIYE GUSOMA',
+    topHeadlines: "Ingingo Z'Ingenzi 10",
     viewMore: 'Reba Ikindi',
     featured: 'IZIGEZWEHO',
     latestArticles: 'INKURU ZIHERUKA',
@@ -702,7 +706,7 @@ export const ky = {
   },
 };
 
-export const sw = {
+const sw = {
   nav: {
     home: 'Nyumba',
     epaper: 'E-Jarida',
@@ -739,6 +743,8 @@ export const sw = {
     latestNews: 'Habari za Hivi Karibuni',
     latestInvestigations: 'Utafiti Mpya',
     latestUpdates: 'Habari Mpya',
+    mustRead: 'LAZIMA KUSOMA',
+    topHeadlines: 'Makala 10 Yenye Umuhimu',
     viewMore: 'Tazama Zaidi',
     featured: 'ZILIZO KUU',
     latestArticles: 'HABARI MPYA',
