@@ -50,7 +50,7 @@ function PagerControls({
   onLast: () => void;
   label: string;
 }) {
-  const buttonBaseClass = "relative h-10 w-10 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg font-semibold transition-all duration-300 text-sm overflow-hidden group";
+  const buttonBaseClass = "relative h-7 w-7 sm:h-6 sm:w-6 flex items-center justify-center rounded-lg font-semibold transition-all duration-300 text-[10px] overflow-hidden group";
   const activeButtonClass = `${buttonBaseClass} bg-gradient-to-br from-red-500 to-red-700 text-white shadow-md hover:shadow-lg hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 dark:focus:ring-offset-neutral-900`;
   const disabledButtonClass = `${buttonBaseClass} bg-neutral-200 dark:bg-neutral-700 text-neutral-400 dark:text-neutral-500 cursor-not-allowed opacity-50`;
 
@@ -296,7 +296,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6 flex flex-col items-center justify-center gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="modern-header-section">
-              <h2 className="modern-header-title">
+              <h2 className="red-bar-title">
                 {t.home.latestArticles}
               </h2>
             </div>
@@ -354,7 +354,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6 flex flex-col items-center justify-center gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="modern-header-section">
-              <h2 className="modern-header-title">
+              <h2 className="red-bar-title">
                 {t.home.mostViewedArticles}
               </h2>
             </div>
@@ -427,7 +427,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-6 flex flex-col items-center justify-center gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="modern-header-section">
-                <h2 className="modern-header-title">
+                <h2 className="red-bar-title">
                   {t.home.oldNews}
                 </h2>
               </div>
@@ -478,9 +478,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
       {/* Sports Section */}
       <section className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 pt-6">
-          <h2 className="branded--bar collection-title--plain collection-title--small" data-testid="branded-collection-title-bar">
-            {t.home.mustRead}
-          </h2>
+          <div className="modern-header-section">
+            <h2 className="red-bar-title" data-testid="branded-collection-title-bar">
+              {t.home.mustRead}
+            </h2>
+          </div>
         </div>
         {/* Sports Section */}
         <div className="flex flex-col lg:flex-row gap-6">
@@ -497,9 +499,13 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 </div>
               </div>
               <div className="flex flex-row gap-3">
-              {/* Left column: First 4 articles stacked vertically */}
+              {/* Left column: 3 specific featured sports articles */}
               <div className="flex flex-col relative" style={{width: '335px', height: '350px', overflow: 'hidden'}}>
-                {sportsArticles.slice(0, 4).map((article) => (
+                {sportsArticles.filter((article) => 
+                  ['rayon-sports-yanganyije-na-gorilla-fc-mu-mukino-wigikombe-cyamahoro', 
+                   'apr-fc-yatsinze-etincelles-fc-iyihanangirije-ikoza-ikirenge-ku-mukino-wa-nyuma-wigikombe-cyamahoro',
+                   'umutekano-wabakinnyi-wibajijwe-nyuma-yigitero-cyahitanye-rutahizamu-wo-muri-ghana'].includes(article.slug)
+                ).map((article) => (
                   <article key={article.id} className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '305px', height: '83px'}}>
                     <div className="gc__image-wrap flex-shrink-0" style={{width: '113px', height: '83px', overflow: 'hidden', borderRadius: '10px'}}>
                       <ArticleImage
@@ -584,7 +590,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
       <section className="py-8 border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h2 className="branded-collection-title branded-collection-title--bar branded-collection-title--plain">
+            <h2 className="red-bar-title">
               {t.home.latestVideos}
             </h2>
           </div>
