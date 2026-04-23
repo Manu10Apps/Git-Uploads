@@ -499,15 +499,15 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
             <div className="absolute bg-neutral-100 dark:bg-neutral-800 flex gap-3" style={{width: '630px', height: '350px', marginTop: '280px', marginLeft: '10px', marginBottom: '25px', borderRadius: '20px', padding: '8px'}}>
               <div className="absolute z-10" style={{top: '5px', left: '10px', marginLeft: '-45px', marginTop: '-10px'}}>
                 <div className="mb-2 h-1 w-4 bg-[#f61f00] rounded-full shadow-md"></div>
-                <h2 className="text-3xl font-bold text-white tracking-widest drop-shadow-lg" style={{writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontFamily: 'Roboto Condensed', WebkitTextStroke: '1px black'}}>
+                <h2 className="text-3xl font-bold text-white tracking-widest drop-shadow-lg" style={{writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontFamily: 'Roboto Condensed', WebkitTextStroke: '0.6px black', textShadow: 'black 0.6px 0, black -0.6px 0, black 0 0.6px, black 0 -0.6px'}}>
                   {t.nav.sports || 'SIPORO'}
                 </h2>
               </div>
               {/* Left column: First 4 articles stacked vertically */}
               <div className="flex flex-col relative" style={{width: '305px', height: '319px', overflow: 'hidden'}}>
                 {sportsArticles.slice(0, 4).map((article) => (
-                  <article key={article.id} className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0 border border-neutral-300 dark:border-neutral-700" style={{width: '305px', height: '83px', borderRadius: '8px'}}>
-                    <div className="gc__image-wrap flex-shrink-0" style={{width: '116px', height: '83px', overflow: 'hidden', borderRadius: '6px'}}>
+                  <article key={article.id} className="gc u-clickable-card gc--type-post gc--with-image flex items-center gap-2 flex-shrink-0" style={{width: '305px', height: '83px'}}>
+                    <div className="gc__image-wrap flex-shrink-0" style={{width: '113px', height: '83px', overflow: 'hidden', borderRadius: '10px'}}>
                       <ArticleImage
                         src={article.image}
                         alt={article.title}
@@ -526,8 +526,8 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               </div>
               {/* Right column: Last article */}
               {sportsArticles.length > 4 && (
-                <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col flex-shrink-0 border border-neutral-300 dark:border-neutral-700" style={{width: '305px', height: '392px', borderRadius: '8px'}}>
-                  <div className="gc__image-wrap flex-shrink-0" style={{width: '305px', height: '203px', overflow: 'hidden', borderRadius: '6px'}}>
+                <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col flex-shrink-0" style={{width: '305px', height: '392px'}}>
+                  <div className="gc__image-wrap flex-shrink-0" style={{width: '300px', height: '200px', overflow: 'hidden', borderRadius: '10px'}}>
                     <ArticleImage
                       src={sportsArticles[4].image}
                       alt={sportsArticles[4].title}
