@@ -336,12 +336,6 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                         {getTitle(article)}
                       </Link>
                     </h3>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 line-clamp-2 font-light">
-                      {getExcerpt(article)}
-                    </p>
-                    <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-500">
-                      <span>{article.publishedAt}</span>
-                    </div>
                   </div>
                 </article>
               ))}
@@ -390,21 +384,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                     </div>
                   </Link>
                   <div className="p-5">
-                    <div className="text-red-600 dark:text-red-500 text-xs font-semibold tracking-widest mb-2 uppercase">
-                      {getCategoryLabel(article.category)}
-                    </div>
                     <h3 className="text-base font-serif font-bold text-neutral-900 dark:text-white mb-2 line-clamp-2">
                       <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
                         {getTitle(article)}
                       </Link>
                     </h3>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3 line-clamp-2">
-                      {getExcerpt(article)}
-                    </p>
-                    <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
-                      <span>{article.author}</span>
-                      <span>{article.publishedAt}</span>
-                    </div>
                   </div>
                 </article>
               ))}
