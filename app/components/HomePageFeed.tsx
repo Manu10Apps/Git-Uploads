@@ -489,7 +489,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
           {/* Left: Featured Sports */}
           <div className="relative w-full lg:w-[770px] h-[400px] md:h-[500px] lg:h-[625px] overflow-hidden flex items-center justify-center group">
             <div className="absolute w-[715px] h-[300px] opacity-85 bg-cover bg-center" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', marginLeft: '7px', marginTop: '-30px', marginBottom: '150px', borderRadius: '10px'}}></div>
-            <div className="absolute bg-neutral-100 dark:bg-neutral-800 flex gap-3" style={{width: '680px', height: '385px', marginTop: '260px', marginLeft: '10px', marginBottom: '25px', borderRadius: '20px', padding: '8px'}}>
+            <div className="absolute bg-neutral-100 dark:bg-neutral-800 flex flex-col gap-3" style={{width: '680px', height: '385px', marginTop: '260px', marginLeft: '10px', marginBottom: '25px', borderRadius: '20px', padding: '8px'}}>
               <div className="absolute z-10 w-full" style={{top: '0px', left: '0px', right: '0px'}}>
                 <div className="flex items-center gap-2 px-3 py-2">
                   <div className="h-1 w-4 bg-[#f61f00] rounded-full shadow-md"></div>
@@ -498,54 +498,59 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   </h2>
                 </div>
               </div>
-              <div className="flex flex-row gap-3">
-              {/* Featured article thumbnail with title and summary */}
-              {sportsArticles.length > 0 && (
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-col gap-2" style={{width: '300px'}}>
-                    <div className="flex-shrink-0" style={{width: '300px', height: '205px', overflow: 'hidden', borderRadius: '10px'}}>
-                      <ArticleImage
-                        src={sportsArticles[0].image}
-                        alt={sportsArticles[0].title}
-                        className="w-full h-full object-cover hover:scale-105 transition"
-                      />
+              
+              {/* Two equal vertical columns */}
+              <div className="flex flex-row gap-3 w-full" style={{marginTop: '50px'}}>
+                {/* Left Column */}
+                <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-3 overflow-hidden">
+                  {sportsArticles.length > 0 && (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex-shrink-0" style={{width: '100%', height: '180px', overflow: 'hidden', borderRadius: '10px'}}>
+                        <ArticleImage
+                          src={sportsArticles[0].image}
+                          alt={sportsArticles[0].title}
+                          className="w-full h-full object-cover hover:scale-105 transition"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-2 transition">
+                          <Link href={`/${sportsArticles[0].category}/${sportsArticles[0].slug}`} className="hover:text-[#f61f00] transition">
+                            {sportsArticles[0].title}
+                          </Link>
+                        </h3>
+                        <p className="text-xs text-neutral-600 dark:text-neutral-400 line-clamp-3">
+                          {sportsArticles[0].excerpt}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-2 px-2">
-                      <h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-2 transition">
-                        <Link href={`/${sportsArticles[0].category}/${sportsArticles[0].slug}`} className="hover:text-[#f61f00] transition">
-                          {sportsArticles[0].title}
-                        </Link>
-                      </h3>
-                      <p className="text-xs text-neutral-600 dark:text-neutral-400 line-clamp-3">
-                        {sportsArticles[0].excerpt}
-                      </p>
-                    </div>
-                  </div>
+                  )}
                 </div>
-              )}
+                
+                {/* Right Column */}
+                <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-3 overflow-hidden">
+                  {sportsArticles.length > 1 && (
+                    <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col h-full">
+                      <div className="gc__image-wrap flex-shrink-0" style={{width: '100%', height: '180px', overflow: 'hidden', borderRadius: '10px'}}>
+                        <ArticleImage
+                          src={sportsArticles[1].image}
+                          alt={sportsArticles[1].title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="gc__content p-2 flex-grow flex flex-col">
+                        <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
+                          <Link href={`/${sportsArticles[1].category}/${sportsArticles[1].slug}`} className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
+                            {sportsArticles[1].title}
+                          </Link>
+                        </h3>
+                        <div className="gc__excerpt text-xs text-neutral-600 dark:text-neutral-400 line-clamp-4 mt-2">
+                          <p>{sportsArticles[1].excerpt}</p>
+                        </div>
+                      </div>
+                    </article>
+                  )}
+                </div>
               </div>
-              {/* Right column: Last article */}
-              {sportsArticles.length > 4 && (
-                <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col flex-shrink-0" style={{width: '305px', height: '392px'}}>
-                  <div className="gc__image-wrap flex-shrink-0" style={{width: '300px', height: '200px', overflow: 'hidden', borderRadius: '10px'}}>
-                    <ArticleImage
-                      src={sportsArticles[8].image}
-                      alt={sportsArticles[8].title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="gc__content p-2 flex-grow flex flex-col">
-                    <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
-                      <Link href={`/${sportsArticles[8].category}/${sportsArticles[8].slug}`} className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
-                        {sportsArticles[8].title}
-                      </Link>
-                    </h3>
-                    <div className="gc__excerpt text-xs text-neutral-600 dark:text-neutral-400 line-clamp-4 mt-2">
-                      <p>{sportsArticles[8].excerpt}</p>
-                    </div>
-                  </div>
-                </article>
-              )}
             </div>
           </div>
 
