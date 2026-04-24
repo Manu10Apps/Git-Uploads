@@ -554,7 +554,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
           </div>
 
           {/* Right: 10 Categories Headlines Grid */}
-          <div className="w-full lg:w-[450px] h-auto max-h-[400px] sm:max-h-[500px] lg:max-h-[650px] bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 sm:p-6 overflow-y-auto" style={{marginTop: '0px', marginBottom: '50px'}}>
+          <div className="w-full lg:w-[450px] h-auto max-h-[400px] sm:max-h-[500px] lg:max-h-[650px] bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 sm:p-6 overflow-hidden sm:overflow-y-auto" style={{marginTop: '0px', marginBottom: '50px'}}>
             <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
               <span className="h-1 w-4 bg-[#f61f00] rounded-full inline-block"></span>
               {t.home.topHeadlines}
