@@ -116,7 +116,7 @@ const CATEGORY_HEADLINES = [
   'ubutabera',
   'ibidukikije',
   'imyemerere',
-  'africa-ylburasirazuba',
+  'afurika-yiburasirazuba',
 ];
 
 export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
