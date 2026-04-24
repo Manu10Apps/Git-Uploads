@@ -575,7 +575,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                       <li key={article.id} className={index < 4 ? "border-b border-neutral-200 dark:border-neutral-700 pb-3" : ""}>
                         <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-3 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2 transition cursor-pointer">
                           <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 1}</span>
-                        <span>{getTitle(article)}</span>
+                        <span className="hover:underline">{getTitle(article)}</span>
                         </Link>
                       </li>
                     ))
@@ -606,7 +606,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                       <li key={article.id} className={index < 4 ? "border-b border-neutral-200 dark:border-neutral-700 pb-3" : ""}>
                         <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-3 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2 transition cursor-pointer">
                           <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 6}</span>
-                        <span>{getTitle(article)}</span>
+                        <span className="hover:underline">{getTitle(article)}</span>
                         </Link>
                       </li>
                     ))
@@ -634,7 +634,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                     <li key={article.id} className={index < categoryArticles.length - 1 ? "border-b border-neutral-200 dark:border-neutral-700 pb-3" : ""}>
                       <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-3 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2 transition cursor-pointer">
                         <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 1}</span>
-                        <span>{getTitle(article)}</span>
+                        <span className="hover:underline">{getTitle(article)}</span>
                       </Link>
                     </li>
                   ))
