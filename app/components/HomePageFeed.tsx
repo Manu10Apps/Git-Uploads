@@ -527,23 +527,23 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 
                 {/* Right Column - 1 featured item */}
                 <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-3 overflow-hidden" style={{height: '320px'}}>
-                  {sportsArticles.length > 3 && (
+                  {sportsArticles.length > 4 && (
                     <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col h-full">
                       <div className="gc__image-wrap flex-shrink-0" style={{width: '100%', height: '160px', overflow: 'hidden', borderRadius: '10px'}}>
                         <ArticleImage
-                          src={sportsArticles[3].image}
-                          alt={sportsArticles[3].title}
+                          src={sportsArticles[4].image}
+                          alt={sportsArticles[4].title}
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="gc__content p-2 flex-grow flex flex-col">
                         <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
-                          <Link href={`/${sportsArticles[3].category}/${sportsArticles[3].slug}`} className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
-                            {sportsArticles[3].title}
+                          <Link href={`/${sportsArticles[4].category}/${sportsArticles[4].slug}`} className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
+                            {sportsArticles[4].title}
                           </Link>
                         </h3>
                         <div className="gc__excerpt text-xs text-neutral-600 dark:text-neutral-400 line-clamp-4 mt-2">
-                          <p>{sportsArticles[3].excerpt}</p>
+                          <p>{sportsArticles[4].excerpt}</p>
                         </div>
                       </div>
                     </article>
