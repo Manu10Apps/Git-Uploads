@@ -514,7 +514,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   <ul className="flex flex-col gap-1">
                     {sportsArticles.slice(0, 4).map((article, index) => (
                       <li key={article.id} className="border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
-                        <Link href={`/${locale}/${article.category}/${article.slug}`} className="group flex gap-2 pb-1 text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
+                        <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-2 pb-1 text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
                           <div className="flex-shrink-0" style={{width: '90px', height: '60px', minWidth: '90px', overflow: 'hidden', borderRadius: '6px'}}>
                             <ArticleImage
                               src={article.image}
@@ -523,7 +523,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-3 transition text-justify group-hover:underline">
+                            <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-3 transition text-justify hover:underline">
                               {article.title}
                             </h4>
                           </div>
@@ -536,7 +536,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 {/* Right Column - 1 featured item */}
                 <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-2 sm:p-3 overflow-hidden" style={{minHeight: '240px'}}>
                   {sportsArticles.length > 4 && (
-                    <Link href={`/${locale}/${sportsArticles[4].category}/${sportsArticles[4].slug}`} className="group gc u-clickable-card gc--type-post gc--with-image flex flex-col h-full text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
+                    <Link href={`/${locale}/${sportsArticles[4].category}/${sportsArticles[4].slug}`} className="gc u-clickable-card gc--type-post gc--with-image flex flex-col h-full text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
                       <div className="gc__image-wrap flex-shrink-0" style={{width: '100%', height: '160px', overflow: 'hidden', borderRadius: '10px'}}>
                         <ArticleImage
                           src={sportsArticles[4].image}
@@ -545,7 +545,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                         />
                       </div>
                       <div className="gc__content p-2 flex-grow flex flex-col">
-                        <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3 text-justify text-neutral-900 dark:text-white group-hover:underline">
+                        <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3 text-justify text-neutral-900 dark:text-white hover:underline">
                           {sportsArticles[4].title}
                         </h3>
                         <div className="gc__excerpt text-xs text-neutral-600 dark:text-neutral-400 line-clamp-4 mt-2 text-justify">
