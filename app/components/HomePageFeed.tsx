@@ -485,11 +485,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
           </div>
         </div>
         {/* Sports Section */}
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
           {/* Left: Featured Sports */}
-          <div className="relative w-full lg:w-[770px] h-[400px] md:h-[500px] lg:h-[625px] overflow-hidden flex items-center justify-center group">
-            <div className="absolute w-[715px] h-[300px] opacity-85 bg-cover bg-center" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', marginLeft: '7px', marginTop: '-30px', marginBottom: '150px', borderRadius: '10px'}}></div>
-            <div className="absolute bg-neutral-100 dark:bg-neutral-800 flex flex-col gap-3" style={{width: '680px', height: '385px', marginTop: '260px', marginLeft: '10px', marginBottom: '25px', borderRadius: '20px', padding: '8px'}}>
+          <div className="relative w-full lg:w-[770px] h-[300px] sm:h-[400px] md:h-[500px] lg:h-[625px] overflow-hidden flex items-center justify-center group">
+            <div className="absolute opacity-85 bg-cover bg-center rounded-lg" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', width: 'calc(100% - 20px)', height: '200px', marginLeft: 'auto', marginRight: 'auto', marginTop: '-20px', marginBottom: 'auto'}}></div>
+            <div className="absolute bg-neutral-100 dark:bg-neutral-800 flex flex-col gap-2 sm:gap-3 w-[calc(100%-20px)] sm:w-[680px]" style={{minHeight: '280px', marginTop: '160px', marginLeft: 'auto', marginRight: 'auto', marginBottom: 'auto', borderRadius: '20px', padding: '8px'}}>
               <div className="absolute z-10 w-full" style={{top: '0px', left: '0px', right: '0px'}}>
                 <div className="flex items-center gap-2 px-3 py-2">
                   <div className="h-1 w-4 bg-[#f61f00] rounded-full shadow-md"></div>
@@ -500,9 +500,9 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               </div>
               
               {/* Two equal vertical columns */}
-              <div className="flex flex-row gap-3 w-full" style={{marginTop: '50px'}}>
-                {/* Left Column - 3 items list */}
-                <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-3 overflow-hidden" style={{height: '320px'}}>
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full" style={{marginTop: '40px'}}>
+                {/* Left Column - 4 items list */}
+                <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-2 sm:p-3 overflow-hidden" style={{minHeight: '240px'}}>
                   <ul className="flex flex-col gap-1">
                     {sportsArticles.slice(0, 4).map((article, index) => (
                       <li key={article.id} className="flex gap-2 pb-1 border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
@@ -526,7 +526,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 </div>
                 
                 {/* Right Column - 1 featured item */}
-                <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-3 overflow-hidden" style={{height: '320px'}}>
+                <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-2 sm:p-3 overflow-hidden" style={{minHeight: '240px'}}>
                   {sportsArticles.length > 4 && (
                     <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col h-full">
                       <div className="gc__image-wrap flex-shrink-0" style={{width: '100%', height: '160px', overflow: 'hidden', borderRadius: '10px'}}>
@@ -554,7 +554,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
           </div>
 
           {/* Right: 10 Categories Headlines Grid */}
-          <div className="w-full lg:w-[450px] h-[500px] lg:h-[650px] bg-neutral-100 dark:bg-neutral-800 rounded-lg p-6 overflow-y-auto" style={{marginTop: '20px', marginBottom: '50px'}}>
+          <div className="w-full lg:w-[450px] h-auto max-h-[400px] sm:max-h-[500px] lg:max-h-[650px] bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 sm:p-6 overflow-y-auto" style={{marginTop: '0px', marginBottom: '50px'}}>
             <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
               <span className="h-1 w-4 bg-[#f61f00] rounded-full inline-block"></span>
               {t.home.topHeadlines}
