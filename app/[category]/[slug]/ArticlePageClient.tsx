@@ -451,7 +451,16 @@ export default function ArticlePageClient({ slug, category }: ArticleClientProps
     } else {
       setInitialLanguage(language);
     }
-    }, [searchParams, setLanguage]);
+  }, [searchParams, setLanguage]);
+
+  // Redirect to new locale when language changes (but not on initial load)
+  useEffect(() => {
+    if (initialLanguage === null) return; // Wait for initial language to be set
+    if (language === initialLanguage) return; // Don't redirect on initial load
+    
+    const newLocale = LANG_TO_LOCALE[language] || 'rw';
+    const newUrl = `/${newLocale}/${category}/${slug}`;
+    router.push(newUrl);
   }, [language, initialLanguage, category, slug, router]);
 
   // Build share URL with language param
