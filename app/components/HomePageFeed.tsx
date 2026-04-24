@@ -504,7 +504,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 {/* Left Column - 3 items list */}
                 <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-3 overflow-hidden" style={{height: '320px'}}>
                   <ul className="flex flex-col gap-2 overflow-y-auto h-full">
-                    {sportsArticles.slice(0, 3).map((article, index) => (
+                    {sportsArticles.slice(0, 4).map((article, index) => (
                       <li key={article.id} className="flex gap-2 pb-2 border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
                         <div className="flex-shrink-0" style={{width: '60px', height: '60px', minWidth: '60px', overflow: 'hidden', borderRadius: '6px'}}>
                           <ArticleImage
@@ -529,7 +529,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-3 overflow-hidden" style={{height: '320px'}}>
                   {sportsArticles.length > 3 && (
                     <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col h-full">
-                      <div className="gc__image-wrap flex-shrink-0" style={{width: '100%', height: '140px', overflow: 'hidden', borderRadius: '10px'}}>
+                      <div className="gc__image-wrap flex-shrink-0" style={{width: '100%', height: '160px', overflow: 'hidden', borderRadius: '10px'}}>
                         <ArticleImage
                           src={sportsArticles[3].image}
                           alt={sportsArticles[3].title}
