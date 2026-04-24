@@ -183,9 +183,9 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
       return;
     }
 
-    // Filter articles by sports category
+    // Filter articles by sports category (siporo)
     const sportsList = articles
-      .filter((article) => article.category.toLowerCase() === 'sports')
+      .filter((article) => article.category.toLowerCase() === 'siporo')
       .slice(0, 5);
 
     setSportsArticles(sportsList);
