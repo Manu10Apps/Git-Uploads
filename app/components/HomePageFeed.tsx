@@ -119,8 +119,16 @@ const CATEGORY_HEADLINES = [
   'afurika-yiburasirazuba',
 ];
 
+// Map language code to URL locale
+const LANG_TO_LOCALE: Record<string, string> = {
+  'ky': 'rw',
+  'en': 'en',
+  'sw': 'sw',
+};
+
 export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
   const language = useAppStore((s) => s.language);
+  const locale = LANG_TO_LOCALE[language] || 'rw';
   const t = getTranslation(language);
   const [latestPage, setLatestPage] = React.useState(0);
   const [mostViewedPage, setMostViewedPage] = React.useState(0);
@@ -320,7 +328,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   key={article.id}
                   className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-200 dark:hover:border-red-900/50 transition-all duration-300 cursor-pointer hover:shadow-lg"
                 >
-                  <Link href={`/article/${article.slug}`}>
+                  <Link href={`/${locale}/${article.category}/${article.slug}`}>
                     <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-36 sm:h-40">
                       <ArticleImage
                         src={article.image}
@@ -334,7 +342,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                       {getCategoryLabel(article.category)}
                     </div>
                     <h3 className="text-lg font-serif font-bold text-neutral-900 dark:text-white mb-3 line-clamp-2">
-                      <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
+                      <Link href={`/${locale}/${article.category}/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
                         {getTitle(article)}
                       </Link>
                     </h3>
@@ -378,7 +386,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   key={article.id}
                   className="group border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden bg-white dark:bg-neutral-800 hover:shadow-lg transition-all duration-300"
                 >
-                  <Link href={`/article/${article.slug}`}>
+                  <Link href={`/${locale}/${article.category}/${article.slug}`}>
                     <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-700 h-56 cursor-pointer">
                       <ArticleImage
                         src={article.image}
@@ -389,7 +397,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   </Link>
                   <div className="p-5">
                     <h3 className="text-base font-serif font-bold text-neutral-900 dark:text-white mb-2 line-clamp-2">
-                      <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
+                      <Link href={`/${locale}/${article.category}/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
                         {getTitle(article)}
                       </Link>
                     </h3>
@@ -451,7 +459,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                     key={article.id}
                     className="group border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden bg-white dark:bg-neutral-800 hover:shadow-lg transition-all duration-300 flex flex-col"
                   >
-                    <Link href={`/article/${article.slug}`}>
+                    <Link href={`/${locale}/${article.category}/${article.slug}`}>
                       <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-700 aspect-video cursor-pointer">
                         <ArticleImage
                           src={article.image}
@@ -462,7 +470,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                     </Link>
                     <div className="p-3 flex-grow flex flex-col">
                       <h3 className="text-sm font-serif font-bold text-neutral-900 dark:text-white line-clamp-2 flex-grow">
-                        <Link href={`/article/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
+                        <Link href={`/${locale}/${article.category}/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
                           {getTitle(article)}
                         </Link>
                       </h3>
@@ -488,7 +496,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
         <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
           {/* Left: Featured Sports */}
           <div className="relative w-full lg:w-[770px] h-[300px] sm:h-[400px] md:h-[500px] lg:h-[625px] overflow-hidden flex items-center justify-center group">
-            <div className="absolute opacity-85 bg-cover bg-center rounded-lg" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', width: 'calc(100% - 40px)', height: '400px', marginLeft: '7px', marginRight: '7px', marginTop: '-20px', marginBottom: 'auto'}}></div>
+            <div className="absolute opacity-85 bg-cover bg-center rounded-lg" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', width: 'calc(100% - 40px)', height: '300px', marginLeft: '12px', marginRight: '12px', marginTop: '-20px', marginBottom: 'auto'}}></div>
             <div className="absolute bg-neutral-100 dark:bg-neutral-800 flex flex-col gap-2 sm:gap-3 w-[calc(100%-20px)] sm:w-[680px]" style={{minHeight: '280px', marginTop: '160px', marginLeft: 'auto', marginRight: 'auto', marginBottom: 'auto', borderRadius: '20px', padding: '8px'}}>
               <div className="absolute z-10 w-full" style={{top: '0px', left: '0px', right: '0px'}}>
                 <div className="flex items-center gap-2 px-3 py-2">
@@ -506,7 +514,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   <ul className="flex flex-col gap-1">
                     {sportsArticles.slice(0, 4).map((article, index) => (
                       <li key={article.id} className="border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
-                        <Link href={`/${article.category}/${article.slug}`} className="flex gap-2 pb-1 text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
+                        <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-2 pb-1 text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
                           <div className="flex-shrink-0" style={{width: '90px', height: '60px', minWidth: '90px', overflow: 'hidden', borderRadius: '6px'}}>
                             <ArticleImage
                               src={article.image}
@@ -528,7 +536,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 {/* Right Column - 1 featured item */}
                 <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-2 sm:p-3 overflow-hidden" style={{minHeight: '240px'}}>
                   {sportsArticles.length > 4 && (
-                    <Link href={`/${sportsArticles[4].category}/${sportsArticles[4].slug}`} className="gc u-clickable-card gc--type-post gc--with-image flex flex-col h-full text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
+                    <Link href={`/${locale}/${sportsArticles[4].category}/${sportsArticles[4].slug}`} className="gc u-clickable-card gc--type-post gc--with-image flex flex-col h-full text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
                       <div className="gc__image-wrap flex-shrink-0" style={{width: '100%', height: '160px', overflow: 'hidden', borderRadius: '10px'}}>
                         <ArticleImage
                           src={sportsArticles[4].image}
@@ -565,7 +573,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   {categoryArticles.length > 0 ? (
                     categoryArticles.slice(0, 5).map((article, index) => (
                       <li key={article.id} className={index < 4 ? "border-b border-neutral-200 dark:border-neutral-700 pb-3" : ""}>
-                        <Link href={`/${article.category}/${article.slug}`} className="flex gap-3 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2 transition cursor-pointer">
+                        <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-3 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2 transition cursor-pointer">
                           <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 1}</span>
                           <span>{article.title}</span>
                         </Link>
@@ -596,7 +604,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   {categoryArticles.length > 0 ? (
                     categoryArticles.slice(5, 10).map((article, index) => (
                       <li key={article.id} className={index < 4 ? "border-b border-neutral-200 dark:border-neutral-700 pb-3" : ""}>
-                        <Link href={`/${article.category}/${article.slug}`} className="flex gap-3 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2 transition cursor-pointer">
+                        <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-3 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2 transition cursor-pointer">
                           <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 6}</span>
                           <span>{article.title}</span>
                         </Link>
@@ -624,7 +632,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 {categoryArticles.length > 0 ? (
                   categoryArticles.map((article, index) => (
                     <li key={article.id} className={index < categoryArticles.length - 1 ? "border-b border-neutral-200 dark:border-neutral-700 pb-3" : ""}>
-                      <Link href={`/${article.category}/${article.slug}`} className="flex gap-3 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2 transition cursor-pointer">
+                      <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-3 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2 transition cursor-pointer">
                         <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 1}</span>
                         <span>{article.title}</span>
                       </Link>
