@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import { normalizeArticleImageUrl } from '@/lib/utils';
 import { resolveOgImageUrl, validateImageUrl, getOgImageType } from '@/lib/social-media-metadata';
-import ArticlePageClient from '../../../article/[slug]/ArticlePageClient';
+import ArticlePageClient from './ArticlePageClient';
 
 const SITE_URL = 'https://intambwemedia.com';
 const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
