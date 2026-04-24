@@ -505,21 +505,21 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-2 sm:p-3 overflow-hidden" style={{minHeight: '240px'}}>
                   <ul className="flex flex-col gap-1">
                     {sportsArticles.slice(0, 4).map((article, index) => (
-                      <li key={article.id} className="flex gap-2 pb-1 border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
-                        <div className="flex-shrink-0" style={{width: '90px', height: '60px', minWidth: '90px', overflow: 'hidden', borderRadius: '6px'}}>
-                          <ArticleImage
-                            src={article.image}
-                            alt={article.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-3 transition text-justify">
-                            <Link href={`/${article.category}/${article.slug}`} className="text-black dark:text-white hover:text-[#f61f00] transition">
+                      <li key={article.id} className="border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
+                        <Link href={`/${article.category}/${article.slug}`} className="flex gap-2 pb-1 text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
+                          <div className="flex-shrink-0" style={{width: '90px', height: '60px', minWidth: '90px', overflow: 'hidden', borderRadius: '6px'}}>
+                            <ArticleImage
+                              src={article.image}
+                              alt={article.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-3 transition text-justify">
                               {article.title}
-                            </Link>
-                          </h4>
-                        </div>
+                            </h4>
+                          </div>
+                        </Link>
                       </li>
                     ))}
                   </ul>
@@ -528,7 +528,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 {/* Right Column - 1 featured item */}
                 <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-2 sm:p-3 overflow-hidden" style={{minHeight: '240px'}}>
                   {sportsArticles.length > 4 && (
-                    <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col h-full">
+                    <Link href={`/${sportsArticles[4].category}/${sportsArticles[4].slug}`} className="gc u-clickable-card gc--type-post gc--with-image flex flex-col h-full text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
                       <div className="gc__image-wrap flex-shrink-0" style={{width: '100%', height: '160px', overflow: 'hidden', borderRadius: '10px'}}>
                         <ArticleImage
                           src={sportsArticles[4].image}
@@ -537,16 +537,14 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                         />
                       </div>
                       <div className="gc__content p-2 flex-grow flex flex-col">
-                        <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3 text-justify">
-                          <Link href={`/${sportsArticles[4].category}/${sportsArticles[4].slug}`} className="text-black dark:text-white hover:text-[#f61f00]">
-                            {sportsArticles[4].title}
-                          </Link>
+                        <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3 text-justify text-neutral-900 dark:text-white">
+                          {sportsArticles[4].title}
                         </h3>
                         <div className="gc__excerpt text-xs text-neutral-600 dark:text-neutral-400 line-clamp-4 mt-2 text-justify">
                           <p>{sportsArticles[4].excerpt}</p>
                         </div>
                       </div>
-                    </article>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -566,23 +564,27 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 <ol className="space-y-3">
                   {categoryArticles.length > 0 ? (
                     categoryArticles.slice(0, 5).map((article, index) => (
-                      <li key={article.id} className={index < 4 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
-                        <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 1}</span>
-                        <Link href={`/${article.category}/${article.slug}`} className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2">
-                          {article.title}
+                      <li key={article.id} className={index < 4 ? "border-b border-neutral-200 dark:border-neutral-700 pb-3" : ""}>
+                        <Link href={`/${article.category}/${article.slug}`} className="flex gap-3 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2 transition cursor-pointer">
+                          <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 1}</span>
+                          <span>{article.title}</span>
                         </Link>
                       </li>
                     ))
                   ) : (
                     <>
-                      <li className="flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
-                        <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">1</span>
-                        <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 line-clamp-2">Loading headlines...</span>
+                      <li className="border-b border-neutral-200 dark:border-neutral-700 pb-3">
+                        <div className="flex gap-3">
+                          <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">1</span>
+                          <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 line-clamp-2">Loading headlines...</span>
+                        </div>
                       </li>
                       {Array.from({ length: 4 }).map((_, i) => (
-                        <li key={i} className={i < 3 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
-                          <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{i + 2}</span>
-                          <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500 line-clamp-2">—</span>
+                        <li key={i} className={i < 3 ? "border-b border-neutral-200 dark:border-neutral-700 pb-3" : ""}>
+                          <div className="flex gap-3">
+                            <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{i + 2}</span>
+                            <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500 line-clamp-2">—</span>
+                          </div>
                         </li>
                       ))}
                     </>
@@ -593,19 +595,21 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 <ol className="space-y-3">
                   {categoryArticles.length > 0 ? (
                     categoryArticles.slice(5, 10).map((article, index) => (
-                      <li key={article.id} className={index < 4 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
-                        <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 6}</span>
-                        <Link href={`/${article.category}/${article.slug}`} className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2">
-                          {article.title}
+                      <li key={article.id} className={index < 4 ? "border-b border-neutral-200 dark:border-neutral-700 pb-3" : ""}>
+                        <Link href={`/${article.category}/${article.slug}`} className="flex gap-3 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2 transition cursor-pointer">
+                          <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 6}</span>
+                          <span>{article.title}</span>
                         </Link>
                       </li>
                     ))
                   ) : (
                     <>
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <li key={i} className={i < 4 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
-                          <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{i + 6}</span>
-                          <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500 line-clamp-2">—</span>
+                        <li key={i} className={i < 4 ? "border-b border-neutral-200 dark:border-neutral-700 pb-3" : ""}>
+                          <div className="flex gap-3">
+                            <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{i + 6}</span>
+                            <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500 line-clamp-2">—</span>
+                          </div>
                         </li>
                       ))}
                     </>
@@ -619,23 +623,27 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               <ol className="space-y-3">
                 {categoryArticles.length > 0 ? (
                   categoryArticles.map((article, index) => (
-                    <li key={article.id} className={index < categoryArticles.length - 1 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
-                      <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 1}</span>
-                      <Link href={`/${article.category}/${article.slug}`} className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2">
-                        {article.title}
+                    <li key={article.id} className={index < categoryArticles.length - 1 ? "border-b border-neutral-200 dark:border-neutral-700 pb-3" : ""}>
+                      <Link href={`/${article.category}/${article.slug}`} className="flex gap-3 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2 transition cursor-pointer">
+                        <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 1}</span>
+                        <span>{article.title}</span>
                       </Link>
                     </li>
                   ))
                 ) : (
                   <>
-                    <li className="flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
-                      <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">1</span>
-                      <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 line-clamp-2">Loading headlines...</span>
+                    <li className="border-b border-neutral-200 dark:border-neutral-700 pb-3">
+                      <div className="flex gap-3">
+                        <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">1</span>
+                        <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 line-clamp-2">Loading headlines...</span>
+                      </div>
                     </li>
                     {Array.from({ length: 9 }).map((_, i) => (
-                      <li key={i} className={i < 8 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
-                        <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{i + 2}</span>
-                        <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500 line-clamp-2">—</span>
+                      <li key={i} className={i < 8 ? "border-b border-neutral-200 dark:border-neutral-700 pb-3" : ""}>
+                        <div className="flex gap-3">
+                          <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{i + 2}</span>
+                          <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500 line-clamp-2">—</span>
+                        </div>
                       </li>
                     ))}
                   </>
