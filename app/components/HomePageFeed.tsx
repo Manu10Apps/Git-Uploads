@@ -501,50 +501,49 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               
               {/* Two equal vertical columns */}
               <div className="flex flex-row gap-3 w-full" style={{marginTop: '50px'}}>
-                {/* Left Column */}
+                {/* Left Column - 3 items list */}
                 <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-3 overflow-hidden" style={{height: '320px'}}>
-                  {sportsArticles.length > 0 && (
-                    <div className="flex flex-col gap-3">
-                      <div className="flex-shrink-0" style={{width: '100%', height: '180px', overflow: 'hidden', borderRadius: '10px'}}>
-                        <ArticleImage
-                          src={sportsArticles[0].image}
-                          alt={sportsArticles[0].title}
-                          className="w-full h-full object-cover hover:scale-105 transition"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-2 transition">
-                          <Link href={`/${sportsArticles[0].category}/${sportsArticles[0].slug}`} className="hover:text-[#f61f00] transition">
-                            {sportsArticles[0].title}
-                          </Link>
-                        </h3>
-                        <p className="text-xs text-neutral-600 dark:text-neutral-400 line-clamp-3">
-                          {sportsArticles[0].excerpt}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                  <ul className="flex flex-col gap-2 overflow-y-auto h-full">
+                    {sportsArticles.slice(0, 3).map((article, index) => (
+                      <li key={article.id} className="flex gap-2 pb-2 border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
+                        <div className="flex-shrink-0" style={{width: '60px', height: '60px', minWidth: '60px', overflow: 'hidden', borderRadius: '6px'}}>
+                          <ArticleImage
+                            src={article.image}
+                            alt={article.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-2 transition">
+                            <Link href={`/${article.category}/${article.slug}`} className="hover:text-[#f61f00] transition">
+                              {article.title}
+                            </Link>
+                          </h4>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
                 
-                {/* Right Column */}
+                {/* Right Column - 1 featured item */}
                 <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-3 overflow-hidden" style={{height: '320px'}}>
-                  {sportsArticles.length > 1 && (
+                  {sportsArticles.length > 3 && (
                     <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col h-full">
-                      <div className="gc__image-wrap flex-shrink-0" style={{width: '100%', height: '180px', overflow: 'hidden', borderRadius: '10px'}}>
+                      <div className="gc__image-wrap flex-shrink-0" style={{width: '100%', height: '140px', overflow: 'hidden', borderRadius: '10px'}}>
                         <ArticleImage
-                          src={sportsArticles[1].image}
-                          alt={sportsArticles[1].title}
+                          src={sportsArticles[3].image}
+                          alt={sportsArticles[3].title}
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="gc__content p-2 flex-grow flex flex-col">
                         <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
-                          <Link href={`/${sportsArticles[1].category}/${sportsArticles[1].slug}`} className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
-                            {sportsArticles[1].title}
+                          <Link href={`/${sportsArticles[3].category}/${sportsArticles[3].slug}`} className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
+                            {sportsArticles[3].title}
                           </Link>
                         </h3>
                         <div className="gc__excerpt text-xs text-neutral-600 dark:text-neutral-400 line-clamp-4 mt-2">
-                          <p>{sportsArticles[1].excerpt}</p>
+                          <p>{sportsArticles[3].excerpt}</p>
                         </div>
                       </div>
                     </article>
