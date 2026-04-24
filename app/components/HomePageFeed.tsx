@@ -524,7 +524,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-3 transition text-justify hover:underline">
-                              {article.title}
+                              {getTitle(article)}
                             </h4>
                           </div>
                         </Link>
@@ -546,10 +546,10 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                       </div>
                       <div className="gc__content p-2 flex-grow flex flex-col">
                         <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3 text-justify text-neutral-900 dark:text-white hover:underline">
-                          {sportsArticles[4].title}
+                          {getTitle(sportsArticles[4])}
                         </h3>
                         <div className="gc__excerpt text-xs text-neutral-600 dark:text-neutral-400 line-clamp-4 mt-2 text-justify">
-                          <p>{sportsArticles[4].excerpt}</p>
+                          <p>{getExcerpt(sportsArticles[4])}</p>
                         </div>
                       </div>
                     </Link>
