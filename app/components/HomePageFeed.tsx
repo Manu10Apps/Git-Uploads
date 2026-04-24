@@ -503,9 +503,9 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               <div className="flex flex-row gap-3 w-full" style={{marginTop: '50px'}}>
                 {/* Left Column - 3 items list */}
                 <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-3 overflow-hidden" style={{height: '320px'}}>
-                  <ul className="flex flex-col gap-2 overflow-y-auto h-full">
+                  <ul className="flex flex-col gap-1">
                     {sportsArticles.slice(0, 4).map((article, index) => (
-                      <li key={article.id} className="flex gap-2 pb-2 border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
+                      <li key={article.id} className="flex gap-2 pb-1 border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
                         <div className="flex-shrink-0" style={{width: '60px', height: '60px', minWidth: '60px', overflow: 'hidden', borderRadius: '6px'}}>
                           <ArticleImage
                             src={article.image}
@@ -514,8 +514,8 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-2 transition">
-                            <Link href={`/${article.category}/${article.slug}`} className="hover:text-[#f61f00] transition">
+                          <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-3 transition">
+                            <Link href={`/${article.category}/${article.slug}`} className="text-black dark:text-white hover:text-[#f61f00] transition">
                               {article.title}
                             </Link>
                           </h4>
@@ -538,7 +538,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                       </div>
                       <div className="gc__content p-2 flex-grow flex flex-col">
                         <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
-                          <Link href={`/${sportsArticles[4].category}/${sportsArticles[4].slug}`} className="text-neutral-900 dark:text-white hover:text-[#f61f00]">
+                          <Link href={`/${sportsArticles[4].category}/${sportsArticles[4].slug}`} className="text-black dark:text-white hover:text-[#f61f00]">
                             {sportsArticles[4].title}
                           </Link>
                         </h3>
