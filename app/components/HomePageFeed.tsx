@@ -506,7 +506,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   <ul className="flex flex-col gap-1">
                     {sportsArticles.slice(0, 4).map((article, index) => (
                       <li key={article.id} className="flex gap-2 pb-1 border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
-                        <div className="flex-shrink-0" style={{width: '60px', height: '60px', minWidth: '60px', overflow: 'hidden', borderRadius: '6px'}}>
+                        <div className="flex-shrink-0" style={{width: '90px', height: '60px', minWidth: '90px', overflow: 'hidden', borderRadius: '6px'}}>
                           <ArticleImage
                             src={article.image}
                             alt={article.title}
@@ -514,7 +514,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-3 transition">
+                          <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-3 transition text-justify">
                             <Link href={`/${article.category}/${article.slug}`} className="text-black dark:text-white hover:text-[#f61f00] transition">
                               {article.title}
                             </Link>
@@ -537,12 +537,12 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                         />
                       </div>
                       <div className="gc__content p-2 flex-grow flex flex-col">
-                        <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3">
+                        <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3 text-justify">
                           <Link href={`/${sportsArticles[4].category}/${sportsArticles[4].slug}`} className="text-black dark:text-white hover:text-[#f61f00]">
                             {sportsArticles[4].title}
                           </Link>
                         </h3>
-                        <div className="gc__excerpt text-xs text-neutral-600 dark:text-neutral-400 line-clamp-4 mt-2">
+                        <div className="gc__excerpt text-xs text-neutral-600 dark:text-neutral-400 line-clamp-4 mt-2 text-justify">
                           <p>{sportsArticles[4].excerpt}</p>
                         </div>
                       </div>
