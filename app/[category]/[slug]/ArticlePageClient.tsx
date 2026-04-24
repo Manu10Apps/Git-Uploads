@@ -35,6 +35,7 @@ interface Article {
 
 interface ArticleClientProps {
   slug: string;
+  category: string;
 }
 
 interface ArticleComment {
@@ -158,11 +159,19 @@ const renderSocialLink = (platform: string, url: string) => {
   );
 };
 
-export default function ArticlePageClient({ slug }: ArticleClientProps) {
+// Map language code to URL locale
+const LANG_TO_LOCALE: Record<string, string> = {
+  'ky': 'rw',
+  'en': 'en',
+  'sw': 'sw',
+};
+
+export default function ArticlePageClient({ slug, category }: ArticleClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { language, setLanguage } = useAppStore();
   const t = getTranslation(language);
+  const [initialLanguage, setInitialLanguage] = React.useState<string | null>(null);
 
   const slugToNavKey: Record<string, keyof typeof t.nav> = {
     amakuru: 'news', politiki: 'politics', ubuzima: 'health', uburezi: 'education',
@@ -438,8 +447,21 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
     const langParam = searchParams.get('lang');
     if (langParam && (langParam === 'en' || langParam === 'sw' || langParam === 'ky')) {
       setLanguage(langParam);
+      setInitialLanguage(langParam);
+    } else {
+      setInitialLanguage(language);
     }
-  }, [searchParams, setLanguage]);
+  }, [searchParams, setLanguage, language]);
+
+  // Redirect to new locale when language changes (but not on initial load)
+  useEffect(() => {
+    if (initialLanguage === null) return; // Wait for initial language to be set
+    if (language === initialLanguage) return; // Don't redirect on initial load
+    
+    const newLocale = LANG_TO_LOCALE[language] || 'rw';
+    const newUrl = `/${newLocale}/${category}/${slug}`;
+    router.push(newUrl);
+  }, [language, initialLanguage, category, slug, router]);
 
   // Build share URL with language param
   useEffect(() => {
@@ -789,65 +811,6 @@ export default function ArticlePageClient({ slug }: ArticleClientProps) {
               translationError={translationError}
               translationSource={translationSource}
             />
-            
-            {/* Featured Grid Section */}
-            <div className="mb-8 sm:mb-10 md:mb-12">
-              <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
-                <div className="relative w-full lg:w-[770px] h-[300px] sm:h-[400px] md:h-[500px] lg:h-[625px] overflow-hidden flex items-center justify-center group">
-                  <div className="absolute opacity-85 bg-cover bg-center rounded-lg" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', width: 'calc(100% - 60px)', height: '400px', marginLeft: '15px', marginRight: '15px', marginTop: '-20px', marginBottom: 'auto'}}></div>
-                  <div className="absolute bg-neutral-100 dark:bg-neutral-800 flex flex-col gap-2 sm:gap-3 w-[calc(100%-20px)] sm:w-[680px]" style={{minHeight: '280px', margin: '160px auto auto', borderRadius: '20px', padding: '8px'}}>
-                    <div className="absolute z-10 w-full" style={{top: '0px', left: '0px', right: '0px'}}>
-                      <div className="flex items-center gap-2 px-3 py-2">
-                        <div className="h-1 w-4 bg-[#f61f00] rounded-full shadow-md"></div>
-                        <h3 className="text-2xl font-bold text-white tracking-widest drop-shadow-lg" style={{fontFamily: '"Roboto Condensed"', WebkitTextStroke: '0.6px black', textShadow: 'black 0.6px 0px, black -0.6px 0px, black 0px 0.6px, black 0px -0.6px', fontSize: '1.65rem'}}>Featured</h3>
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full" style={{marginTop: '40px'}}>
-                      <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-2 sm:p-3 overflow-hidden" style={{minHeight: '240px'}}>
-                        <ul className="flex flex-col gap-1">
-                          {recentArticles.slice(0, 4).map((article, index) => (
-                            <li key={article.id} className="border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
-                              <Link href={`/${language === 'ky' ? 'rw' : language}/${article.category}/${article.slug}`} className="flex gap-2 pb-1 text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
-                                <div className="flex-shrink-0" style={{width: '90px', height: '60px', minWidth: '90px', overflow: 'hidden', borderRadius: '6px'}}>
-                                  <ArticleImage
-                                    src={article.image}
-                                    alt={article.title}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-3 transition text-justify">{article.title}</h4>
-                                </div>
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-2 sm:p-3 overflow-hidden" style={{minHeight: '240px'}}>
-                        {mostViewedArticles.length > 0 && (
-                          <Link href={`/${language === 'ky' ? 'rw' : language}/${mostViewedArticles[0].category}/${mostViewedArticles[0].slug}`} className="gc u-clickable-card gc--type-post gc--with-image flex flex-col h-full text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
-                            <div className="gc__image-wrap flex-shrink-0" style={{width: '100%', height: '160px', overflow: 'hidden', borderRadius: '10px'}}>
-                              <ArticleImage
-                                src={mostViewedArticles[0].image}
-                                alt={mostViewedArticles[0].title}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="gc__content p-2 flex-grow flex flex-col">
-                              <h3 className="gc__title text-xs font-bold leading-tight line-clamp-3 text-justify text-neutral-900 dark:text-white">{mostViewedArticles[0].title}</h3>
-                              <div className="gc__excerpt text-xs text-neutral-600 dark:text-neutral-400 line-clamp-4 mt-2 text-justify">
-                                <p>{mostViewedArticles[0].excerpt}</p>
-                              </div>
-                            </div>
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <div className="mb-3 sm:mb-4">
               <span className="inline-block px-2 sm:px-3 py-1 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-300 rounded-full text-xs sm:text-sm font-semibold capitalize">
                 {getCategoryLabel(article.category)}

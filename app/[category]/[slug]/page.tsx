@@ -202,7 +202,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 }
 
 export default async function ArticlePage({ params, searchParams }: PageProps) {
-  const { slug } = await params;
+  const { slug, category } = await params;
   const { lang } = await searchParams;
   const article = await getArticleBySlug(slug);
   
@@ -261,7 +261,7 @@ export default async function ArticlePage({ params, searchParams }: PageProps) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
         />
       )}
-      <ArticlePageClient slug={slug} />
+      <ArticlePageClient slug={slug} category={category} />
     </>
   );
 }
