@@ -496,7 +496,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
         <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
           {/* Left: Featured Sports */}
           <div className="relative w-full lg:w-[770px] h-[300px] sm:h-[400px] md:h-[500px] lg:h-[625px] overflow-hidden flex items-center justify-center group">
-            <div className="absolute opacity-85 bg-cover bg-center rounded-lg" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', width: 'calc(100% - 40px)', height: '300px', marginLeft: '12px', marginRight: '12px', marginTop: '-20px', marginBottom: 'auto'}}></div>
+            <div className="absolute opacity-85 bg-cover bg-center rounded-lg" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', width: 'calc(100% - 60px)', height: '300px', marginLeft: '15px', marginRight: '15px', marginTop: '-20px', marginBottom: 'auto'}}></div>
             <div className="absolute bg-neutral-100 dark:bg-neutral-800 flex flex-col gap-2 sm:gap-3 w-[calc(100%-20px)] sm:w-[680px]" style={{minHeight: '280px', marginTop: '160px', marginLeft: 'auto', marginRight: 'auto', marginBottom: 'auto', borderRadius: '20px', padding: '8px'}}>
               <div className="absolute z-10 w-full" style={{top: '0px', left: '0px', right: '0px'}}>
                 <div className="flex items-center gap-2 px-3 py-2">
