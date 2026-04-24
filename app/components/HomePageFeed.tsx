@@ -502,7 +502,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               {/* Two equal vertical columns */}
               <div className="flex flex-row gap-3 w-full" style={{marginTop: '50px'}}>
                 {/* Left Column */}
-                <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-3 overflow-hidden">
+                <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-3 overflow-hidden" style={{height: '350px'}}>
                   {sportsArticles.length > 0 && (
                     <div className="flex flex-col gap-3">
                       <div className="flex-shrink-0" style={{width: '100%', height: '180px', overflow: 'hidden', borderRadius: '10px'}}>
@@ -527,7 +527,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 </div>
                 
                 {/* Right Column */}
-                <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-3 overflow-hidden">
+                <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-3 overflow-hidden" style={{height: '350px'}}>
                   {sportsArticles.length > 1 && (
                     <article className="gc u-clickable-card gc--type-post gc--with-image flex flex-col h-full">
                       <div className="gc__image-wrap flex-shrink-0" style={{width: '100%', height: '180px', overflow: 'hidden', borderRadius: '10px'}}>
