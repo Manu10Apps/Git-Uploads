@@ -488,7 +488,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
         <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
           {/* Left: Featured Sports */}
           <div className="relative w-full lg:w-[770px] h-[300px] sm:h-[400px] md:h-[500px] lg:h-[625px] overflow-hidden flex items-center justify-center group">
-            <div className="absolute opacity-85 bg-cover bg-center rounded-lg" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', width: 'calc(100% - 20px)', height: '200px', marginLeft: 'auto', marginRight: 'auto', marginTop: '-20px', marginBottom: 'auto'}}></div>
+            <div className="absolute opacity-85 bg-cover bg-center rounded-lg" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', width: 'calc(100% - 20px)', height: '400px', marginLeft: 'auto', marginRight: 'auto', marginTop: '-20px', marginBottom: 'auto'}}></div>
             <div className="absolute bg-neutral-100 dark:bg-neutral-800 flex flex-col gap-2 sm:gap-3 w-[calc(100%-20px)] sm:w-[680px]" style={{minHeight: '280px', marginTop: '160px', marginLeft: 'auto', marginRight: 'auto', marginBottom: 'auto', borderRadius: '20px', padding: '8px'}}>
               <div className="absolute z-10 w-full" style={{top: '0px', left: '0px', right: '0px'}}>
                 <div className="flex items-center gap-2 px-3 py-2">
@@ -554,37 +554,94 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
           </div>
 
           {/* Right: 10 Categories Headlines Grid */}
-          <div className="w-full lg:w-[450px] h-auto max-h-[400px] sm:max-h-[500px] lg:max-h-[650px] bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 sm:p-6 overflow-hidden sm:overflow-y-auto" style={{marginTop: '0px', marginBottom: '50px'}}>
+          <div className="w-full lg:w-[450px] h-auto bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 sm:p-6 overflow-hidden" style={{marginTop: '0px', marginBottom: '50px'}}>
             <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
               <span className="h-1 w-4 bg-[#f61f00] rounded-full inline-block"></span>
               {t.home.topHeadlines}
             </h3>
-            <ol className="space-y-3">
-              {categoryArticles.length > 0 ? (
-                categoryArticles.map((article, index) => (
-                  <li key={article.id} className={index < categoryArticles.length - 1 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
-                    <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 1}</span>
-                    <Link href={`/${article.category}/${article.slug}`} className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2">
-                      {article.title}
-                    </Link>
-                  </li>
-                ))
-              ) : (
-                // Fallback static headlines if no articles loaded
-                <>
-                  <li className="flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
-                    <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">1</span>
-                    <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 line-clamp-2">Loading headlines...</span>
-                  </li>
-                  {Array.from({ length: 9 }).map((_, i) => (
-                    <li key={i} className={i < 8 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
-                      <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{i + 2}</span>
-                      <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500 line-clamp-2">—</span>
+            
+            {/* Small devices: 2 divs of 5 articles each */}
+            <div className="block sm:hidden">
+              <div className="max-h-[400px] overflow-y-auto mb-4">
+                <ol className="space-y-3">
+                  {categoryArticles.length > 0 ? (
+                    categoryArticles.slice(0, 5).map((article, index) => (
+                      <li key={article.id} className={index < 4 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
+                        <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 1}</span>
+                        <Link href={`/${article.category}/${article.slug}`} className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2">
+                          {article.title}
+                        </Link>
+                      </li>
+                    ))
+                  ) : (
+                    <>
+                      <li className="flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
+                        <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">1</span>
+                        <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 line-clamp-2">Loading headlines...</span>
+                      </li>
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <li key={i} className={i < 3 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
+                          <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{i + 2}</span>
+                          <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500 line-clamp-2">—</span>
+                        </li>
+                      ))}
+                    </>
+                  )}
+                </ol>
+              </div>
+              <div className="max-h-[400px] overflow-y-auto">
+                <ol className="space-y-3">
+                  {categoryArticles.length > 0 ? (
+                    categoryArticles.slice(5, 10).map((article, index) => (
+                      <li key={article.id} className={index < 4 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
+                        <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 6}</span>
+                        <Link href={`/${article.category}/${article.slug}`} className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2">
+                          {article.title}
+                        </Link>
+                      </li>
+                    ))
+                  ) : (
+                    <>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <li key={i} className={i < 4 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
+                          <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{i + 6}</span>
+                          <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500 line-clamp-2">—</span>
+                        </li>
+                      ))}
+                    </>
+                  )}
+                </ol>
+              </div>
+            </div>
+
+            {/* Larger devices: single consolidated view */}
+            <div className="hidden sm:block max-h-[500px] lg:max-h-[650px] overflow-y-auto">
+              <ol className="space-y-3">
+                {categoryArticles.length > 0 ? (
+                  categoryArticles.map((article, index) => (
+                    <li key={article.id} className={index < categoryArticles.length - 1 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
+                      <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{index + 1}</span>
+                      <Link href={`/${article.category}/${article.slug}`} className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-[#f61f00] line-clamp-2">
+                        {article.title}
+                      </Link>
                     </li>
-                  ))}
-                </>
-              )}
-            </ol>
+                  ))
+                ) : (
+                  <>
+                    <li className="flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
+                      <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">1</span>
+                      <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 line-clamp-2">Loading headlines...</span>
+                    </li>
+                    {Array.from({ length: 9 }).map((_, i) => (
+                      <li key={i} className={i < 8 ? "flex gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700" : "flex gap-3"}>
+                        <span className="flex-shrink-0 text-lg font-bold text-[#f61f00] opacity-70 w-6">{i + 2}</span>
+                        <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500 line-clamp-2">—</span>
+                      </li>
+                    ))}
+                  </>
+                )}
+              </ol>
+            </div>
           </div>
         </div>
       </section>
