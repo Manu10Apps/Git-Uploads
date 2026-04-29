@@ -382,11 +382,11 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               {/* Second list - 2 articles (4th and 5th) on right */}
               {latestPageArticles.length > 4 && (
                 <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-2 sm:p-3 overflow-hidden" style={{ minHeight: '240px' }}>
-                  <ul className="flex flex-col gap-1">
+                  <ul className="flex flex-col gap-1 h-full">
                     {latestPageArticles.slice(4, 6).map((article) => (
-                      <li key={article.id} className="border-b border-neutral-200 dark:border-neutral-600 last:border-b-0 my-1">
-                        <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-2 pb-1 text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
-                          <div className="flex-shrink-0" style={{ width: '120px', height: '80px', minWidth: '120px', overflow: 'hidden', borderRadius: '6px' }}>
+                      <li key={article.id} className="border-b border-neutral-200 dark:border-neutral-600 last:border-b-0 my-1 flex-1 flex flex-col">
+                        <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-2 pb-1 text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer flex-1 flex-col">
+                          <div className="flex-shrink-0" style={{ width: '150px', height: '100px', minWidth: '150px', overflow: 'hidden', borderRadius: '6px' }}>
                             <span className="relative block w-full h-full">
                               <ArticleImage
                                 src={article.image}
