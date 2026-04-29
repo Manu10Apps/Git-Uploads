@@ -357,9 +357,9 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-2 sm:p-3 overflow-hidden" style={{ minHeight: '240px' }}>
                 <ul className="flex flex-col gap-1">
                   {latestPageArticles.slice(1, 4).map((article) => (
-                    <li key={article.id} className="border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
-                      <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-2 pb-1 text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
-                        <div className="flex-shrink-0" style={{ width: '90px', height: '60px', minWidth: '90px', overflow: 'hidden', borderRadius: '6px' }}>
+                    <li key={article.id} className="border-b border-neutral-200 dark:border-neutral-600 last:border-b-0 my-1">
+                      <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-2 my-2 text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
+                        <div className="flex-shrink-0" style={{ width: '120px', height: '80px', minWidth: '120px', overflow: 'hidden', borderRadius: '6px' }}>
                           <span className="relative block w-full h-full">
                             <ArticleImage
                               src={article.image}
@@ -369,7 +369,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-3 transition text-justify hover:underline">
+                          <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-4 transition text-justify hover:underline">
                             {getTitle(article)}
                           </h4>
                         </div>
@@ -384,9 +384,9 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-2 sm:p-3 overflow-hidden" style={{ minHeight: '240px' }}>
                   <ul className="flex flex-col gap-1">
                     {latestPageArticles.slice(4, 6).map((article) => (
-                      <li key={article.id} className="border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
+                      <li key={article.id} className="border-b border-neutral-200 dark:border-neutral-600 last:border-b-0 my-1">
                         <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-2 pb-1 text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
-                          <div className="flex-shrink-0" style={{ width: '90px', height: '60px', minWidth: '90px', overflow: 'hidden', borderRadius: '6px' }}>
+                          <div className="flex-shrink-0" style={{ width: '120px', height: '80px', minWidth: '120px', overflow: 'hidden', borderRadius: '6px' }}>
                             <span className="relative block w-full h-full">
                               <ArticleImage
                                 src={article.image}
