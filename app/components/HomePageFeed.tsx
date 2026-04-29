@@ -342,7 +342,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                       {getCategoryLabel(article.category)}
                     </div>
                     <h3 className="text-lg font-serif font-bold text-neutral-900 dark:text-white mb-3 line-clamp-2">
-                      <Link href={`/${locale}/${article.category}/${article.slug}`} className="text-neutral-900 dark:text-white hover:underline transition-colors">
+                      <Link href={`/${locale}/${article.category}/${article.slug}`} className="text-neutral-900 dark:text-white hover:underline transition-colors rounded-[10px]">
                         {getTitle(article)}
                       </Link>
                     </h3>
