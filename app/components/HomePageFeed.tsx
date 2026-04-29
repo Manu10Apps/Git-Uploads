@@ -322,33 +322,60 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
           </div>
 
           {latestPageArticles.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-              {latestPageArticles.map((article) => (
-                <article
-                  key={article.id}
-                  className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 transition-all duration-300 cursor-pointer hover:shadow-lg"
-                >
-                  <Link href={`/${locale}/${article.category}/${article.slug}`}>
-                    <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-36 sm:h-40">
+            <div className="flex gap-4">
+              {/* First article - Grid card on left */}
+              <article className="group hidden sm:block flex-shrink-0 w-full sm:w-1/2 border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 transition-all duration-300 cursor-pointer hover:shadow-lg">
+                <Link href={`/${locale}/${latestPageArticles[0].category}/${latestPageArticles[0].slug}`}>
+                  <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-36 sm:h-40">
+                    <span className="relative block w-full h-full">
                       <ArticleImage
-                        src={article.image}
-                        alt={getTitle(article)}
+                        src={latestPageArticles[0].image}
+                        alt={getTitle(latestPageArticles[0])}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
-                    </div>
-                  </Link>
-                  <div className="p-2">
-                    <div className="text-red-600 dark:text-red-500 text-xs font-semibold tracking-widest mb-2 uppercase">
-                      {getCategoryLabel(article.category)}
-                    </div>
-                    <h3 className="text-lg font-serif font-bold text-neutral-900 dark:text-white mb-3 line-clamp-2">
-                      <Link href={`/${locale}/${article.category}/${article.slug}`} className="text-neutral-900 dark:text-white hover:underline transition-colors rounded-[10px]">
-                        {getTitle(article)}
-                      </Link>
-                    </h3>
+                    </span>
                   </div>
-                </article>
-              ))}
+                </Link>
+                <div className="p-2">
+                  <div className="text-red-600 dark:text-red-500 text-xs font-semibold tracking-widest mb-2 uppercase">
+                    {getCategoryLabel(latestPageArticles[0].category)}
+                  </div>
+                  <h3 className="text-lg font-serif font-bold text-neutral-900 dark:text-white mb-3 line-clamp-2">
+                    <Link
+                      href={`/${locale}/${latestPageArticles[0].category}/${latestPageArticles[0].slug}`}
+                      className="text-neutral-900 dark:text-white hover:underline transition-colors rounded-[10px]"
+                    >
+                      {getTitle(latestPageArticles[0])}
+                    </Link>
+                  </h3>
+                </div>
+              </article>
+
+              {/* Remaining articles - List on right */}
+              <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-2 sm:p-3 overflow-hidden" style={{ minHeight: '240px' }}>
+                <ul className="flex flex-col gap-1">
+                  {latestPageArticles.slice(1, 5).map((article) => (
+                    <li key={article.id} className="border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
+                      <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-2 pb-1 text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
+                        <div className="flex-shrink-0" style={{ width: '90px', height: '60px', minWidth: '90px', overflow: 'hidden', borderRadius: '6px' }}>
+                          <span className="relative block w-full h-full">
+                            <ArticleImage
+                              src={article.image}
+                              alt={getTitle(article)}
+                              className="w-full h-full object-cover"
+                            />
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-3 transition text-justify hover:underline">
+                            {getTitle(article)}
+                          </h4>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           ) : (
             <div className="text-center py-8">
