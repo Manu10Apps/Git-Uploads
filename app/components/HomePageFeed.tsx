@@ -326,7 +326,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
               {latestPageArticles.map((article) => (
                 <article
                   key={article.id}
-                  className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 hover:border-red-200 dark:hover:border-red-900/50 transition-all duration-300 cursor-pointer hover:shadow-lg"
+                  className="group border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 transition-all duration-300 cursor-pointer hover:shadow-lg"
                 >
                   <Link href={`/${locale}/${article.category}/${article.slug}`}>
                     <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-36 sm:h-40">
@@ -337,12 +337,12 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                       />
                     </div>
                   </Link>
-                  <div className="p-3 sm:p-4 md:p-6">
+                  <div className="p-2">
                     <div className="text-red-600 dark:text-red-500 text-xs font-semibold tracking-widest mb-2 uppercase">
                       {getCategoryLabel(article.category)}
                     </div>
                     <h3 className="text-lg font-serif font-bold text-neutral-900 dark:text-white mb-3 line-clamp-2">
-                      <Link href={`/${locale}/${article.category}/${article.slug}`} className="text-neutral-900 dark:text-white hover:text-red-700 transition-colors">
+                      <Link href={`/${locale}/${article.category}/${article.slug}`} className="text-neutral-900 dark:text-white hover:underline transition-colors">
                         {getTitle(article)}
                       </Link>
                     </h3>
