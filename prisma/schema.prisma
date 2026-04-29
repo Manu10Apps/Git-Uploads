@@ -49,6 +49,7 @@ model Article {
   gallery         String?   // JSON array as string: '[{"url":"...","caption":"..."}]'
   seoTitle        String?
   seoDescription  String?
+  locked          Boolean   @default(false) // Lock to prevent reader access
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   comments        Comment[]
@@ -326,6 +327,7 @@ model EpaperEdition {
   notes        String?                // Auto-generated article summary for the week
   isCurrent    Boolean   @default(false) // Mark as current/latest issue
   isArchived   Boolean   @default(false) // Soft delete indicator
+  isLocked     Boolean   @default(false) // Lock to prevent reader access
   createdBy    Int
   admin        AdminUser @relation(fields: [createdBy], references: [id], onDelete: Restrict)
   createdAt    DateTime  @default(now())

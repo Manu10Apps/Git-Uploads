@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import Image from 'next/image';
-import { Download, Trash2, Star, Archive, AlertCircle, FileText, Send, RefreshCw, Pencil, Upload, X, EyeOff } from 'lucide-react';
+import { Download, Trash2, Star, Archive, AlertCircle, FileText, Send, RefreshCw, Pencil, Upload, X, EyeOff, Lock, Unlock } from 'lucide-react';
 import Link from 'next/link';
 import { formatFileSize, formatIssueDate } from '@/lib/epaper-client';
 
@@ -18,6 +18,7 @@ interface EpaperEdition {
   notes?: string;
   isCurrent: boolean;
   isArchived: boolean;
+  isLocked?: boolean;
   admin: { name: string };
   createdAt: Date;
 }
@@ -315,6 +316,37 @@ export function EpaperManager() {
     }
   };
 
+  // Lock/Unlock
+  const handleLock = async (id: number, isLocked: boolean) => {
+    try {
+      const adminEmail = localStorage.getItem('adminEmail');
+      const response = await fetch('/api/epaper/lock', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-email': adminEmail || '',
+        },
+        body: JSON.stringify({
+          epaperId: id,
+          action: isLocked ? 'unlock' : 'lock',
+        }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setSuccessMessage(`E-paper ${isLocked ? 'unlocked' : 'locked'} successfully!`);
+        setEditions(
+          editions.map((ed) =>
+            ed.id === id ? { ...ed, isLocked: !isLocked } : ed
+          )
+        );
+      } else {
+        setError(data.error || 'Failed to lock/unlock');
+      }
+    } catch (err) {
+      setError('Failed to lock/unlock edition');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -555,6 +587,11 @@ export function EpaperManager() {
                         Current Issue
                       </span>
                     )}
+                    {edition.isLocked && (
+                      <span className="px-2 py-1 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-semibold rounded flex items-center gap-1">
+                        <Lock size={12} /> Locked
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -656,6 +693,27 @@ export function EpaperManager() {
                     <Pencil size={14} />
                     Edit
                   </Link>
+
+                  <button
+                    onClick={() => handleLock(edition.id, edition.isLocked || false)}
+                    className={`flex items-center gap-1 px-3 py-1 text-sm rounded transition ${
+                      edition.isLocked
+                        ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/60'
+                        : 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 hover:bg-orange-200 dark:hover:bg-orange-900/60'
+                    }`}
+                  >
+                    {edition.isLocked ? (
+                      <>
+                        <Unlock size={14} />
+                        Unlock
+                      </>
+                    ) : (
+                      <>
+                        <Lock size={14} />
+                        Lock
+                      </>
+                    )}
+                  </button>
 
                   <button
                     onClick={() => handleDelete(edition.id)}

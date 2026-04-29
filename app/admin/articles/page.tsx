@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Edit2, Trash2, Plus } from 'lucide-react';
+import { Edit2, Trash2, Plus, Lock, Unlock } from 'lucide-react';
 import AdminHeader from '@/app/admin/components/AdminHeader';
 import { ArticleImage } from '@/app/components/ArticleImage';
 
@@ -17,6 +17,7 @@ interface Article {
   publishedAt: string;
   featured: boolean;
   status: string;
+  locked?: boolean;
 }
 
 export default function AdminArticlesPage() {
@@ -71,6 +72,37 @@ export default function AdminArticlesPage() {
       }
     } catch (error) {
       console.error('Failed to delete article:', error);
+    }
+  };
+
+  const handleLock = async (id: string, isLocked: boolean) => {
+    try {
+      const response = await fetch('/api/articles/lock', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-email': adminEmail,
+        },
+        body: JSON.stringify({
+          articleId: id,
+          action: isLocked ? 'unlock' : 'lock',
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setArticles(
+          articles.map((a) =>
+            a.id === id ? { ...a, locked: result.data.locked } : a
+          )
+        );
+      } else {
+        const data = await response.json().catch(() => ({}));
+        alert(data.error || 'Failed to lock/unlock article');
+      }
+    } catch (error) {
+      console.error('Failed to lock/unlock article:', error);
+      alert('Failed to lock/unlock article');
     }
   };
 
@@ -138,6 +170,9 @@ export default function AdminArticlesPage() {
                       <th className="px-3 sm:px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white hidden md:table-cell">
                         Featured
                       </th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white hidden sm:table-cell">
+                        Status
+                      </th>
                       <th className="px-3 sm:px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-white">
                         Actions
                       </th>
@@ -190,8 +225,20 @@ export default function AdminArticlesPage() {
                             <span className="text-xs text-neutral-500">-</span>
                           )}
                         </td>
+                        <td className="px-3 sm:px-6 py-4 hidden sm:table-cell">
+                          {article.locked ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-200">
+                              <Lock className="w-3 h-3" /> Locked
+                            </span>
+                          ) : (
+                            <span className="text-xs text-neutral-500">Unlocked</span>
+                          )}
+                        </td>
                         <td className="px-3 sm:px-6 py-4">
                           <div className="flex items-center gap-1 sm:gap-2">
+                            {article.locked && (
+                              <span className="text-xs font-semibold text-red-700 dark:text-red-400 sm:hidden">🔒</span>
+                            )}
                             {(adminRole !== 'editor' || article.author === adminName) && (
                               <button
                                 onClick={() => router.push(`/admin/edit-article/${article.id}`)}
@@ -199,6 +246,23 @@ export default function AdminArticlesPage() {
                                 title="Edit article"
                               >
                                 <Edit2 className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+                              </button>
+                            )}
+                            {adminRole === 'admin' && (
+                              <button
+                                onClick={() => handleLock(article.id, article.locked || false)}
+                                className={`p-2.5 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${
+                                  article.locked
+                                    ? 'hover:bg-green-50 dark:hover:bg-green-950'
+                                    : 'hover:bg-orange-50 dark:hover:bg-orange-950'
+                                }`}
+                                title={article.locked ? 'Unlock article' : 'Lock article'}
+                              >
+                                {article.locked ? (
+                                  <Unlock className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                ) : (
+                                  <Lock className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                                )}
                               </button>
                             )}
                             {(adminRole !== 'editor' || article.author === adminName) && (
