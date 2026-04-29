@@ -8,6 +8,12 @@ import { HomepageAdverts } from '@/app/components/HomepageAdverts';
 export default async function Home() {
   // Load featured data only for initial render (fast)
   const { articles: featuredPageArticles, adverts } = await getFeaturedHomepageData();
+  
+  // Load full homepage data for the feed
+  const { articles: allArticles, adverts: feedAdverts } = await getHomepageData();
+  
+  // Get most viewed articles (sorted by views)
+  const mostViewedArticles = [...allArticles].sort((a: any, b: any) => (b.views || 0) - (a.views || 0));
 
   const featuredArticle = featuredPageArticles.find((article) => article.featured) || featuredPageArticles[0] || null;
   const featuredRemainingArticles = featuredPageArticles.filter((article) => featuredArticle && article.id !== featuredArticle.id);
@@ -35,8 +41,8 @@ export default async function Home() {
 
         <HomepageAdverts topAdverts={homepageTopAdverts} bottomAdverts={homepageBottomAdverts} />
 
-        {/* Deferred loading for full feed */}
-        <DeferredHomePageFeed />
+        {/* Deferred loading for full feed - now with server-side data */}
+        <DeferredHomePageFeed articles={allArticles} mostViewed={mostViewedArticles} />
 
         <HomepageAdverts topAdverts={homepageTopAdverts} bottomAdverts={homepageBottomAdverts} section="bottom" />
 

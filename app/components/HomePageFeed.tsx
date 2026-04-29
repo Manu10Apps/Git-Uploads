@@ -324,9 +324,9 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
           {latestPageArticles.length > 0 ? (
             <div className="flex gap-4">
               {/* First article - Grid card on left */}
-              <article className="group hidden sm:block flex-shrink-0 w-full sm:w-1/2 border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 transition-all duration-300 cursor-pointer hover:shadow-lg">
+              <article className="group hidden sm:block flex-shrink-0 w-full sm:w-1/3 border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 transition-all duration-300 cursor-pointer hover:shadow-lg">
                 <Link href={`/${locale}/${latestPageArticles[0].category}/${latestPageArticles[0].slug}`}>
-                  <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-36 sm:h-40">
+                  <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 sm:h-64">
                     <span className="relative block w-full h-full">
                       <ArticleImage
                         src={latestPageArticles[0].image}
@@ -351,10 +351,10 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                 </div>
               </article>
 
-              {/* Remaining articles - List on right */}
+              {/* First list - 3 articles in middle */}
               <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-2 sm:p-3 overflow-hidden" style={{ minHeight: '240px' }}>
                 <ul className="flex flex-col gap-1">
-                  {latestPageArticles.slice(1, 5).map((article) => (
+                  {latestPageArticles.slice(1, 4).map((article) => (
                     <li key={article.id} className="border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
                       <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-2 pb-1 text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
                         <div className="flex-shrink-0" style={{ width: '90px', height: '60px', minWidth: '90px', overflow: 'hidden', borderRadius: '6px' }}>
@@ -376,6 +376,34 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                   ))}
                 </ul>
               </div>
+
+              {/* Second list - 2 articles (4th and 5th) on right */}
+              {latestPageArticles.length > 4 && (
+                <div className="flex-1 bg-white dark:bg-neutral-700 rounded-lg p-2 sm:p-3 overflow-hidden" style={{ minHeight: '240px' }}>
+                  <ul className="flex flex-col gap-1">
+                    {latestPageArticles.slice(4, 6).map((article) => (
+                      <li key={article.id} className="border-b border-neutral-200 dark:border-neutral-600 last:border-b-0">
+                        <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-2 pb-1 text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer">
+                          <div className="flex-shrink-0" style={{ width: '90px', height: '60px', minWidth: '90px', overflow: 'hidden', borderRadius: '6px' }}>
+                            <span className="relative block w-full h-full">
+                              <ArticleImage
+                                src={article.image}
+                                alt={getTitle(article)}
+                                className="w-full h-full object-cover"
+                              />
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-3 transition text-justify hover:underline">
+                              {getTitle(article)}
+                            </h4>
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-8">
