@@ -391,7 +391,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                               {getTitle(article)}
                             </h4>
                           </div>
-                          <div className="flex-shrink-0" style={{ width: '150px', height: '100px', minWidth: '150px', overflow: 'hidden', borderRadius: '6px' }}>
+                          <div className="flex-shrink-0" style={{ width: '200px', height: '120px', minWidth: '200px', overflow: 'hidden', borderRadius: '6px' }}>
                             <span className="relative block w-full h-full">
                               <ArticleImage
                                 src={article.image}
