@@ -1,6 +1,8 @@
 import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { resolveArticleImage } from '@/lib/article-images';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 export type HomepageArticle = {
   id: number;
@@ -66,8 +68,36 @@ const getHomepageArticles = unstable_cache(
         featured: a.featured,
         views: 0,
       }));
-    } catch {
-      return [];
+    } catch (error) {
+      // Fallback to JSON file if database is unavailable
+      try {
+        const filePath = path.join(process.cwd(), 'data', 'articles.json');
+        const raw = await fs.readFile(filePath, 'utf-8');
+        const parsed = JSON.parse(raw) as { articles: any[] };
+        
+        if (!parsed.articles || !Array.isArray(parsed.articles)) {
+          return [];
+        }
+        
+        return parsed.articles
+          .filter((a: any) => a.status === 'published')
+          .map((a: any) => ({
+            id: a.id,
+            title: a.title,
+            slug: a.slug,
+            excerpt: a.excerpt,
+            image: a.image || '',
+            category: a.category,
+            author: a.author,
+            publishedAt: new Date(a.publishedAt).toLocaleDateString(),
+            publishedAtRaw: a.publishedAt,
+            readTime: a.readTime || 5,
+            featured: a.featured || false,
+            views: 0,
+          }));
+      } catch {
+        return [];
+      }
     }
   },
   ['homepage-articles'],
@@ -112,8 +142,37 @@ const getFeaturedArticles = unstable_cache(
         featured: a.featured,
         views: 0,
       }));
-    } catch {
-      return [];
+    } catch (error) {
+      // Fallback to JSON file if database is unavailable
+      try {
+        const filePath = path.join(process.cwd(), 'data', 'articles.json');
+        const raw = await fs.readFile(filePath, 'utf-8');
+        const parsed = JSON.parse(raw) as { articles: any[] };
+        
+        if (!parsed.articles || !Array.isArray(parsed.articles)) {
+          return [];
+        }
+        
+        return parsed.articles
+          .filter((a: any) => a.status === 'published')
+          .slice(0, 5)
+          .map((a: any) => ({
+            id: a.id,
+            title: a.title,
+            slug: a.slug,
+            excerpt: a.excerpt,
+            image: a.image || '',
+            category: a.category,
+            author: a.author,
+            publishedAt: new Date(a.publishedAt).toLocaleDateString(),
+            publishedAtRaw: a.publishedAt,
+            readTime: a.readTime || 5,
+            featured: a.featured || false,
+            views: 0,
+          }));
+      } catch {
+        return [];
+      }
     }
   },
   ['homepage-featured-articles'],

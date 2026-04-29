@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArticleImage } from '@/app/components/ArticleImage';
 import { useAppStore } from '@/lib/store';
 import { getTranslation } from '@/lib/translations';
+import { useSportsImageRotation } from '@/lib/hooks/useSportsImageRotation';
 import type { HomepageArticle } from '@/lib/homepage-data';
 
 type TranslationMap = Record<number, { title: string; excerpt: string }>;
@@ -130,6 +131,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
   const language = useAppStore((s) => s.language);
   const locale = LANG_TO_LOCALE[language] || 'rw';
   const t = getTranslation(language);
+  const { currentImage: sportsImage, timeUntilUpdate } = useSportsImageRotation();
   const [latestPage, setLatestPage] = React.useState(0);
   const [mostViewedPage, setMostViewedPage] = React.useState(0);
   const [oldNewsPage, setOldNewsPage] = React.useState(0);
@@ -324,14 +326,14 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
           {latestPageArticles.length > 0 ? (
             <div className="flex gap-4">
               {/* First article - Grid card on left */}
-              <article className="group hidden sm:block flex-shrink-0 w-full sm:w-1/3 border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-white dark:bg-neutral-900 transition-all duration-300 cursor-pointer hover:shadow-lg">
+              <article className="group hidden sm:block flex-shrink-0 w-full sm:w-1/3 overflow-hidden bg-white dark:bg-neutral-900 transition-all duration-300 cursor-pointer rounded-lg">
                 <Link href={`/${locale}/${latestPageArticles[0].category}/${latestPageArticles[0].slug}`}>
                   <div className="overflow-hidden bg-neutral-100 dark:bg-neutral-800 h-48 sm:h-64">
                     <span className="relative block w-full h-full">
                       <ArticleImage
                         src={latestPageArticles[0].image}
                         alt={getTitle(latestPageArticles[0])}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 rounded-[10px]"
                       />
                     </span>
                   </div>
@@ -551,14 +553,32 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
         <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
           {/* Left: Featured Sports */}
           <div className="relative w-full lg:w-[770px] h-[300px] sm:h-[400px] md:h-[500px] lg:h-[625px] overflow-hidden flex items-center justify-center group">
-            <div className="absolute opacity-85 bg-cover bg-center rounded-lg" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80)', width: 'calc(100% - 60px)', height: '400px', marginLeft: '15px', marginRight: '15px', marginTop: '-20px', marginBottom: 'auto'}}></div>
+            {/* Dynamic Sports Background Image - Updates every 16 hours */}
+            <div 
+              className="absolute opacity-85 bg-cover bg-center rounded-lg transition-all duration-1000" 
+              style={{
+                backgroundImage: `url(${sportsImage})`,
+                width: 'calc(100% - 60px)', 
+                height: '400px', 
+                marginLeft: '15px', 
+                marginRight: '15px', 
+                marginTop: '-20px', 
+                marginBottom: 'auto'
+              }}
+              title={`Sports image updates every 16 hours. Next update in: ${timeUntilUpdate}`}
+            ></div>
             <div className="absolute bg-neutral-100 dark:bg-neutral-800 flex flex-col gap-2 sm:gap-3 w-[calc(100%-20px)] sm:w-[680px]" style={{minHeight: '280px', marginTop: '160px', marginLeft: 'auto', marginRight: 'auto', marginBottom: 'auto', borderRadius: '20px', padding: '8px'}}>
               <div className="absolute z-10 w-full" style={{top: '0px', left: '0px', right: '0px'}}>
                 <div className="flex items-center gap-2 px-3 py-2">
                   <div className="h-1 w-4 bg-[#f61f00] rounded-full shadow-md"></div>
-                  <h2 className="text-2xl font-bold text-white tracking-widest drop-shadow-lg" style={{fontFamily: 'Roboto Condensed', WebkitTextStroke: '0.6px black', textShadow: 'black 0.6px 0, black -0.6px 0, black 0 0.6px, black 0 -0.6px', fontSize: '1.65rem'}}>
-                    {t.nav.sports || 'SIPORO'}
-                  </h2>
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-bold text-white tracking-widest drop-shadow-lg" style={{fontFamily: 'Roboto Condensed', WebkitTextStroke: '0.6px black', textShadow: 'black 0.6px 0, black -0.6px 0, black 0 0.6px, black 0 -0.6px', fontSize: '1.65rem'}}>
+                      {t.nav.sports || 'SIPORO'}
+                    </h2>
+                    <p className="text-xs text-gray-200 drop-shadow-md mt-1" style={{textShadow: 'black 0.5px 0, black -0.5px 0, black 0 0.5px, black 0 -0.5px'}}>
+                      🔄 Featured image updates every 16 hours • Next: {timeUntilUpdate}
+                    </p>
+                  </div>
                 </div>
               </div>
               
