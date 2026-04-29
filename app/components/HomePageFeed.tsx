@@ -387,7 +387,7 @@ export function HomePageFeed({ articles, mostViewed }: HomePageFeedProps) {
                       <li key={article.id} className="border-b border-neutral-200 dark:border-neutral-600 last:border-b-0 mt-4 mb-1 flex-1 flex flex-col">
                         <Link href={`/${locale}/${article.category}/${article.slug}`} className="flex gap-2 text-black dark:text-white hover:text-[#f61f00] transition cursor-pointer items-start">
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-xs font-bold text-neutral-900 dark:text-white transition text-justify hover:underline" style={{ maxHeight: '162px', maxWidth: '240.68px', overflow: 'visible', wordWrap: 'break-word', whiteSpace: 'normal' }}>
+                            <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-8 transition text-justify hover:underline" style={{ maxHeight: '162px', maxWidth: '240.68px', overflow: 'visible', wordWrap: 'break-word', whiteSpace: 'normal' }}>
                               {getTitle(article)}
                             </h4>
                           </div>
